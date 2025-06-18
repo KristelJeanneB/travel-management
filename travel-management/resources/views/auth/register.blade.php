@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Register</title>
     <link rel="stylesheet" href="{{ asset('css/register.css') }}">
-    
 </head>
 <body>
     <div class="background-image"></div>
@@ -16,29 +15,45 @@
 
             <div class="form-group">
                 <label for="firstname">First Name:</label>
-                <input type="text" id="firstname" name="firstname" required>
+                <input type="text" id="firstname" name="firstname" value="{{ old('firstname') }}" required>
+                @error('firstname')
+                    <div class="error" style="color:red;">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="form-group">
                 <label for="lastname">Last Name:</label>
-                <input type="text" id="lastname" name="lastname" required>
+                <input type="text" id="lastname" name="lastname" value="{{ old('lastname') }}" required>
+                @error('lastname')
+                    <div class="error" style="color:red;">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="form-group">
                 <label for="username">Email:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="email" id="username" name="username" value="{{ old('username') }}" required>
+                @error('username')
+                    <div class="error" style="color:red;">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="form-group">
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
                 <i class="eye-icon fas fa-eye-slash"></i>
+                @error('password')
+                    <div class="error" style="color:red;">{{ $message }}</div>
+                @enderror
+                <small>Password must be at least 8 characters and include at least one special character.</small>
             </div>
 
             <div class="form-group">
                 <label for="password_confirmation">Confirm Password:</label>
                 <input type="password" id="password_confirmation" name="password_confirmation" required>
                 <i class="eye-icon fas fa-eye-slash"></i>
+                @error('password_confirmation')
+                    <div class="error" style="color:red;">{{ $message }}</div>
+                @enderror
             </div>
 
             <!-- reCAPTCHA -->
@@ -48,16 +63,18 @@
 
             <button type="submit" class="btn btn-primary">Sign Up</button>
             
-            <p style="text-align:center; margin-top:10px;">Already have an account?
-            <a href="{{ route('login') }}">Log In</a></p>
+            <p style="text-align:center; margin-top:10px;">
+                Already have an account?
+                <a href="{{ route('login') }}">Log In</a>
+            </p>
         </form>
     </div>
 
     <!-- reCAPTCHA Script -->
-    <script src="https://www.google.com/recaptcha/api.js"  async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
     <!-- Password Toggle Script -->
-    <<script>
+    <script>
         document.querySelectorAll('.eye-icon').forEach(icon => {
             const input = icon.previousElementSibling;
 
