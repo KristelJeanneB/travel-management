@@ -38,7 +38,7 @@
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
-                <a href="#" class="forgot-password">Forgot password?</a>
+                <p><a href="{{ route('password.request') }}">Forgot Password?</a></p>
             </div>
 
             <div class="form-group remember-me">

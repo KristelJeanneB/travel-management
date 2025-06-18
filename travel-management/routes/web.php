@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +36,19 @@ use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
+
+use App\Http\Controllers\Auth\PasswordResetController;
+// Show forgot password form
+Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+
+// Handle email submission
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');;
+
+// Show reset password form
+Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+
+// Handle reset password
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 
 // Home route
 Route::get('/home', function () {
