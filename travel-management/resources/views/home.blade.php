@@ -2,19 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Home</title>
+    <title>Route Guidance</title>
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"> 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> 
 </head>
 <body>
-    <h1>Welcome to Your Home Page</h1>
 
-    @if(Auth::check())
-        <p>Hello, {{ Auth::user()->name }}!</p>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit">Logout</button>
-        </form>
-    @else
-        <p>You are not logged in.</p>
-    @endif
+<!-- Header -->
+<div class="header">
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search">
+        <button id="search-button"><i class="fas fa-search"></i></button>
+    </div>
+    <nav>
+        <a href="#" class="home">Home</a>
+        <a href="#" class="settings"><i class="fas fa-cog"></i></a>
+        <a href="#" class="login">Login</a>
+    </nav>
+</div>
+
+<!-- Route Guidance Panel -->
+<div class="route-guidance">
+    <h3>Route Guidance</h3>
+    <form id="route-form">
+        <div class="form-group">
+            <label for="start-from"><i class="fas fa-map-marker-alt"></i> Start from:</label>
+            <input type="text" id="start-from" placeholder="Enter starting location">
+        </div>
+        <div class="form-group">
+            <label for="destination"><i class="fas fa-map-marker-alt"></i> Where to:</label>
+            <input type="text" id="destination" placeholder="Enter destination">
+        </div>
+        <button type="submit">Get Directions</button>
+    </form>
+</div>
+
+<!-- Map Container -->
+<div id="map" style="height: 100vh;"></div>
+
+<!-- Zoom Controls -->
+<div class="zoom-controls">
+    <button id="zoom-in"><i class="fas fa-plus"></i></button>
+    <button id="zoom-out"><i class="fas fa-minus"></i></button>
+</div>
+
+<script src="{{ asset('js/home.js') }}"></script>
 </body>
 </html>
