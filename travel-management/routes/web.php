@@ -1,63 +1,31 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-Route::get('/', function () {
-    return view('register');
-});
 use App\Http\Controllers\Auth\RegisterController;
-
-// Show registration form
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-
-// Handle registration
-Route::post('/register', [RegisterController::class, 'register']);
-
-Route::get('/', function () {
-    return view('register');
-});
-
-//Login
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
 
-// routes/web.php
+// Root URL shows registration form (GET, no route name)
+Route::get('/', [RegisterController::class, 'showRegistrationForm']);
 
+// Registration routes
+Route::get('/register', [RegisterController::class, 'showRegistrationForm']);
+Route::post('/register', [RegisterController::class, 'register'])->name('register');  // POST route named 'register'
+
+// Login routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 
-use App\Http\Controllers\Auth\PasswordResetController;
-// Show forgot password form
+// Password reset routes
 Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
-
-// Handle email submission
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');;
-
-// Show reset password form
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
-
-// Handle reset password
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 
-// Home route
+// Protected home route (requires auth)
 Route::get('/home', function () {
     return view('home');
 })->name('home')->middleware('auth');
-// Handle logout
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-//route exits
-Route::get('/home', function () {
-    return view('home');
-})->name('home')->middleware('auth');
+// Logout route
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
