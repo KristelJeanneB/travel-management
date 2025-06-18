@@ -3,57 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
-    <style>
-        .error { color: red; }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
+    
+    <!-- Font Awesome for Eye Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
 </head>
 <body>
-    <h2>Register</h2>
 
-    @if(session('success'))
-        <p style="color:green;">{{ session('success') }}</p>
-    @endif
+    <div class="form-container">
+        <h2>Create account</h2>
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
 
-    <form action="{{ url('register') }}" method="POST">
-        @csrf
+            <div class="form-group">
+                <label for="firstname">Firstname:</label>
+                <input type="text" id="firstname" name="firstname" required>
+            </div>
 
-        <div>
-            <label>Name:</label>
-            <input type="text" name="name" value="{{ old('name') }}">
-            @error('name')
-                <span class="error">{{ $message }}</span>
-            @enderror
-        </div>
+            <div class="form-group">
+                <label for="lastname">Lastname:</label>
+                <input type="text" id="lastname" name="lastname" required>
+            </div>
 
-        <div>
-            <label>Email:</label>
-            <input type="email" name="email" value="{{ old('email') }}">
-            @error('email')
-                <span class="error">{{ $message }}</span>
-            @enderror
-        </div>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
 
-        <div>
-            <label>Password:</label>
-            <input type="password" name="password">
-            @error('password')
-                <span class="error">{{ $message }}</span>
-            @enderror
-        </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <i class="eye-icon fas fa-eye-slash"></i>
+            </div>
 
-        <div>
-            <label>Confirm Password:</label>
-            <input type="password" name="password_confirmation">
-        </div>
+            <div class="form-group">
+                <label for="password_confirmation">Confirm password:</label>
+                <input type="password" id="password_confirmation" name="password_confirmation" required>
+                <i class="eye-icon fas fa-eye-slash"></i>
+            </div>
 
-        <div>
-            <button type="submit">SignUp</button>
-        </div>
-    </form>
+            <!-- reCAPTCHA -->
+            <div class="form-group">
+                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}"></div>
+            </div>
+
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ route('login') }}'"> Sign Up</button>
+        </form>
+    </div>
+
+    <!-- reCAPTCHA Script -->
+    <script src="https://www.google.com/recaptcha/api.js"  async defer></script>
+
+    <!-- Password Toggle Script -->
+    <script>
+        document.querySelectorAll('.eye-icon').forEach(icon => {
+            const input = icon.previousElementSibling;
+
+            icon.addEventListener('click', () => {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>
-
-<div class="mt-4">
-    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}"></div>
-</div>
-<script src="https://www.google.com/recaptcha/api.js"  async defer></script>

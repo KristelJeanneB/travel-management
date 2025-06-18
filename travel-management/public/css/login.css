@@ -1,0 +1,221 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden; /* Prevent scrolling */
+}
+
+/* Background Image */
+.background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/path/to/your/map-image.jpg'); /* Replace with your map image */
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px); /* Optional: Blur the background */
+    z-index: -1;
+}
+
+/* Form Container */
+.form-container {
+    position: relative;
+    background-color: white;
+    padding: 30px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    z-index: 1;
+}
+
+/* Form Title */
+h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 24px;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #555;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    border-color: #007bff;
+}
+
+/* Forgot Password Link */
+.forgot-password {
+    float: right;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #0056b3;
+}
+
+/* Remember Me Checkbox */
+.remember-me {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 10px; /* Adjust spacing as needed */
+    transform: scale(1.2); /* Larger checkbox (optional) */
+}
+
+.remember-me label {
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Buttons */
+.btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 12px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #ddd;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background-color: #ccc;
+}
+
+/* "Or" Text */
+.or-text {
+    text-align: center;
+    margin: 20px 0;
+    color: #999;
+    font-size: 14px;
+    position: relative;
+}
+
+.or-text::before,
+.or-text::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background-color: #ccc;
+}
+
+.or-text::before {
+    left: 0;
+    transform: translateY(-50%);
+}
+
+.or-text::after {
+    right: 0;
+    transform: translateY(-50%);
+}
+
+/* Social Logins */
+.social-logins {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.social-login {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #ddd;
+    color: #333;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.social-login:hover {
+    background-color: #bbb;
+}
+
+/* Font Awesome Icons */
+.fab, .fas {
+    vertical-align: middle;
+}
+
+/* reCAPTCHA Wrapper */
+.g-recaptcha {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Optional: Responsive fix for small screens */
+@media (max-width: 480px) {
+    .g-recaptcha {
+        transform: scale(0.85);
+        -webkit-transform: scale(0.85);
+        transform-origin: 0 0;
+        -webkit-transform-origin: 0 0;
+    }
+
+    .form-container {
+        padding: 20px 15px;
+        max-width: 95%;
+    }
+}

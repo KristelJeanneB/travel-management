@@ -15,7 +15,7 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    // Handle login request
+    // Handle login
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -23,25 +23,25 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
-            throw ValidationException::withMessages([
-                'email' => [trans('auth.failed')],
-            ]);
+        if (Auth::attempt($credentials, $request->has('remember'))) {
+            $request->session()->regenerate();
+
+            return redirect()->route('home'); //
         }
 
-        $request->session()->regenerate();
-
-        return redirect()->intended('/home'); // Change '/home' to your dashboard route
+        return back()->withErrors([
+            'email' => 'Invalid credentials.',
+        ]);
     }
 
     // Handle logout
     public function logout(Request $request)
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('register');
     }
+
 }

@@ -30,16 +30,19 @@ Route::get('/', function () {
 //Login
 use App\Http\Controllers\Auth\LoginController;
 
-// Show login form
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+// routes/web.php
 
-// Handle login
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 
+// Home route
+Route::get('/home', function () {
+    return view('home');
+})->name('home')->middleware('auth');
 // Handle logout
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 //route exits
 Route::get('/home', function () {
     return view('home');
-})->middleware('auth');
+})->name('home')->middleware('auth');
