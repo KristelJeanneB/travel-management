@@ -1,13 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize Leaflet map
-    const map = L.map('map').setView([45.5231, -122.6765], 13);
 
-    // Add tile layer (e.g., OpenStreetMap)
+    const map = L.map('map').setView([45.5231, -122.6765], 13)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',  {
         attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>  contributors'
     }).addTo(map);
 
-    // Handle zoom controls
+
     document.getElementById('zoom-in').addEventListener('click', () => {
         map.zoomIn();
     });
@@ -16,16 +14,16 @@ document.addEventListener('DOMContentLoaded', function () {
         map.zoomOut();
     });
 
-    // Handle search functionality
+
     document.getElementById('search-button').addEventListener('click', () => {
         const query = document.getElementById('search-input').value.trim();
         if (!query) return;
 
-        // Example: Search logic (replace with actual geocoding service)
+    
         alert(`Searching for: ${query}`);
     });
 
-    // Handle route guidance form submission
+
     document.getElementById('route-form').addEventListener('submit', function (e) {
         e.preventDefault();
 
@@ -37,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Example: Directions logic (replace with actual routing service)
+    
         alert(`Getting directions from ${start} to ${destination}`);
     });
 });

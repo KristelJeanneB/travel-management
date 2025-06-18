@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
     <div class="search-bar">
         <input type="text" id="search-input" placeholder="Search">
@@ -22,7 +21,6 @@
     </nav>
 </div>
 
-<!-- Route Guidance Panel -->
 <div class="route-guidance">
     <h3>Route Guidance</h3>
     <form id="route-form">
@@ -38,10 +36,8 @@
     </form>
 </div>
 
-<!-- Map Container -->
 <div id="map" style="height: 100vh;"></div>
 
-<!-- Zoom Controls -->
 <div class="zoom-controls">
     <button id="zoom-in"><i class="fas fa-plus"></i></button>
     <button id="zoom-out"><i class="fas fa-minus"></i></button>
