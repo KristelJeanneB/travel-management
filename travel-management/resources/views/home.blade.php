@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Route Guidance</title>
+    <title>Home</title>
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"> 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> 
@@ -17,12 +17,12 @@
     <nav>
         <a href="#" class="home">Home</a>
         <a href="#" class="settings"><i class="fas fa-cog"></i></a>
-        <a href="#" class="login">Login</a>
+        <a href="{{ route('login') }}">Log In</a>
     </nav>
 </div>
 
 <div class="route-guidance">
-    <h3>Route Guidance</h3>
+    <h3>Home</h3>
     <form id="route-form">
         <div class="form-group">
             <label for="start-from"><i class="fas fa-map-marker-alt"></i> Start from:</label>
