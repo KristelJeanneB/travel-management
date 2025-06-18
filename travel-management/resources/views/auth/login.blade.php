@@ -9,24 +9,26 @@
 </head>
 <body>
     @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     @if(session('status'))
-    <div class="alert alert-success">
-        {{ session('status') }}
-    </div>
-@endif
-<div class="background-image"></div>
+        <div class="alert alert-success">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    <div class="background-image"></div>
 
     <div class="form-container">
         <h2>Log in</h2>
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
@@ -38,19 +40,24 @@
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
-                <p><a href="{{ route('password.request') }}">Forgot Password?</a></p>
             </div>
 
-            <div class="form-group remember-me">
-                <input type="checkbox" id="remember_me" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                <label for="remember_me">Remember me</label>
+        
+            <div class="form-group checkbox-forgot-wrapper">
+                <label class="remember-me">
+                    <input type="checkbox" id="remember_me" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                    Remember me
+                </label>
+                <a href="{{ route('password.request') }}" class="forgot-password">Forgot Password?</a>
             </div>
 
             <button type="submit" class="btn">Log In</button>
+
             <p class="or-text">or</p>
 
-            <p style="text-align:center; margin-top:10px;">Don't have an account?
-            <a href="{{ route('register') }}">Register</a></p>
+            <p style="text-align:center; margin-top:10px;">
+                Don't have an account? <a href="{{ route('register') }}">Register</a>
+            </p>
 
             <div class="social-logins">
                 <a href="#" class="social-login"><i class="fab fa-facebook"></i></a>
@@ -66,6 +73,6 @@
         </div>
     </div>
 
-    <script src="https://www.google.com/recaptcha/api.js"  async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>
