@@ -73,6 +73,24 @@
         </div>
     </div>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const alertBox = document.getElementById('alert');
+        if (!alertBox) return;
+
+        setTimeout(() => {
+            alertBox.style.opacity = '0';
+            setTimeout(() => alertBox.remove(), 500); 
+        }, 15500); 
+
+        
+        alertBox.addEventListener('click', () => {
+            alertBox.style.opacity = '0';
+            setTimeout(() => alertBox.remove(), 500);
+        });
+    });
+</script>
+
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>
