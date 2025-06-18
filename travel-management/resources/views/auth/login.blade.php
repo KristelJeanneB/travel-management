@@ -46,9 +46,11 @@
                 <label for="remember_me">Remember me</label>
             </div>
 
+            <button type="submit" class="btn">Log In</button>
             <p class="or-text">or</p>
 
-            <button type="submit" class="btn">Log In</button>
+            <p style="text-align:center; margin-top:10px;">Don't have an account?
+            <a href="{{ route('register') }}">Register</a></p>
 
             <div class="social-logins">
                 <a href="#" class="social-login"><i class="fab fa-facebook"></i></a>
