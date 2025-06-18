@@ -3,6 +3,26 @@
     padding: 0;
     box-sizing: border-box;
 }
+.background-image {
+    background-image: url("/images/background.png"); 
+    background-size: cover;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+.form-container {
+    position: relative;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 100%;
+    margin: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
 
 body {
     font-family: Arial, sans-serif;
@@ -12,32 +32,6 @@ body {
     align-items: center;
     height: 100vh;
     overflow: hidden; /* Prevent scrolling */
-}
-
-/* Background Image */
-.background-image {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('/path/to/your/map-image.jpg'); /* Replace with your map image */
-    background-size: cover;
-    background-position: center;
-    filter: blur(5px); /* Optional: Blur the background */
-    z-index: -1;
-}
-
-/* Form Container */
-.form-container {
-    position: relative;
-    background-color: white;
-    padding: 30px 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    width: 100%;
-    z-index: 1;
 }
 
 /* Form Title */

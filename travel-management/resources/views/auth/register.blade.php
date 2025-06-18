@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
 </head>
 <body>
+    <div class="background-image"></div>
 
     <div class="form-container">
         <h2>Create account</h2>
