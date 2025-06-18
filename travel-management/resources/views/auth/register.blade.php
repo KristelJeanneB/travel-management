@@ -5,29 +5,27 @@
     <title>Register</title>
     <link rel="stylesheet" href="{{ asset('css/register.css') }}">
     
-    <!-- Font Awesome for Eye Icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
 </head>
 <body>
     <div class="background-image"></div>
 
     <div class="form-container">
-        <h2>Create account</h2>
+        <h2>Create Account</h2>
         <form method="POST" action="{{ route('register') }}">
             @csrf
 
             <div class="form-group">
-                <label for="firstname">Firstname:</label>
+                <label for="firstname">First Name:</label>
                 <input type="text" id="firstname" name="firstname" required>
             </div>
 
             <div class="form-group">
-                <label for="lastname">Lastname:</label>
+                <label for="lastname">Last Name:</label>
                 <input type="text" id="lastname" name="lastname" required>
             </div>
 
             <div class="form-group">
-                <label for="username">Username:</label>
+                <label for="username">Email:</label>
                 <input type="text" id="username" name="username" required>
             </div>
 
@@ -38,7 +36,7 @@
             </div>
 
             <div class="form-group">
-                <label for="password_confirmation">Confirm password:</label>
+                <label for="password_confirmation">Confirm Password:</label>
                 <input type="password" id="password_confirmation" name="password_confirmation" required>
                 <i class="eye-icon fas fa-eye-slash"></i>
             </div>
@@ -48,7 +46,10 @@
                 <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}"></div>
             </div>
 
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ route('login') }}'"> Sign Up</button>
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+            
+            <p style="text-align:center; margin-top:10px;">Already have an account?
+            <a href="{{ route('login') }}">Log In</a></p>
         </form>
     </div>
 
@@ -56,7 +57,7 @@
     <script src="https://www.google.com/recaptcha/api.js"  async defer></script>
 
     <!-- Password Toggle Script -->
-    <script>
+    <<script>
         document.querySelectorAll('.eye-icon').forEach(icon => {
             const input = icon.previousElementSibling;
 

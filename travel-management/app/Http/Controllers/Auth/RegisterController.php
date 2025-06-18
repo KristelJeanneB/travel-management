@@ -21,9 +21,10 @@ class RegisterController extends Controller
     {
         // Validate input
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        'firstname' => ['required', 'string', 'max:255'],
+        'lastname' => ['required', 'string', 'max:255'],
+        'username' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         if ($validator->fails()) {
@@ -34,13 +35,13 @@ class RegisterController extends Controller
 
         // Insert user into database
         $user = DB::table('users')->insert([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+        'name' => $request->firstname . ' ' . $request->lastname,
+        'email' => $request->username,
+        'password' => Hash::make($request->password),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return redirect('login')->with('success', 'Registration successful!');
+        return redirect()->route('login')->with('status', 'Registration successful! Please log in.');
     }
 }
