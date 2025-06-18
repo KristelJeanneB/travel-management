@@ -41,6 +41,6 @@ class RegisterController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('register')->with('success', 'Registration successful!');
+        return redirect('login')->with('success', 'Registration successful!');
     }
 }

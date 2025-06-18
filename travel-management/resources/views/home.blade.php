@@ -2,11 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Laravel App</title> 
+    <title>Home</title>
 </head>
 <body>
-    <h1>Welcome to My Laravel App!</h1>
-    <p>This is my custom home page.</p>
+    <h1>Welcome to Your Home Page</h1>
+
+    @if(Auth::check())
+        <p>Hello, {{ Auth::user()->name }}!</p>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit">Logout</button>
+        </form>
+    @else
+        <p>You are not logged in.</p>
+    @endif
 </body>
 </html>

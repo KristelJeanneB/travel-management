@@ -23,4 +23,23 @@ Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->na
 // Handle registration
 Route::post('/register', [RegisterController::class, 'register']);
 
+Route::get('/', function () {
+    return view('register');
+});
 
+//Login
+use App\Http\Controllers\Auth\LoginController;
+
+// Show login form
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+
+// Handle login
+Route::post('/login', [LoginController::class, 'login']);
+
+// Handle logout
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+//route exits
+Route::get('/home', function () {
+    return view('home');
+})->middleware('auth');
