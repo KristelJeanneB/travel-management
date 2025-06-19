@@ -1,0 +1,177 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    color: #222222;
+}
+
+.settings-wrapper {
+    max-width: 800px;
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 40px;
+}
+
+.settings-nav {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #333333;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    z-index: 10000;
+    user-select: none;
+    justify-content: space-between;
+}
+
+.nav-back {
+    color: #555555;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 4px;
+    transition-property: background-color, color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+.nav-back:hover {
+    background-color: #dddddd;
+    color: #222222;
+}
+
+.settings-nav h1 {
+    font-weight: 700;
+    font-size: 20px;
+    color: #333333;
+    margin: 0;
+}
+
+.settings-panel {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.07);
+    padding-top: 30px;
+    padding-bottom: 30px;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin-top: 30px;
+}
+
+.setting-section {
+    margin-bottom: 40px;
+}
+
+.setting-section h2 {
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 18px;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-bottom-color: #cccccc;
+    padding-bottom: 6px;
+    color: #444444;
+}
+
+.setting-section p {
+    font-size: 16px;
+    line-height: 24px;
+    color: #555555;
+}
+
+.settings-list {
+    list-style-type: none;
+}
+
+.settings-list li {
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+
+.setting-button {
+    width: 100%;
+    background-color: #666666;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    color: white;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition-property: background-color, box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+.setting-button i {
+    font-size: 18px;
+}
+
+.setting-button:hover:not(:disabled) {
+    background-color: #555555;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.setting-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .settings-wrapper {
+        margin-top: 120px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .nav-back {
+        font-size: 14px;
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    .settings-nav h1 {
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .setting-button {
+        font-size: 15px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}

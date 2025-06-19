@@ -2,29 +2,56 @@
 
 @section('title', 'Settings')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/settings.css') }}">
+@endpush
+
 @section('content')
-    <div class="map-container">
-        <div id="map" style="height: 100vh;"></div>
-    </div>
+<div class="settings-wrapper">
 
+    <nav class="settings-nav">
+        <a href="{{ route('home') }}" class="nav-back">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+        <h1>Settings</h1>
+    </nav>
 
-    <div id="settings-modal" class="settings-modal hidden">
-        <div class="settings-content">
-            <h2>Settings</h2>
-            <ul>
+    <div class="settings-panel">
+
+        <section class="setting-section">
+            <h2>About Us</h2>
+            <p>
+                Welcome to our Travel Management Platform!  
+                BABY BEA!!!
+            </p>
+        </section>
+
+        <section class="setting-section">
+            <h2>Preferences</h2>
+            <ul class="settings-list">
                 <li>
-                    <i class="fas fa-bell"></i> Notification
-                    <button class="toggle-button"><i class="fas fa-chevron-right"></i></button>
+                    <button class="setting-button" disabled>
+                        <i class="fas fa-bell"></i> Notifications
+                    </button>
                 </li>
                 <li>
-                    <i class="fas fa-volume-up"></i> Sounds and alerts
-                    <button class="toggle-button"><i class="fas fa-chevron-right"></i></button>
+                    <button class="setting-button" disabled>
+                        <i class="fas fa-volume-up"></i> Sounds & Alerts
+                    </button>
                 </li>
                 <li>
-                    <i class="fas fa-info-circle"></i> About
-                    <button class="toggle-button"><i class="fas fa-chevron-right"></i></button>
+                    <button class="setting-button" disabled>
+                        <i class="fas fa-user-shield"></i> Privacy
+                    </button>
+                </li>
+                <li>
+                    <button class="setting-button" disabled>
+                        <i class="fas fa-user-cog"></i> Account Settings
+                    </button>
                 </li>
             </ul>
-        </div>
+        </section>
+
     </div>
+</div>
 @endsection

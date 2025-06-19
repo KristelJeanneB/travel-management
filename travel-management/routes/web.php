@@ -29,7 +29,8 @@ Route::get('/home', function () {
 })->name('home')->middleware('auth');
 
 //Settings Roue
-Route::get('/settings', [SettingsController::class, 'index'])->name('settings')->middleware('auth');
+Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+
 
 // Logout route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
