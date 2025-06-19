@@ -1,14 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Settings</title>
-    <link rel="stylesheet" href="{{ asset('css/settings.css') }}">
-</head>
-    <body>
-    <div class="container">
-        <h2>Settings</h2>
-        <p>This is your settings page.</p>
+@extends('layouts.app')
+
+@section('title', 'Settings')
+
+@section('content')
+    <div class="map-container">
+        <div id="map" style="height: 100vh;"></div>
     </div>
-</body>
-</html>
+
+
+    <div id="settings-modal" class="settings-modal hidden">
+        <div class="settings-content">
+            <h2>Settings</h2>
+            <ul>
+                <li>
+                    <i class="fas fa-bell"></i> Notification
+                    <button class="toggle-button"><i class="fas fa-chevron-right"></i></button>
+                </li>
+                <li>
+                    <i class="fas fa-volume-up"></i> Sounds and alerts
+                    <button class="toggle-button"><i class="fas fa-chevron-right"></i></button>
+                </li>
+                <li>
+                    <i class="fas fa-info-circle"></i> About
+                    <button class="toggle-button"><i class="fas fa-chevron-right"></i></button>
+                </li>
+            </ul>
+        </div>
+    </div>
+@endsection

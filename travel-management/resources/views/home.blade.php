@@ -16,7 +16,7 @@
     </div>
     <nav>
         <a href="{{ route('home') }}" class="home">Home</a>
-        <a href="{{ route('settings') }}" class="settings">Settings</a>
+        <a href="{{ route('settings') }}" class="settings">⚙️</a>
         <a href="{{ route('login') }}">Log In</a>
     </nav>
 </div>
