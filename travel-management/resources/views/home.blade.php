@@ -14,10 +14,23 @@
         <input type="text" id="search-input" placeholder="Search">
         <button id="search-button"><i class="fas fa-search"></i></button>
     </div>
-    <nav>
+
+    <nav class="nav">
         <a href="{{ route('home') }}" class="home">Home</a>
-        <a href="{{ route('settings') }}" class="settings">⚙️</a>
-        <a href="{{ route('login') }}">Log In</a>
+
+        <div class="dropdown">
+            <button class="dropbtn">☰</button>
+            <div class="dropdown-content">
+                <a href="{{ route('settings') }}">Settings ⚙️</a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+                    @csrf
+                </form>
+                <a href="#" 
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                   Log Out
+                </a>
+            </div>
+        </div>
     </nav>
 </div>
 
@@ -46,3 +59,4 @@
 <script src="{{ asset('js/home.js') }}"></script>
 </body>
 </html>
+s
