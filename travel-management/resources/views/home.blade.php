@@ -15,8 +15,8 @@
         <button id="search-button"><i class="fas fa-search"></i></button>
     </div>
     <nav>
-        <a href="#" class="home">Home</a>
-        <a href="#" class="settings"><i class="fas fa-cog"></i></a>
+        <a href="{{ route('home') }}" class="home">Home</a>
+        <a href="{{ route('settings') }}" class="settings">Settings</a>
         <a href="{{ route('login') }}">Log In</a>
     </nav>
 </div>

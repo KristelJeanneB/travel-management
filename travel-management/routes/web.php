@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\SettingsController;
 
 // Root URL shows registration form (GET, no route name)
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
@@ -26,6 +27,9 @@ Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name(
 Route::get('/home', function () {
     return view('home');
 })->name('home')->middleware('auth');
+
+//Settings Roue
+Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
 // Logout route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
