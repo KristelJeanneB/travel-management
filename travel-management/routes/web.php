@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Admin\DashboardController;
 
 // Root URL shows registration form (GET, no route name)
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
@@ -16,6 +17,11 @@ Route::post('/register', [RegisterController::class, 'register'])->name('registe
 // Login routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
+
+//Admin Dashboard
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])
+    ->name('admin.dashboard')
+    ->middleware(['auth','is.admin']);
 
 // Password reset routes
 Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
