@@ -41,7 +41,6 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
-
         
             <div class="form-group checkbox-forgot-wrapper">
                 <label class="remember-me">
@@ -49,6 +48,11 @@
                     Remember me
                 </label>
                 <a href="{{ route('password.request') }}" class="forgot-password">Forgot Password?</a>
+            </div>
+
+            <!-- reCAPTCHA -->
+            <div class="form-group">
+                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}"></div>
             </div>
 
             <button type="submit" class="btn">Log In</button>
@@ -66,11 +70,6 @@
                 <a href="#" class="social-login"><i class="fab fa-google"></i></a>
             </div>
         </form>
-
-        <!-- reCAPTCHA -->
-        <div class="form-group">
-            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}"></div>
-        </div>
     </div>
 
     <script>

@@ -11,7 +11,7 @@
 
     <nav class="settings-nav">
         <a href="{{ route('home') }}" class="nav-back">
-            <i class="fas fa-arrow-left"></i> Back to Home
+            <i class="fas fa-arrow-left"></i>
         </a>
         <h1>Settings</h1>
     </nav>
