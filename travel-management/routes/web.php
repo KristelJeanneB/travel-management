@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\MapController;
 
 // Root URL shows registration form (GET, no route name)
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
@@ -40,3 +41,7 @@ Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
 // Logout route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+
+Route::get('/map', [MapController::class, 'show'])->name('map');
+
