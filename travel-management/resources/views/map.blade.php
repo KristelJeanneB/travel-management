@@ -17,22 +17,23 @@
 <body>
 
     <div class="header">
-        <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Search location...">
-            <!-- Search button removed -->
-        </div>
-
         <nav class="nav">
-            <!-- Home replaced with back icon -->
-            <a href="{{ route('home') }}" class="home"><i class="fas fa-arrow-left"></i></a>
+            <!-- Home button (left-aligned) -->
+            <a href="{{ route('home') }}" class="home" id="home-button" title="Go to Home">
+                <i class="fas fa-home"></i>
+            </a>
+
+            <!-- Dropdown menu (right-aligned) -->
             <div class="dropdown">
-                <button class="dropbtn">☰</button>
-                <div class="dropdown-content">
+                <button class="dropbtn" id="dropdown-btn">☰</button>
+                <div class="dropdown-content" id="dropdown-menu" style="display: none;">
                     <a href="{{ route('settings') }}">Settings ⚙️</a>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
                         @csrf
                     </form>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Log Out</a>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        Log Out
+                    </a>
                 </div>
             </div>
         </nav>
@@ -51,18 +52,50 @@
             </div>
             <button type="submit">Get Directions</button>
         </form>
+
+        
+        <div class="report-incident" style="margin-top: 30px;">
+            <h3>Report Incident</h3>
+            <form id="incident-form">
+                <div class="form-group">
+                    <label for="incident-type"><i class="fas fa-exclamation-triangle"></i> Incident Type:</label>
+                    <select id="incident-type" required>
+                        <option value="" disabled selected>Select an incident</option>
+                        <option value="accident">Accident</option>
+                        <option value="traffic_jam">Traffic Jam</option>
+                        <option value="road_closure">Road Closure</option>
+                        <option value="hazard">Hazard on Road</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="incident-description"><i class="fas fa-comment"></i> Description:</label>
+                    <textarea id="incident-description" rows="3" placeholder="Optional details..."></textarea>
+                </div>
+                <button type="submit">Report Incident</button>
+            </form>
+        </div>
     </div>
 
     <div id="map"></div>
 
-    <div class="zoom-controls">
-        <button id="zoom-in"><i class="fas fa-plus"></i></button>
-        <button id="zoom-out"><i class="fas fa-minus"></i></button>
-    </div>
-
     <div id="route-summary" class="route-summary hidden"></div>
 
     <script>
+       
+        const dropdownBtn = document.getElementById('dropdown-btn');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+
+        dropdownBtn.addEventListener('click', () => {
+            dropdownMenu.style.display = (dropdownMenu.style.display === 'none' || dropdownMenu.style.display === '') ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!dropdownBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.style.display = 'none';
+            }
+        });
+
+        
         let map = L.map('map').setView([14.5995, 120.9842], 13);
         let userCoords = null;
         let routeControl = null;
@@ -71,16 +104,16 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        navigator.geolocation.getCurrentPosition(position => {
-            userCoords = [position.coords.latitude, position.coords.longitude];
-            map.setView(userCoords, 15);
-            L.marker(userCoords).addTo(map).bindPopup("You are here").openPopup();
-        }, () => {
-            alert("Unable to access your location. Please type it manually.");
-        });
-
-        document.getElementById('zoom-in').onclick = () => map.zoomIn();
-        document.getElementById('zoom-out').onclick = () => map.zoomOut();
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                userCoords = [position.coords.latitude, position.coords.longitude];
+                map.setView(userCoords, 15);
+                L.marker(userCoords).addTo(map).bindPopup("You are here").openPopup();
+            },
+            () => {
+                alert("Unable to access your location. Please type it manually.");
+            }
+        );
 
         async function geocode(place) {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`);
@@ -139,6 +172,22 @@
             } catch (err) {
                 alert(err.message || "Error fetching route.");
             }
+        });
+
+        
+        document.getElementById('incident-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const type = document.getElementById('incident-type').value;
+            const desc = document.getElementById('incident-description').value.trim();
+
+            if (!type) {
+                alert('Please select an incident type.');
+                return;
+            }
+
+            alert(`Incident reported:\nType: ${type.replace(/_/g, ' ')}\n${desc ? 'Description: ' + desc : ''}`);
+
+            this.reset();
         });
     </script>
 
