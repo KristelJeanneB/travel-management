@@ -56,11 +56,14 @@
                 @enderror
             </div>
 
-            <!-- reCAPTCHA -->
+            <!--Math Captcha-->
             <div class="form-group">
-                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}"></div>
+                <label>{{ $math_question }} = ?</label>
+                <input type="number" name="captcha_answer" value="{{ old('captcha_answer') }}" required>
+                @error('captcha_answer')
+                    <span style="color: red;">{{ $message }}</span>
+                @enderror
             </div>
-
             <button type="submit" class="btn btn-primary">Sign Up</button>
             
             <p style="text-align:center; margin-top:10px;">

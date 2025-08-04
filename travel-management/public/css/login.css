@@ -258,13 +258,22 @@ h2 {
 
 
 @media (max-width: 480px) {
-    .g-recaptcha {
-        transform: scale(0.85);
-        -webkit-transform: scale(0.85);
-        transform-origin: 0 0;
-        -webkit-transform-origin: 0 0;
-    }
+    .form-group {
+    margin-bottom: 15px;
+}
 
+    label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+    input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
     .form-container {
         padding: 20px 15px;
         max-width: 95%;

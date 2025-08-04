@@ -50,9 +50,13 @@
                 <a href="{{ route('password.request') }}" class="forgot-password">Forgot Password?</a>
             </div>
 
-            <!-- reCAPTCHA -->
+            <!-- CAPTCHA Field -->
             <div class="form-group">
-                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}"></div>
+                <label>{{ $math_question }} = ?</label>
+                <input type="number" name="captcha_answer" value="{{ old('captcha_answer') }}" required>
+                @error('captcha_answer')
+                    <span style="color: red;">{{ $message }}</span>
+                @enderror
             </div>
 
             <button type="submit" class="btn">Log In</button>

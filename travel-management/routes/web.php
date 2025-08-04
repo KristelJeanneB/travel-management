@@ -13,8 +13,8 @@ use App\Http\Controllers\IncidentController;
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
 
 // Registration routes
-Route::get('/register', [RegisterController::class, 'showRegistrationForm']);
-Route::post('/register', [RegisterController::class, 'register'])->name('register');  // POST route named 'register'
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
 
 // Login routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
