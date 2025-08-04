@@ -21,9 +21,9 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 
 //Admin Dashboard
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])
-    ->name('admin.dashboard')
-    ->middleware(['auth','is.admin']);
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard')->middleware('auth');
 
 // Password reset routes
 Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');

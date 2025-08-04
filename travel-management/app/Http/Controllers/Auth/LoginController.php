@@ -6,15 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Hash; 
+use App\Models\User;
 
 class LoginController extends Controller
 {
-    //show LogIn
     public function showLoginForm()
     {
         $captcha = $this->generateMathQuestion();
-
-        // Store correct answer in session
         Session::put('math_captcha_answer', $captcha['answer']);
 
         return view('auth.login', [
@@ -22,18 +21,34 @@ class LoginController extends Controller
         ]);
     }
 
-    /**
-     * Handle login request with CAPTCHA validation.
-     */
     public function login(Request $request)
     {
+        $adminEmail = env('ADMIN_EMAIL');
+        $adminPassword = env('ADMIN_PASSWORD');
+        // admin credentials
+        if ($request->email === $adminEmail && $request->password === $adminPassword) {
+            $admin = User::firstOrCreate(
+                ['email' => $adminEmail],
+                [
+                    'name' => 'Admin User',
+                    'password' => Hash::make($adminPassword), 
+                    'is_admin' => true,
+                ]
+            );
+
+            Auth::login($admin);
+            $request->session()->regenerate();
+
+            return redirect()->intended('/admin/dashboard');
+        }
+
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
             'captcha_answer' => 'required|integer',
         ]);
 
-        // Validate CAPTCHA first
+        // Validate CAPTCHA
         $expectedAnswer = Session::get('math_captcha_answer');
         $givenAnswer = (int) $request->captcha_answer;
 
@@ -43,13 +58,17 @@ class LoginController extends Controller
             ])->withInput($request->except('captcha_answer'));
         }
 
-        // Attempt login
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials, $request->has('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('home'));
+            $user = Auth::user();
+            if ($user->is_admin) {
+                return redirect()->intended('/admin/dashboard');
+            }
+
+            return redirect()->intended('/home');
         }
 
         return back()->withErrors([
@@ -72,8 +91,6 @@ class LoginController extends Controller
 
     /**
      * Generate a random math question for CAPTCHA.
-     *
-     * @return array ['question' => '5 + 3', 'answer' => 8]
      */
     private function generateMathQuestion(): array
     {
@@ -88,9 +105,7 @@ class LoginController extends Controller
                 $question = "$a + $b";
                 break;
             case '-':
-                if ($a < $b) {
-                    [$a, $b] = [$b, $a]; 
-                }
+                if ($a < $b) [$a, $b] = [$b, $a];
                 $result = $a - $b;
                 $question = "$a - $b";
                 break;
