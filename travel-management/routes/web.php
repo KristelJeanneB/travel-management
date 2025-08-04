@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\IncidentController;
 
 // Root URL shows registration form (GET, no route name)
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
@@ -44,4 +45,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 
 Route::get('/map', [MapController::class, 'show'])->name('map');
+
+Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store');
 

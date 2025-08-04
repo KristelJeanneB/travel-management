@@ -13,22 +13,29 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <!-- CSRF Token for JS -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
 
     <div class="header">
         <nav class="nav">
-            <!-- Home button (left-aligned) -->
+            <!-- Back button added -->
+            <a href="{{ route('home') }}" class="back-button" id="back-button" title="Back to Home">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+
+            <!-- Existing Home icon button -->
             <a href="{{ route('home') }}" class="home" id="home-button" title="Go to Home">
                 <i class="fas fa-home"></i>
             </a>
 
-            <!-- Dropdown menu (right-aligned) -->
             <div class="dropdown">
                 <button class="dropbtn" id="dropdown-btn">☰</button>
-                <div class="dropdown-content" id="dropdown-menu" style="display: none;">
+                <div class="dropdown-content" id="dropdown-menu">
                     <a href="{{ route('settings') }}">Settings ⚙️</a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST">
                         @csrf
                     </form>
                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -53,8 +60,16 @@
             <button type="submit">Get Directions</button>
         </form>
 
-        
-        <div class="report-incident" style="margin-top: 30px;">
+        <!-- Report Incident Button -->
+        <div class="report-incident-trigger">
+            <button id="open-incident-modal">Report Incident</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="incident-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-incident-modal">&times;</span>
             <h3>Report Incident</h3>
             <form id="incident-form">
                 <div class="form-group">
@@ -68,7 +83,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="incident-description"><i class="fas fa-comment"></i> Description:</label>
+                    <label for="incident-description"><i class="fas fa-comment"></i> Add Location:</label>
                     <textarea id="incident-description" rows="3" placeholder="Optional details..."></textarea>
                 </div>
                 <button type="submit">Report Incident</button>
@@ -77,11 +92,10 @@
     </div>
 
     <div id="map"></div>
-
     <div id="route-summary" class="route-summary hidden"></div>
 
     <script>
-       
+        // Dropdown menu
         const dropdownBtn = document.getElementById('dropdown-btn');
         const dropdownMenu = document.getElementById('dropdown-menu');
 
@@ -95,7 +109,7 @@
             }
         });
 
-        
+        // Map init
         let map = L.map('map').setView([14.5995, 120.9842], 13);
         let userCoords = null;
         let routeControl = null;
@@ -124,7 +138,6 @@
 
         document.getElementById('route-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const startInput = document.getElementById('start-from').value.trim();
             const destInput = document.getElementById('destination').value.trim();
 
@@ -162,7 +175,7 @@
                     const route = e.routes[0].summary;
                     const distance = (route.totalDistance / 1000).toFixed(2);
                     const time = Math.round(route.totalTime / 60);
-                    const summary = `Distance: ${distance} km &bull; Estimated time: ${time} mins`;
+                    const summary = `Distance: ${distance} km • Estimated time: ${time} mins`;
 
                     const summaryBox = document.getElementById('route-summary');
                     summaryBox.innerHTML = summary;
@@ -174,20 +187,45 @@
             }
         });
 
-        
-        document.getElementById('incident-form').addEventListener('submit', function(e) {
+        // Modal logic
+        const modal = document.getElementById("incident-modal");
+        const openBtn = document.getElementById("open-incident-modal");
+        const closeBtn = document.getElementById("close-incident-modal");
+
+        openBtn.onclick = () => modal.style.display = "block";
+        closeBtn.onclick = () => modal.style.display = "none";
+        window.onclick = event => { if (event.target == modal) modal.style.display = "none"; }
+
+        // Submit Incident
+        document.getElementById('incident-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const type = document.getElementById('incident-type').value;
-            const desc = document.getElementById('incident-description').value.trim();
+            const description = document.getElementById('incident-description').value.trim();
 
             if (!type) {
                 alert('Please select an incident type.');
                 return;
             }
 
-            alert(`Incident reported:\nType: ${type.replace(/_/g, ' ')}\n${desc ? 'Description: ' + desc : ''}`);
+            try {
+                const res = await fetch("{{ route('incidents.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ type, description })
+                });
 
-            this.reset();
+                const data = await res.json();
+
+                alert(data.message || 'Incident reported successfully.');
+                this.reset();
+                modal.style.display = "none";
+            } catch (err) {
+                console.error(err);
+                alert('Failed to report the incident. Please try again.');
+            }
         });
     </script>
 

@@ -1,193 +1,189 @@
 * {
-    margin: 0px;
-    padding: 0px;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body, html {
-    height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url("/images/background.png"); 
-    background-size: cover;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #E1CBD7; /* pastel background instead of image */
+  /* optional if you want a subtle pattern or image, you can add back */
+  /* background-image: url("/images/background.png"); */
+  /* background-size: cover; */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: #2f2f2f;
+  overflow-y: auto;
 }
 
 .settings-wrapper {
-    max-width: 800px;
-    margin-top: 100px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 40px;
+  max-width: 800px;
+  margin: 100px auto 60px auto;
+  padding: 20px 20px 40px 20px;
 }
 
 .settings-nav {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 60px;
-    background-color: rgba(255, 255, 255, 0.85);
-    color: #333333;
-    display: flex;
-    align-items: center;
-    padding-left: 20px;
-    padding-right: 20px;
-    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
-    backdrop-filter: saturate(180%) blur(12px);
-    -webkit-backdrop-filter: saturate(180%) blur(12px);
-    z-index: 10000;
-    user-select: none;
-    justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  background-color: #86A8CF; /* main blue from map */
+  color: #5D7EA3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  user-select: none;
+  font-weight: 600;
+  font-size: 18px;
+  font-family: 'Poppins', sans-serif;
 }
 
 .nav-back {
-    color: #555555;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 4px;
-    transition-property: background-color, color;
-    transition-duration: 0.3s;
-    transition-timing-function: ease-in-out;
+  color: #5D7EA3;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
-.nav-back:hover {
-    background-color: #dddddd;
-    color: #222222;
+.nav-back:hover,
+.nav-back:focus {
+  background-color: rgba(134, 168, 207, 0.3);
+  outline: none;
+  color: #fff;
 }
 
 .settings-nav h1 {
-    font-weight: 700;
-    font-size: 20px;
-    color: #333333;
-    margin: 0;
+  margin: 0;
+  font-weight: 700;
+  font-size: 22px;
+  color: #5D7EA3;
+  text-shadow: 0 0 8px rgba(134, 168, 207, 0.8);
+  font-family: 'Poppins', sans-serif;
 }
 
 .settings-panel {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.07);
-    padding-top: 30px;
-    padding-bottom: 30px;
-    padding-left: 30px;
-    padding-right: 30px;
-    margin-top: 30px;
+  background-color: #f4edf2; /* light pastel purple */
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(134, 168, 207, 0.6);
+  padding: 30px;
+  margin-top: 30px;
+  color: #2f2f2f;
+  font-family: 'Poppins', sans-serif;
 }
 
 .setting-section {
-    margin-bottom: 40px;
+  margin-bottom: 40px;
 }
 
 .setting-section h2 {
-    margin-bottom: 15px;
-    font-weight: 600;
-    font-size: 18px;
-    border-bottom-style: solid;
-    border-bottom-width: 2px;
-    border-bottom-color: #cccccc;
-    padding-bottom: 6px;
-    color: #444444;
+  margin-bottom: 15px;
+  font-weight: 700;
+  font-size: 20px;
+  border-bottom: 2px solid #86A8CF;
+  padding-bottom: 8px;
+  color: #5D7EA3;
+  text-shadow: 0 0 6px rgba(134, 168, 207, 0.5);
 }
 
 .setting-section p {
-    font-size: 16px;
-    line-height: 24px;
-    color: #555555;
+  font-size: 16px;
+  line-height: 24px;
+  color: #444444;
+  font-weight: 500;
 }
 
 .settings-list {
-    list-style-type: none;
+  list-style-type: none;
+  padding-left: 0;
 }
 
 .settings-list li {
-    margin-top: 18px;
-    margin-bottom: 18px;
+  margin: 18px 0;
 }
 
 .setting-button {
-    width: 100%;
-    background-color: #666666;
-    border-style: none;
-    border-width: 0px;
-    border-radius: 8px;
-    color: white;
-    padding-top: 16px;
-    padding-bottom: 16px;
-    padding-left: 20px;
-    padding-right: 20px;
-    font-size: 17px;
-    font-weight: 600;
-    cursor: default;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition-property: background-color, box-shadow;
-    transition-duration: 0.3s;
-    transition-timing-function: ease-in-out;
+  width: 100%;
+  background-color: #86A8CF; /* main blue */
+  border: none;
+  border-radius: 12px;
+  color: white;
+  padding: 16px 20px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 6px 12px rgba(134, 168, 207, 0.8);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-family: 'Poppins', sans-serif;
 }
 
 .setting-button i {
-    font-size: 18px;
+  font-size: 20px;
 }
 
-.setting-button:hover:not(:disabled) {
-    background-color: #555555;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+.setting-button:hover:not(:disabled),
+.setting-button:focus:not(:disabled) {
+  background-color: #5D7EA3; /* darker blue */
+  box-shadow: 0 8px 16px rgba(93, 126, 163, 0.9);
+  outline: none;
 }
 
 .setting-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #b3c0d6;
+  box-shadow: none;
 }
+
 .form-container {
-    position: relative;
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    max-width: 400px;
-    width: 100%;
-    margin: auto;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  background-color: #f4edf2;
+  padding: 30px;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 100%;
+  margin: auto;
+  box-shadow: 0 6px 18px rgba(134, 168, 207, 0.7);
+  font-family: 'Poppins', sans-serif;
+  color: #2f2f2f;
 }
 
 @media (max-width: 600px) {
-    .settings-wrapper {
-        margin-top: 120px;
-        padding-left: 15px;
-        padding-right: 15px;
-    }
+  .settings-wrapper {
+    margin-top: 120px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
 
-    .nav-back {
-        font-size: 14px;
-        padding-left: 6px;
-        padding-right: 6px;
-    }
+  .nav-back {
+    font-size: 14px;
+    padding-left: 8px;
+    padding-right: 8px;
+    gap: 6px;
+  }
 
-    .settings-nav h1 {
-        font-size: 16px;
-        margin: 0;
-    }
+  .settings-nav h1 {
+    font-size: 18px;
+  }
 
-    .setting-button {
-        font-size: 15px;
-        padding-top: 14px;
-        padding-bottom: 14px;
-        padding-left: 16px;
-        padding-right: 16px;
-    }
+  .setting-button {
+    font-size: 15px;
+    padding: 14px 16px;
+  }
 }
