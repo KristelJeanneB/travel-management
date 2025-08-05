@@ -43,7 +43,7 @@ HOME
     <!-- Hero Section with Video Background -->
     <section class="hero video-hero">
       <video autoplay muted loop playsinline class="hero-bg-video">
-        <source src="{{ asset('images/video2.mp4') }}" type="video/mp4">
+        <source src="{{ asset('images/vid1.mp4') }}" type="video/mp4">
         Your browser does not support the video tag.
       </video>
       <div class="hero-overlay"></div>
