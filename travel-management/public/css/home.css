@@ -1,7 +1,7 @@
 /* Import Google Font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Reset & Base Styles */
+
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +16,7 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Header */
+
 .header {
   background-color: #86A8CF;
   height: 56px;
@@ -43,7 +43,7 @@ html, body {
   font-weight: 700;
 }
 
-/* Dropdown */
+
 .dropdown {
   position: relative;
 }
@@ -106,12 +106,12 @@ html, body {
   font-size: 18px;
 }
 
-/* Main Padding Offset for Fixed Header */
+
 main {
   padding-top: 56px;
 }
 
-/* Hero Section */
+
 .hero {
   position: relative;
   display: flex;
@@ -184,7 +184,7 @@ main {
   box-shadow: 0 6px 16px rgba(93, 126, 163, 0.9);
 }
 
-/* Features Section */
+
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -230,7 +230,7 @@ main {
   color: #666;
 }
 
-/* How It Works */
+
 .how-it-works {
   background: #fff;
   padding: 60px 20px;
@@ -272,7 +272,7 @@ main {
   font-size: 0.95rem;
 }
 
-/* Quick Stats */
+
 .quick-stats {
   background-color: #f4edf2;
   text-align: center;
@@ -303,7 +303,7 @@ main {
   font-size: 1rem;
 }
 
-/* Our Team */
+
 .our-team {
   padding: 60px 20px;
   background-color: #fff;
@@ -348,7 +348,7 @@ main {
   color: #666;
 }
 
-/* CTA Section */
+
 .cta {
   text-align: center;
   padding: 60px 20px 100px;
@@ -368,7 +368,7 @@ main {
   margin-bottom: 32px;
 }
 
-/* Footer */
+
 .footer {
   text-align: center;
   background-color: #86A8CF;
@@ -377,7 +377,7 @@ main {
   font-size: 0.9rem;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .hero {
     flex-direction: column;
