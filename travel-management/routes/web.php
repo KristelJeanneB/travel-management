@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\HomeAdminController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\IncidentController;
 
@@ -36,9 +37,14 @@ Route::get('/home', function () {
     return view('home');
 })->name('home')->middleware('auth');
 
-//Settings Roue
+//Settings Route
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
+//Admin Home Route
+
+Route::get('/homeAdmin', [HomeAdminController::class, 'index'])
+    ->name('homeAdmin')
+    ->middleware('web'); 
 
 // Logout route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

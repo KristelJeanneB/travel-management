@@ -9,7 +9,9 @@
     
     <div class="sidebar">
         <ul>
-            <li><i class="fas fa-home"></i> Dashboard</li>
+            <li><i class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
+                <a href="{{ route('homeAdmin') }}">
+            <i class="fas fa-map-marked-alt"></i> Dashboard </a>
             <li><i class="fas fa-map-marked-alt"></i> Map View</li>
             <li><i class="fas fa-bell"></i> Alerts</li>
             <li><i class="fas fa-cog"></i> Settings</li>
