@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Map View</title>
+@extends('layouts.app')
+
+@section('title', 'Map View')
+
+@section('content')
     <style>
 * {
     margin: 0;
@@ -238,8 +238,8 @@ header button {
                     <i class="fas fa-bell"></i> Alerts
                 </a>
             </li>
-            <li class="{{ request()->routeIs('settings') ? 'active' : '' }}">
-                <a href="{{ route('settings') }}">
+            <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings') }}">
                     <i class="fas fa-cog"></i> Settings
                 </a>
             </li>
@@ -250,6 +250,7 @@ header button {
             </li>
         </ul>
     </div>
+
     
     <div class="main-content">
         <header>

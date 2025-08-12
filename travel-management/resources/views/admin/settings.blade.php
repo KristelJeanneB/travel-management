@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Settings</title>
+@extends('layouts.app')
+
+@section('title', 'Admin Settings')
+
+@section('content')
     <style>
-        /* General Reset */
         * {
             margin: 0;
             padding: 0;
@@ -267,8 +266,8 @@ header button {
                     <i class="fas fa-bell"></i> Alerts
                 </a>
             </li>
-            <li class="{{ request()->routeIs('settings') ? 'active' : '' }}">
-                <a href="{{ route('settings') }}">
+            <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings') }}">
                     <i class="fas fa-cog"></i> Settings
                 </a>
             </li>
@@ -280,6 +279,7 @@ header button {
         </ul>
     </div>
 
+
     <div class="main-content">
         <header>
             <input type="text" placeholder="Search..." />
@@ -287,7 +287,7 @@ header button {
         </header>
 
         <section class="overview">
-            <h2>Settings</h2>
+            <h2>Admin Settings</h2>
             <div class="card-group">
                 <div class="card">
                     <p>Change Password</p>

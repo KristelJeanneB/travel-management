@@ -58,8 +58,7 @@ Route::get('/view', [ViewAdminController::class, 'index'])
 Route::get('/alerts', [AlertsController::class, 'index'])->name('alerts');
 
 //Admin Settings
-Route::get('/admin/settings', [AdminSettingsController::class, 'index'])->name('settings');
-
+Route::get('/admin/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
 
 // Logout route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

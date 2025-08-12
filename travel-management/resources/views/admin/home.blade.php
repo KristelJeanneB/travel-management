@@ -1,3 +1,8 @@
+@extends('layouts.app')
+
+@section('title', 'HomeAdmin')
+
+@section('content')
 <style>
     * {
         margin: 0;
@@ -223,8 +228,8 @@
                     <i class="fas fa-bell"></i> Alerts
                 </a>
             </li>
-            <li class="{{ request()->routeIs('settings') ? 'active' : '' }}">
-                <a href="{{ route('settings') }}">
+            <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings') }}">
                     <i class="fas fa-cog"></i> Settings
                 </a>
             </li>
@@ -235,6 +240,7 @@
             </li>
         </ul>
     </div>
+
 
     <div class="main-content">
         <header>

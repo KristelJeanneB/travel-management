@@ -7,7 +7,7 @@
 
 <div class="dashboard-container">
     <div class="sidebar">
-         <ul>
+        <ul>
             <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
                 <a href="{{ route('homeAdmin') }}">
                     <i class="fas fa-home"></i> Dashboard
@@ -23,20 +23,16 @@
                     <i class="fas fa-bell"></i> Alerts
                 </a>
             </li>
-            <li>
-                <a href="{{ route('settings') }}">
+            <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings') }}">
                     <i class="fas fa-cog"></i> Settings
                 </a>
             </li>
             <li>
-            <li>
-            <a href="" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fas fa-sign-out-alt"></i> Log Out
-            </a>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt"></i> Log Out
+                </a>
             </li>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                 @csrf
-            </form>
         </ul>
     </div>
 
