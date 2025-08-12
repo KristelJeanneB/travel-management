@@ -124,7 +124,7 @@
     }
 
     .profile-btn:hover {
-        background: white;
+        background: #0056b3;
     }
 
     .overview h2 {
@@ -208,20 +208,31 @@
 <div class="dashboard-container">
     <div class="sidebar">
         <ul>
-            <li><i class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
+            <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
                 <a href="{{ route('homeAdmin') }}">
-            <i class="fas fa-map-marked-alt"></i> Dashboard </a>
-            <li><i class="fas fa-map-marked-alt"></i> Map View</li>
-            <li><i class="fas fa-bell"></i> Alerts</li>
-            <li><i class="fas fa-cog"></i> Settings</li>
-            <li>
-            <a href="" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fas fa-sign-out-alt"></i> Log Out
-            </a>
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
             </li>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                 @csrf
-            </form>
+            <li class="{{ request()->routeIs('view') ? 'active' : '' }}">
+                <a href="{{ route('view') }}">
+                    <i class="fas fa-map-marked-alt"></i> Map View
+                </a>
+            </li>
+            <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
+                <a href="{{ route('alerts') }}">
+                    <i class="fas fa-bell"></i> Alerts
+                </a>
+            </li>
+            <li class="{{ request()->routeIs('settings') ? 'active' : '' }}">
+                <a href="{{ route('settings') }}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt"></i> Log Out
+                </a>
+            </li>
         </ul>
     </div>
 
@@ -252,7 +263,7 @@
     </div>
 </div>
 
+<!-- Single Logout Form -->
 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
-@endsection
