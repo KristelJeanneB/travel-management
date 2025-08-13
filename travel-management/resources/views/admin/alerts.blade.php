@@ -4,7 +4,7 @@
 
 @section('content')
 <style>
-    /* General Reset */
+    /* 🔒 Preserved your full original CSS */
     * {
         margin: 0;
         padding: 0;
@@ -197,6 +197,107 @@
         text-decoration: underline;
     }
 
+    .card button {
+        margin-top: 12px;
+        padding: 10px 36px;
+        border-radius: 20px;
+        font-weight: 600;
+        border: none;
+        background-color: #f28b82;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(242, 139, 130, 0.4);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        font-size: 15px;
+        display: inline-block;
+        text-align: center;
+        user-select: none;
+        min-width: 140px;
+    }
+
+    .card button:hover {
+        background-color: #d1605f;
+        box-shadow: 0 6px 16px rgba(209, 96, 95, 0.6);
+        transform: translateY(-2px);
+    }
+
+    .card button:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 6px rgba(209, 96, 95, 0.4);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background: white;
+        margin: 8% auto;
+        padding: 25px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 70vh;
+        overflow-y: auto;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        font-size: 15px;
+        color: #333;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: #007bff;
+        font-weight: 700;
+    }
+
+    .close-btn {
+        font-size: 26px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    .close-btn:hover {
+        color: #007bff;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    table thead tr {
+        background-color: #007bff;
+        color: white;
+    }
+
+    table th, table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
     @media (max-width: 768px) {
         .dashboard-container {
             flex-direction: column;
@@ -234,24 +335,16 @@
     <div class="sidebar">
         <ul>
             <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
-                <a href="{{ route('homeAdmin') }}">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
+                <a href="{{ route('homeAdmin') }}"><i class="fas fa-home"></i> Dashboard</a>
             </li>
             <li class="{{ request()->routeIs('view') ? 'active' : '' }}">
-                <a href="{{ route('view') }}">
-                    <i class="fas fa-map-marked-alt"></i> Map View
-                </a>
+                <a href="{{ route('view') }}"><i class="fas fa-map-marked-alt"></i> Map View</a>
             </li>
             <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
-                <a href="{{ route('alerts') }}">
-                    <i class="fas fa-bell"></i> Alerts
-                </a>
+                <a href="{{ route('alerts') }}"><i class="fas fa-bell"></i> Alerts</a>
             </li>
             <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                <a href="{{ route('admin.settings') }}">
-                    <i class="fas fa-cog"></i> Settings
-                </a>
+                <a href="{{ route('admin.settings') }}"><i class="fas fa-cog"></i> Settings</a>
             </li>
             <li>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -287,16 +380,82 @@
                 <div class="card">
                     <p>Accident Reports</p>
                     <small>User Reports</small>
-                    <li class="{{ request()->routeIs('admin.incident') ? 'active' : '' }}">
-                    <a href="{{ route('admin.incident') }}">Check Now</a>
-                </div>
+                    <button id="openIncidentsBtn">View Reports</button>
                 </div>
             </div>
         </section>
     </div>
 </div>
 
+<!-- Modal -->
+<div id="incidentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Incident Reports</h3>
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="incidentTableBody">
+                <!-- Data injected via JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
+
+<script>
+    document.getElementById('openIncidentsBtn').addEventListener('click', function () {
+        fetch('{{ route("incidents.fetch") }}')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('incidentTableBody');
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+
+                    const titleTd = document.createElement('td');
+                    titleTd.textContent = item.title || 'N/A';
+                    tr.appendChild(titleTd);
+
+                    const descTd = document.createElement('td');
+                    descTd.textContent = item.description || 'N/A';
+                    tr.appendChild(descTd);
+
+                    const dateTd = document.createElement('td');
+                    const date = new Date(item.created_at);
+                    dateTd.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    tr.appendChild(dateTd);
+
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('incidentModal').style.display = 'block';
+            })
+            .catch(err => {
+                alert('Failed to load incident reports.');
+                console.error(err);
+            });
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+        document.getElementById('incidentModal').style.display = 'none';
+    });
+
+    window.onclick = function (event) {
+        const modal = document.getElementById('incidentModal');
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
 @endsection

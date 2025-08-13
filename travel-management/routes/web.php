@@ -8,11 +8,11 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HomeAdminController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\IncidentController; 
-use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\ViewAdminController;
 use App\Http\Controllers\AlertsController;
+use App\Http\Controllers\AdminIncidentController;
 
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
 
@@ -79,4 +79,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/map', [MapController::class, 'show'])->name('map');
 
 Route::post('/incidents', [IncidentController::class, 'store'])->name('incident.store');
+
+Route::get('/admin/incidents', [AdminIncidentController::class, 'index'])->name('admin.incident');
+Route::get('/admin/incidents/fetch', [AdminIncidentController::class, 'fetchIncidents'])->name('admin.incidents.fetch');
+
+Route::get('/incidents/fetch', function() {
+    return \App\Models\Incident::select('title','description', 'created_at')->get();
+})->name('incidents.fetch');
 

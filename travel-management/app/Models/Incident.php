@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Incident extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'description',
@@ -14,5 +16,6 @@ class Incident extends Model
         'lng',
         'status',
     ];
+
     protected $table = 'incidents';
 }

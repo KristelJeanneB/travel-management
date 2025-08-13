@@ -13,7 +13,7 @@ class IncidentController extends Controller
     public function index()
     {
         $incidents = Incident::all();
-        return view('incident.index', compact('incident'));
+        return view('incident.index', compact('incidents'));
     }
 
     /**
@@ -24,6 +24,9 @@ class IncidentController extends Controller
         return view('incident.create');
     }
 
+    /**
+     * Store a newly created incident in storage.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -41,6 +44,6 @@ class IncidentController extends Controller
             'status' => 'reported',
         ]);
 
-        return redirect()->back()->with('status', 'Incident reported successfully!');
+        return response()->json(['message' => 'Incident reported successfully!']);
     }
 }
