@@ -73,9 +73,6 @@
         </form>
     </div>
 
-    <!-- reCAPTCHA Script -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
     <!-- Password Toggle Script -->
     <script>
         document.querySelectorAll('.eye-icon').forEach(icon => {

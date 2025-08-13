@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Incident extends Model
 {
-    use HasFactory;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = ['type', 'description'];
+    protected $fillable = [
+        'title',
+        'description',
+        'lat',
+        'lng',
+        'status',
+    ];
+    protected $table = 'incidents';
 }

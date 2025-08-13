@@ -5,15 +5,15 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\HomeAdminController;
 use App\Http\Controllers\MapController;
-use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\IncidentController; 
+use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\ViewAdminController;
 use App\Http\Controllers\AlertsController;
 
-// Root URL shows registration form (GET, no route name)
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
 
 // Registration routes
@@ -55,10 +55,22 @@ Route::get('/view', [ViewAdminController::class, 'index'])
     ->middleware('web');
 
 //Admin Alerts
-Route::get('/alerts', [AlertsController::class, 'index'])->name('alerts');
+
+Route::get('alerts', [AlertsController::class, 'index'])
+    ->name('alerts')
+    ->middleware('auth');
 
 //Admin Settings
 Route::get('/admin/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
+
+//Admin Incidents
+Route::get('/admin/incident', [IncidentController::class, 'index'])->name('admin.incident');
+Route::get('/admin/incident/{id}', [IncidentController::class, 'show'])->name('admin.incident.show');
+
+Route::get('/incident', [IncidentController::class, 'index']);
+Route::get('/report-incident', [IncidentController::class, 'create'])->name('incident.create');
+Route::post('/incident', [IncidentController::class, 'store'])->name('incident.store');
+Route::get('/incident/create', [IncidentController::class, 'create'])->name('incident.create');
 
 // Logout route
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -66,5 +78,5 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/map', [MapController::class, 'show'])->name('map');
 
-Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store');
+Route::post('/incidents', [IncidentController::class, 'store'])->name('incident.store');
 

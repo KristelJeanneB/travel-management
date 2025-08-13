@@ -284,6 +284,13 @@
                     <p>Important: New User</p>
                     <small>text</small>
                 </div>
+                <div class="card">
+                    <p>Accident Reports</p>
+                    <small>User Reports</small>
+                    <li class="{{ request()->routeIs('admin.incident') ? 'active' : '' }}">
+                    <a href="{{ route('admin.incident') }}">Check Now</a>
+                </div>
+                </div>
             </div>
         </section>
     </div>
