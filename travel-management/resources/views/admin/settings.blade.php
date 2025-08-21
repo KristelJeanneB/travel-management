@@ -252,24 +252,16 @@ header button {
     <div class="sidebar">
         <ul>
             <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
-                <a href="{{ route('homeAdmin') }}">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
+                <a href="{{ route('homeAdmin') }}"><i class="fas fa-home"></i> Dashboard</a>
             </li>
             <li class="{{ request()->routeIs('view') ? 'active' : '' }}">
-                <a href="{{ route('view') }}">
-                    <i class="fas fa-map-marked-alt"></i> Map View
-                </a>
+                <a href="{{ route('view') }}"><i class="fas fa-map-marked-alt"></i> Map View</a>
             </li>
             <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
-                <a href="{{ route('alerts') }}">
-                    <i class="fas fa-bell"></i> Alerts
-                </a>
+                <a href="{{ route('alerts') }}"><i class="fas fa-bell"></i> Alerts</a>
             </li>
             <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                <a href="{{ route('admin.settings') }}">
-                    <i class="fas fa-cog"></i> Settings
-                </a>
+                <a href="{{ route('admin.settings') }}"><i class="fas fa-cog"></i> Settings</a>
             </li>
             <li>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -278,7 +270,6 @@ header button {
             </li>
         </ul>
     </div>
-
 
     <div class="main-content">
         <header>
@@ -319,6 +310,10 @@ header button {
         </section>
     </div>
 </div>
+<!-- Single Logout Form -->
+<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+    @csrf
+</form>
 
 </body>
 </html>
