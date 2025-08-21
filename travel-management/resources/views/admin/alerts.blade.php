@@ -4,7 +4,7 @@
 
 @section('content')
 <style>
-    /* 🔒 Preserved your full original CSS */
+    /* --- General Styles --- */
     * {
         margin: 0;
         padding: 0;
@@ -160,12 +160,14 @@
         padding: 22px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        width: 220px;
+        width: 260px;
         text-align: center;
         font-weight: 600;
         color: #444;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border-top: 4px solid #007bff;
+        user-select: none;
+        cursor: pointer;
     }
 
     .card:hover {
@@ -197,6 +199,7 @@
         text-decoration: underline;
     }
 
+    /* Button styles inside cards (if any buttons) */
     .card button {
         margin-top: 12px;
         padding: 10px 36px;
@@ -363,36 +366,62 @@
         <section class="overview">
             <h2>Alerts</h2>
             <div class="card-group">
-                <div class="card">
-                    <p>Urgent Server Down!</p>
-                    <small>Main server not working</small>
-                    <a href="#">See info</a>
-                </div>
-                <div class="card">
+
+                <!-- Failed Login Attempts Card as Button -->
+                <div class="card" id="failedAttemptsBtn">
                     <p>Failed Login Attempts</p>
                     <small>Someone tried to log in many times</small>
-                    <a href="#">Check now</a>
+
                 </div>
-                <div class="card">
-                    <p>Important: New User</p>
-                    <small>text</small>
+
+                <!-- New User Accounts Card as Button -->
+                <div class="card" id="newUsersBtn">
+                    <p>New Users</p>
+                    <small>Recently registered accounts</small>
+                    @if(!$newUsers->count())
+                        <small>No new users recently</small>
+                    @endif
                 </div>
-                <div class="card">
+
+                <!-- Accident Reports Card as Button -->
+                <div class="card" id="accidentReportsBtn">
                     <p>Accident Reports</p>
                     <small>User Reports</small>
-                    <button id="openIncidentsBtn">View Reports</button>
                 </div>
             </div>
         </section>
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal for Failed Login Attempts -->
+<div id="failedAttemptsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Failed Login Attempts Details</h3>
+            <button class="close-btn" id="closeFailedAttemptsModal">&times;</button>
+        </div>
+        @if($failedAttempts->count())
+            <ul style="list-style:none; padding-left: 0;">
+                @foreach($failedAttempts as $attempt)
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                        <strong>Email:</strong> {{ $attempt->email ?? 'Unknown' }}<br>
+                        <strong>IP Address:</strong> {{ $attempt->ip_address ?? 'N/A' }}<br>
+                        <strong>Attempted:</strong> {{ $attempt->created_at->diffForHumans() }}
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <p>No failed login attempts recorded.</p>
+        @endif
+    </div>
+</div>
+
+<!-- Modal for Incident Reports -->
 <div id="incidentModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Incident Reports</h3>
-            <button class="close-btn" id="closeModalBtn">&times;</button>
+            <button class="close-btn" id="closeIncidentModal">&times;</button>
         </div>
         <table>
             <thead>
@@ -409,53 +438,90 @@
     </div>
 </div>
 
-<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+<!-- Modal for New Users -->
+<div id="newUsersModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Newly Registered Users</h3>
+            <button class="close-btn" id="closeNewUsersModal">&times;</button>
+        </div>
+        <div class="user-list-modal">
+            @if($newUsers->count())
+                <ul>
+                    @foreach($newUsers as $user)
+                        <li>
+                            <strong>{{ $user->name }}</strong> <br>
+                            <small>{{ $user->email }} — {{ $user->created_at->diffForHumans() }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p>No new users recently.</p>
+            @endif
+        </div>
+    </div>
+</div>
+
+<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
     @csrf
 </form>
 
 <script>
-    document.getElementById('openIncidentsBtn').addEventListener('click', function () {
+    // Failed Attempts Modal Logic
+    document.getElementById('failedAttemptsBtn').addEventListener('click', () => {
+        document.getElementById('failedAttemptsModal').style.display = 'block';
+    });
+
+    document.getElementById('closeFailedAttemptsModal').onclick = () => {
+        document.getElementById('failedAttemptsModal').style.display = 'none';
+    };
+
+    // Incident Reports Modal Logic
+    document.getElementById('accidentReportsBtn').addEventListener('click', () => {
         fetch('{{ route("incidents.fetch") }}')
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('incidentTableBody');
                 tbody.innerHTML = '';
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
-
-                    const titleTd = document.createElement('td');
-                    titleTd.textContent = item.title || 'N/A';
-                    tr.appendChild(titleTd);
-
-                    const descTd = document.createElement('td');
-                    descTd.textContent = item.description || 'N/A';
-                    tr.appendChild(descTd);
-
-                    const dateTd = document.createElement('td');
-                    const date = new Date(item.created_at);
-                    dateTd.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-                    tr.appendChild(dateTd);
-
-                    tbody.appendChild(tr);
-                });
-
+                if(data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No reports found</td></tr>';
+                } else {
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.title || 'N/A'}</td>
+                            <td>${item.description || 'N/A'}</td>
+                            <td>${new Date(item.created_at).toLocaleString()}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
                 document.getElementById('incidentModal').style.display = 'block';
             })
-            .catch(err => {
+            .catch(error => {
                 alert('Failed to load incident reports.');
-                console.error(err);
+                console.error(error);
             });
     });
 
-    document.getElementById('closeModalBtn').addEventListener('click', () => {
+    document.getElementById('closeIncidentModal').onclick = () => {
         document.getElementById('incidentModal').style.display = 'none';
+    };
+
+    // New Users Modal Logic
+    document.getElementById('newUsersBtn').addEventListener('click', () => {
+        document.getElementById('newUsersModal').style.display = 'block';
     });
 
-    window.onclick = function (event) {
-        const modal = document.getElementById('incidentModal');
-        if (event.target === modal) {
-            modal.style.display = "none";
+    document.getElementById('closeNewUsersModal').onclick = () => {
+        document.getElementById('newUsersModal').style.display = 'none';
+    };
+
+    // Close modal when clicking outside content
+    window.onclick = function(event) {
+        if(event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
         }
-    }
+    };
 </script>
 @endsection

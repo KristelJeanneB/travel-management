@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Hash; 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Models\FailedLogin; // ✅ Import the FailedLogin model
 
 class LoginController extends Controller
 {
@@ -25,13 +27,14 @@ class LoginController extends Controller
     {
         $adminEmail = env('ADMIN_EMAIL');
         $adminPassword = env('ADMIN_PASSWORD');
-        // admin credentials
+
+        // Admin credentials check
         if ($request->email === $adminEmail && $request->password === $adminPassword) {
             $admin = User::firstOrCreate(
                 ['email' => $adminEmail],
                 [
                     'name' => 'Admin User',
-                    'password' => Hash::make($adminPassword), 
+                    'password' => Hash::make($adminPassword),
                     'is_admin' => true,
                 ]
             );
@@ -48,7 +51,7 @@ class LoginController extends Controller
             'captcha_answer' => 'required|integer',
         ]);
 
-        // Validate CAPTCHA
+        // CAPTCHA validation
         $expectedAnswer = Session::get('math_captcha_answer');
         $givenAnswer = (int) $request->captcha_answer;
 
@@ -71,8 +74,22 @@ class LoginController extends Controller
             return redirect()->intended('/home');
         }
 
-        return back()->withErrors([
-            'email' => 'Invalid credentials.'
+        // ✅ Call the custom failed login handler
+        return $this->sendFailedLoginResponse($request);
+    }
+
+    /**
+     * Custom handler for failed login attempts.
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        FailedLogin::create([
+            'email' => $request->input('email'),
+            'ip_address' => $request->ip(),
+        ]);
+
+        throw ValidationException::withMessages([
+            'email' => [trans('auth.failed')],
         ]);
     }
 
