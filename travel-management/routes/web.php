@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\ViewAdminController;
 use App\Http\Controllers\AlertsController;
 use App\Http\Controllers\AdminIncidentController;
+use App\Http\Controllers\PaymentController;
 use App\Models\FailedLogin;
 use App\Models\User;
 
@@ -26,7 +27,7 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Admin Dashboard
+// Admin Dashboard (Static)
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard')->middleware('auth');
@@ -42,30 +43,34 @@ Route::get('/home', function () {
     return view('home');
 })->name('home')->middleware('auth');
 
-// Admin Routes
+// Admin Routes (Authenticated)
 Route::middleware(['auth'])->group(function () {
     Route::get('/homeAdmin', [HomeAdminController::class, 'index'])->name('homeAdmin');
     Route::get('/view', [ViewAdminController::class, 'index'])->name('view');
     Route::get('/admin/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
 
-    // Alerts Route - shows failed login attempts and new users
+    // Alerts: Last 5 failed login attempts and users
     Route::get('/admin/alerts', function () {
-        $failedAttempts = FailedLogin::latest()->take(5)->get(); // last 5 failed attempts
-        $newUsers = User::latest()->take(5)->get(); // last 5 users
+        $failedAttempts = FailedLogin::latest()->take(5)->get();
+        $newUsers = User::latest()->take(5)->get();
         return view('admin.alerts', compact('failedAttempts', 'newUsers'));
     })->name('alerts');
+
+    // Payment routes (for AJAX/modal)
+    Route::get('/admin/payments/data', [PaymentController::class, 'getPaymentsData'])->name('admin.payments.data');
+    Route::post('/admin/payments/confirm/{id}', [PaymentController::class, 'confirmPaymentById'])->name('admin.payments.confirm');
 });
 
 // Settings
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
-// Incident Reporting (user)
+// Incident Reporting (User)
 Route::get('/incident', [IncidentController::class, 'index']);
 Route::get('/incident/create', [IncidentController::class, 'create'])->name('incident.create');
 Route::post('/incident', [IncidentController::class, 'store'])->name('incident.store');
 Route::post('/incidents', [IncidentController::class, 'store'])->name('incident.store');
 
-// Incident Reporting (admin)
+// Incident Reporting (Admin)
 Route::get('/admin/incident', [IncidentController::class, 'index'])->name('admin.incident');
 Route::get('/admin/incident/{id}', [IncidentController::class, 'show'])->name('admin.incident.show');
 Route::get('/admin/incidents', [AdminIncidentController::class, 'index'])->name('admin.incident');
@@ -78,3 +83,12 @@ Route::get('/incidents/fetch', function () {
 
 // Map View
 Route::get('/map', [MapController::class, 'show'])->name('map');
+
+// ✅ Premium Page (Static)
+Route::get('/premium', function () {
+    return view('premium');
+})->name('premium');
+
+// Payment Routes (User payment submission form)
+Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment');
+Route::post('/payment/confirm', [PaymentController::class, 'confirmPayment'])->name('payment.confirm');

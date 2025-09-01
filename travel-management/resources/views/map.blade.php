@@ -55,6 +55,14 @@
         <div class="report-incident-trigger">
             <button id="open-incident-modal" type="button" class="btn">Report Incident</button>
         </div>
+
+        <!-- ✅ Premium Section Added Below -->
+        <div class="premium-section" style="margin-top: 20px; text-align: center;">
+            <h3 style="margin-bottom: 10px;">Want More Features?</h3>
+            <a href="{{ route('premium') }}" class="btn" style="padding: 10px 20px; background-color: #ffc107; color: #000; border-radius: 5px; text-decoration: none; font-weight: bold;">
+                🌟 Go Premium
+            </a>
+        </div>
     </form>
 </div>
 
