@@ -12,9 +12,17 @@ class Payment extends Model
     protected $fillable = [
         'payer_name',
         'payer_email',
+        'contact',
         'amount',
         'payment_method',
         'status',
         'transaction_id',
+        'user_id',
     ];
+
+    // Optional: relationship to user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

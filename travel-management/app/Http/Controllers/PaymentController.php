@@ -13,7 +13,7 @@ class PaymentController extends Controller
         return view('payment');
     }
 
-    // Store payment form submission
+    // Handle payment form submission
     public function confirmPayment(Request $request)
     {
         $validated = $request->validate([
@@ -30,13 +30,13 @@ class PaymentController extends Controller
             'amount' => $validated['amount'],
             'payment_method' => 'GCash',
             'status' => 'pending',
-            'user_id' => auth()->check() ? auth()->id() : null, // Optional
+            'user_id' => auth()->check() ? auth()->id() : null,
         ]);
 
         return redirect()->route('payment')->with('success', 'Payment confirmation received! Thank you.');
     }
 
-    // ✅ Return all payments for admin dashboard
+    // Admin: Return all payments as JSON
     public function getPaymentsData()
     {
         $payments = Payment::latest()->get()->map(function ($payment) {
@@ -51,7 +51,7 @@ class PaymentController extends Controller
         return response()->json($payments);
     }
 
-    // ✅ Confirm payment via AJAX
+    // Admin: Confirm payment by ID via AJAX
     public function confirmPaymentById($id)
     {
         $payment = Payment::find($id);
