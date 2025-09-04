@@ -17,6 +17,7 @@ class CreatePaymentsTable extends Migration
             $table->bigIncrements('id');
             $table->string('payer_name');
             $table->string('payer_email');
+            $table->string('contact', 15);
             $table->decimal('amount', 10, 2);
             $table->string('payment_method')->default('GCash');
             $table->string('status')->default('pending'); // For example: pending, confirmed, failed

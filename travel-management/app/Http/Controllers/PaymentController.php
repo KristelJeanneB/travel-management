@@ -19,12 +19,14 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'payer_name' => 'required|string|max:255',
             'payer_email' => 'required|email|max:255',
+            'contact' => 'required|numeric|min:1',
             'amount' => 'required|numeric|min:150',
         ]);
 
         Payment::create([
             'payer_name' => $validated['payer_name'],
             'payer_email' => $validated['payer_email'],
+            'contact' => $validated['contact'],
             'amount' => $validated['amount'],
             'payment_method' => 'GCash',
             'status' => 'pending',
