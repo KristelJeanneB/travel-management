@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'HomeAdmin')
+@section('title', 'Home Admin')
 
 @section('content')
 <style>
@@ -13,33 +13,34 @@
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f4f4f4;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        overflow: hidden;
         color: #333;
+        line-height: 1.6;
     }
-
-    .background-image {
+    .header {
+        background-color: #86A8CF;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
         position: fixed;
-        top: 0;
-        left: 0;
         width: 100%;
-        height: 100%;
-        background-image: url("/images/background.png");
-        background-size: cover;
-        background-position: center;
-        filter: blur(5px);
-        z-index: -1;
+        top: 0;
+        z-index: 1100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
+
+    .header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+    }
     .dashboard-container {
         position: relative;
-        width: 90%;
-        max-width: 1000px;
-        height: 80vh;
-        background-color: white;
+        width: 95%;
+        max-width: 100%;
+        margin: 20px auto;
         border-radius: 12px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
         overflow: hidden;
@@ -49,24 +50,27 @@
 
     .sidebar {
         width: 240px;
-        background: linear-gradient(180deg, #007bff 0%, #0056b3 100%);
+        background: #86A8CF;
         color: white;
         padding: 20px 0;
-        height: 100%;
+        min-height: 100%;
     }
 
     .sidebar ul {
         list-style: none;
+        padding: 0;
+        margin: 0;
     }
 
     .sidebar li {
         padding: 14px 20px;
         cursor: pointer;
         font-size: 15px;
-        transition: background 0.3s ease, padding-left 0.2s ease;
+        transition: background 0.3s ease;
     }
 
-    .sidebar li:hover, .sidebar li.active {
+    .sidebar li:hover,
+    .sidebar li.active {
         background: rgba(255, 255, 255, 0.2);
         padding-left: 25px;
     }
@@ -76,22 +80,20 @@
         text-decoration: none;
         display: block;
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .sidebar i {
-        margin-right: 12px;
-        width: 20px;
-        text-align: center;
-    }
-
+    /* Main Content */
     .main-content {
         flex: 1;
-        padding: 25px;
-        display: flex;
-        flex-direction: column;
-        background-color: #f9f9f9;
+        padding: 30px;
+        background: white;
+        min-height: calc(100vh - 120px);
     }
 
+    /* Search Header */
     header {
         display: flex;
         align-items: center;
@@ -115,7 +117,7 @@
     }
 
     .profile-btn {
-        background: #007bff;
+        background: #86A8CF;
         border: none;
         color: white;
         width: 40px;
@@ -129,9 +131,10 @@
     }
 
     .profile-btn:hover {
-        background: #0056b3;
+        background: #6a8cb3;
     }
 
+    /* Overview Cards */
     .overview h2 {
         text-align: center;
         margin-bottom: 25px;
@@ -157,7 +160,7 @@
         font-weight: 600;
         color: #444;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-top: 4px solid #007bff;
+        border-top: 4px solid #86A8CF;
         user-select: none;
     }
 
@@ -178,19 +181,15 @@
         margin-top: 6px;
     }
 
-    /* Make payments card clickable */
-    #payments-card {
-        cursor: pointer;
-    }
-
-    /* Modal styles */
+    /* Modal */
     #payments-modal {
         display: none;
         position: fixed;
-        top: 0; left: 0;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0, 0, 0, 0.5);
         z-index: 9999;
         justify-content: center;
         align-items: center;
@@ -223,7 +222,8 @@
         border-collapse: collapse;
     }
 
-    #payments-modal th, #payments-modal td {
+    #payments-modal th,
+    #payments-modal td {
         padding: 8px;
         border: 1px solid #ddd;
         text-align: left;
@@ -249,65 +249,56 @@
         cursor: default;
     }
 
-    @media (max-width: 768px) {
-        .dashboard-container {
-            flex-direction: column;
-            height: auto;
-        }
+     @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
 
-        .sidebar {
-            width: 100%;
-            padding: 10px 0;
-        }
+            .sidebar {
+                width: 100%;
+                padding: 10px 0;
+            }
 
-        .sidebar li {
-            padding: 12px 15px;
-            font-size: 16px;
-        }
+            .card-group {
+                flex-direction: column;
+                align-items: center;
+            }
 
-        .card-group {
-            flex-direction: column;
-            align-items: center;
-        }
+            .card {
+                width: 90%;
+            }
 
-        .card {
-            width: 90%;
+            .main-content {
+                padding: 20px;
+            }
         }
-
-        .main-content {
-            padding: 20px;
-        }
-    }
 </style>
 
-<div class="background-image"></div>
+<div class="header">
+    <h1>Admin</h1>
+</div>
 
 <div class="dashboard-container">
     <nav class="sidebar" aria-label="Sidebar Navigation">
         <ul>
             <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
                 <a href="{{ route('homeAdmin') }}">
-                    <i class="fas fa-home" aria-hidden="true"></i> Dashboard
-                </a>
-            </li>
-            <li class="{{ request()->routeIs('view') ? 'active' : '' }}">
-                <a href="{{ route('view') }}">
-                    <i class="fas fa-map-marked-alt" aria-hidden="true"></i> Map View
+                    <i class="fas fa-home"></i> Dashboard
                 </a>
             </li>
             <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
                 <a href="{{ route('alerts') }}">
-                    <i class="fas fa-bell" aria-hidden="true"></i> Alerts
+                    <i class="fas fa-bell"></i> Alerts
                 </a>
             </li>
             <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
                 <a href="{{ route('admin.settings') }}">
-                    <i class="fas fa-cog" aria-hidden="true"></i> Settings
+                    <i class="fas fa-cog"></i> Settings
                 </a>
             </li>
             <li>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Log Out
+                    <i class="fas fa-sign-out-alt"></i> Log Out
                 </a>
             </li>
         </ul>
@@ -316,7 +307,9 @@
     <main class="main-content" role="main">
         <header>
             <input type="search" placeholder="Search..." class="search-bar" aria-label="Search" />
-            <button class="profile-btn" aria-label="User Profile"><i class="fas fa-user"></i></button>
+            <button class="profile-btn" aria-label="User Profile">
+                <i class="fas fa-user"></i>
+            </button>
         </header>
 
         <section class="overview" aria-labelledby="overview-heading">
@@ -340,10 +333,9 @@
     </main>
 </div>
 
-<!-- Payments Modal -->
 <div id="payments-modal" role="dialog" aria-modal="true" aria-labelledby="payments-modal-title" tabindex="-1">
     <div class="modal-content">
-        <button class="close-btn" id="close-modal" aria-label="Close payments modal">&times;</button>
+        <button class="close-btn" id="close-modal">&times;</button>
         <h2 id="payments-modal-title">Payments</h2>
         <div id="payments-content">
             <p>Loading payments...</p>
@@ -351,140 +343,131 @@
     </div>
 </div>
 
-<!-- Single Logout Form -->
 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const paymentsCard = document.getElementById('payments-card');
-    const paymentsModal = document.getElementById('payments-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const paymentsContent = document.getElementById('payments-content');
+    document.addEventListener('DOMContentLoaded', () => {
+        const paymentsCard = document.getElementById('payments-card');
+        const paymentsModal = document.getElementById('payments-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const paymentsContent = document.getElementById('payments-content');
 
-    const openModal = () => {
-        paymentsModal.style.display = 'flex';
-        paymentsModal.focus();
-        loadPayments();
-    };
+        const openModal = () => {
+            paymentsModal.style.display = 'flex';
+            loadPayments();
+        };
 
-    const closeModal = () => {
-        paymentsModal.style.display = 'none';
-        paymentsContent.innerHTML = '<p>Loading payments...</p>';
-    };
+        const closeModal = () => {
+            paymentsModal.style.display = 'none';
+            paymentsContent.innerHTML = '<p>Loading payments...</p>';
+        };
 
-    // Fetch payments data via AJAX
-    function loadPayments() {
-        fetch('{{ route('admin.payments.data') }}', {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.length) {
-                paymentsContent.innerHTML = '<p>No payments found.</p>';
-                return;
-            }
+        function loadPayments() {
+            fetch('{{ route('admin.payments.data') }}', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.length) {
+                    paymentsContent.innerHTML = '<p>No payments found.</p>';
+                    return;
+                }
 
-            let tableHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>User</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            data.forEach(payment => {
-                tableHtml += `
-                    <tr data-id="${payment.id}">
-                        <td>${payment.id}</td>
-                        <td>${payment.user_name}</td>
-                        <td>${payment.amount}</td>
-                        <td class="status">${payment.status}</td>
-                        <td>
-                            ${payment.status === 'pending' 
-                                ? `<button class="confirm-btn">Confirm</button>` 
-                                : ''}
-                        </td>
-                    </tr>
+                let tableHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            });
 
-            tableHtml += `</tbody></table>`;
-            paymentsContent.innerHTML = tableHtml;
+                data.forEach(payment => {
+                    tableHtml += `
+                        <tr data-id="${payment.id}">
+                            <td>${payment.id}</td>
+                            <td>${payment.user_name}</td>
+                            <td>${payment.amount}</td>
+                            <td class="status">${payment.status}</td>
+                            <td>
+                                ${payment.status === 'pending' 
+                                    ? `<button class="confirm-btn">Confirm</button>` 
+                                    : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
 
-            // Attach confirm button listeners
-            document.querySelectorAll('.confirm-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const row = btn.closest('tr');
-                    const paymentId = row.dataset.id;
-                    btn.disabled = true;
-                    btn.textContent = 'Confirming...';
+                tableHtml += `</tbody></table>`;
+                paymentsContent.innerHTML = tableHtml;
 
-                    fetch(`{{ url('admin/payments/confirm') }}/${paymentId}`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    })
-                    .then(res => res.json())
-                    .then(resData => {
-                        if (resData.success) {
-                            row.querySelector('.status').textContent = 'confirmed';
-                            btn.remove();
-                        } else {
-                            alert('Failed to confirm payment.');
+                document.querySelectorAll('.confirm-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const row = btn.closest('tr');
+                        const paymentId = row.dataset.id;
+                        btn.disabled = true;
+                        btn.textContent = 'Confirming...';
+
+                        fetch(`{{ url('admin/payments/confirm') }}/${paymentId}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        })
+                        .then(res => res.json())
+                        .then(resData => {
+                            if (resData.success) {
+                                row.querySelector('.status').textContent = 'confirmed';
+                                btn.remove();
+                            } else {
+                                alert('Failed to confirm payment.');
+                                btn.disabled = false;
+                                btn.textContent = 'Confirm';
+                            }
+                        })
+                        .catch(() => {
+                            alert('Error confirming payment.');
                             btn.disabled = false;
                             btn.textContent = 'Confirm';
-                        }
-                    })
-                    .catch(() => {
-                        alert('Error confirming payment.');
-                        btn.disabled = false;
-                        btn.textContent = 'Confirm';
+                        });
                     });
                 });
+            })
+            .catch(() => {
+                paymentsContent.innerHTML = '<p>Failed to load payments.</p>';
             });
-        })
-        .catch(() => {
-            paymentsContent.innerHTML = '<p>Failed to load payments.</p>';
+        }
+
+        paymentsCard.addEventListener('click', openModal);
+        paymentsCard.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openModal();
+            }
         });
-    }
 
-    paymentsCard.addEventListener('click', openModal);
-    paymentsCard.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openModal();
-        }
+        closeModalBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', e => {
+            if (e.target === paymentsModal) closeModal();
+        });
+
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && paymentsModal.style.display === 'flex') {
+                closeModal();
+            }
+        });
     });
-
-    closeModalBtn.addEventListener('click', closeModal);
-
-    // Close modal on outside click
-    window.addEventListener('click', e => {
-        if (e.target === paymentsModal) {
-            closeModal();
-        }
-    });
-
-    // Close modal on Escape key
-    window.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && paymentsModal.style.display === 'flex') {
-            closeModal();
-        }
-    });
-});
 </script>
 @endsection

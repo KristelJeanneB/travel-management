@@ -249,14 +249,6 @@ h2 {
     vertical-align: middle;
 }
 
-
-.g-recaptcha {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-
 @media (max-width: 480px) {
     .form-group {
     margin-bottom: 15px;

@@ -4,7 +4,6 @@
 
 @section('content')
 <style>
-    /* --- General Styles --- */
     * {
         margin: 0;
         padding: 0;
@@ -14,33 +13,34 @@
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f4f4f4;
+          color: #333;
+        line-height: 1.6;
+    }
+    .header {
+        background-color: #86A8CF;
+        height: 56px;
         display: flex;
-        justify-content: center;
         align-items: center;
-        height: 100vh;
-        overflow: hidden;
-        color: #333;
+        padding: 0 24px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
-    .background-image {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url("/images/background.png");
-        background-size: cover;
-        background-position: center;
-        filter: blur(5px);
-        z-index: -1;
+    .header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
     }
 
     .dashboard-container {
         position: relative;
-        width: 90%;
-        max-width: 1000px;
-        height: 80vh;
-        background-color: white;
+        width: 95%;
+        max-width: 100%;
+        margin: 20px auto;
         border-radius: 12px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
         overflow: hidden;
@@ -50,7 +50,7 @@
 
     .sidebar {
         width: 240px;
-        background: linear-gradient(180deg, #007bff 0%, #0056b3 100%);
+        background: #86A8CF;
         color: white;
         padding: 20px 0;
         height: 100%;
@@ -58,25 +58,22 @@
 
     .sidebar ul {
         list-style: none;
-        margin: 0;
         padding: 0;
+        margin: 0;
     }
 
+    
     .sidebar li {
         padding: 14px 20px;
         cursor: pointer;
         font-size: 15px;
-        transition: background 0.3s ease, padding-left 0.2s ease;
+        transition: background 0.3s ease;
     }
 
-    .sidebar li:hover {
-        background: rgba(255, 255, 255, 0.2);
-        padding-left: 25px;
-    }
-
+    .sidebar li:hover,
     .sidebar li.active {
         background: rgba(255, 255, 255, 0.2);
-        border-left: 3px solid white;
+        padding-left: 25px;
     }
 
     .sidebar a {
@@ -84,7 +81,11 @@
         text-decoration: none;
         display: block;
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
+
 
     .sidebar i {
         margin-right: 12px;
@@ -94,10 +95,9 @@
 
     .main-content {
         flex: 1;
-        padding: 25px;
-        display: flex;
-        flex-direction: column;
-        background-color: #f9f9f9;
+        padding: 30px;
+        background: white;
+        min-height: calc(100vh - 120px);
     }
 
     header {
@@ -105,6 +105,39 @@
         align-items: center;
         margin-bottom: 25px;
         gap: 12px;
+    }
+
+    .search-bar {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        outline: none;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-bar:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    .profile-btn {
+        background: #86A8CF;
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+    }
+
+    .profile-btn:hover {
+        background: #6a8cb3;
     }
 
     input[type="text"] {
@@ -165,7 +198,7 @@
         font-weight: 600;
         color: #444;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-top: 4px solid #007bff;
+        border-top: 4px solid #86A8CF;
         user-select: none;
         cursor: pointer;
     }
@@ -190,7 +223,7 @@
     .card a {
         display: inline-block;
         margin-top: 10px;
-        color: #007bff;
+        color: #86A8CF;
         text-decoration: none;
         font-size: 14px;
     }
@@ -199,7 +232,6 @@
         text-decoration: underline;
     }
 
-    /* Button styles inside cards (if any buttons) */
     .card button {
         margin-top: 12px;
         padding: 10px 36px;
@@ -301,38 +333,34 @@
         background-color: #f9f9f9;
     }
 
-    @media (max-width: 768px) {
-        .dashboard-container {
-            flex-direction: column;
-            height: auto;
-        }
+     @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
 
-        .sidebar {
-            width: 100%;
-            padding: 10px 0;
-        }
+            .sidebar {
+                width: 100%;
+                padding: 10px 0;
+            }
 
-        .sidebar li {
-            padding: 12px 15px;
-            font-size: 16px;
-        }
+            .card-group {
+                flex-direction: column;
+                align-items: center;
+            }
 
-        .card-group {
-            flex-direction: column;
-            align-items: center;
-        }
+            .card {
+                width: 90%;
+            }
 
-        .card {
-            width: 90%;
+            .main-content {
+                padding: 20px;
+            }
         }
-
-        .main-content {
-            padding: 20px;
-        }
-    }
 </style>
 
-<div class="background-image"></div>
+<div class="header">
+    <h1>Admin</h1>
+</div>
 
 <div class="dashboard-container">
     <div class="sidebar">
@@ -340,9 +368,11 @@
             <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
                 <a href="{{ route('homeAdmin') }}"><i class="fas fa-home"></i> Dashboard</a>
             </li>
-            <li class="{{ request()->routeIs('view') ? 'active' : '' }}">
-                <a href="{{ route('view') }}"><i class="fas fa-map-marked-alt"></i> Map View</a>
-            </li>
+            <!--<li class="{{ request()->routeIs('view') ? 'active' : '' }}">
+                <a href="{{ route('view') }}">
+                    <i class="fas fa-map-marked-alt"></i> Map View
+                </a>
+            </li>-->
             <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
                 <a href="{{ route('alerts') }}"><i class="fas fa-bell"></i> Alerts</a>
             </li>
@@ -360,21 +390,27 @@
     <div class="main-content">
         <header>
             <input type="text" placeholder="Search..." />
-            <button><i class="fas fa-user"></i></button>
+           <button class="profile-btn" aria-label="User Profile">
+                <i class="fas fa-user"></i>
+            </button>
         </header>
 
         <section class="overview">
             <h2>Alerts</h2>
             <div class="card-group">
 
-                <!-- Failed Login Attempts Card as Button -->
+               
                 <div class="card" id="failedAttemptsBtn">
                     <p>Failed Login Attempts</p>
                     <small>Someone tried to log in many times</small>
 
                 </div>
 
-                <!-- New User Accounts Card as Button -->
+                <div class="card-group">
+                <div class="card">
+                    <p>Manage Users</p>
+                </div>
+
                 <div class="card" id="newUsersBtn">
                     <p>New Users</p>
                     <small>Recently registered accounts</small>
@@ -383,7 +419,6 @@
                     @endif
                 </div>
 
-                <!-- Accident Reports Card as Button -->
                 <div class="card" id="accidentReportsBtn">
                     <p>Accident Reports</p>
                     <small>User Reports</small>
@@ -393,7 +428,6 @@
     </div>
 </div>
 
-<!-- Modal for Failed Login Attempts -->
 <div id="failedAttemptsModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -416,7 +450,6 @@
     </div>
 </div>
 
-<!-- Modal for Incident Reports -->
 <div id="incidentModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -432,13 +465,11 @@
                 </tr>
             </thead>
             <tbody id="incidentTableBody">
-                <!-- Data injected via JS -->
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Modal for New Users -->
 <div id="newUsersModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -467,7 +498,6 @@
 </form>
 
 <script>
-    // Failed Attempts Modal Logic
     document.getElementById('failedAttemptsBtn').addEventListener('click', () => {
         document.getElementById('failedAttemptsModal').style.display = 'block';
     });
@@ -476,7 +506,6 @@
         document.getElementById('failedAttemptsModal').style.display = 'none';
     };
 
-    // Incident Reports Modal Logic
     document.getElementById('accidentReportsBtn').addEventListener('click', () => {
         fetch('{{ route("incidents.fetch") }}')
             .then(response => response.json())
@@ -508,7 +537,6 @@
         document.getElementById('incidentModal').style.display = 'none';
     };
 
-    // New Users Modal Logic
     document.getElementById('newUsersBtn').addEventListener('click', () => {
         document.getElementById('newUsersModal').style.display = 'block';
     });
@@ -516,8 +544,6 @@
     document.getElementById('closeNewUsersModal').onclick = () => {
         document.getElementById('newUsersModal').style.display = 'none';
     };
-
-    // Close modal when clicking outside content
     window.onclick = function(event) {
         if(event.target.classList.contains('modal')) {
             event.target.style.display = 'none';

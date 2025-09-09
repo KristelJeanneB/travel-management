@@ -228,11 +228,11 @@ header button {
                     <i class="fas fa-home"></i> Dashboard
                 </a>
             </li>
-            <li class="{{ request()->routeIs('view') ? 'active' : '' }}">
+            <!--<li class="{{ request()->routeIs('view') ? 'active' : '' }}">
                 <a href="{{ route('view') }}">
                     <i class="fas fa-map-marked-alt"></i> Map View
                 </a>
-            </li>
+            </li>-->
             <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
                 <a href="{{ route('alerts') }}">
                     <i class="fas fa-bell"></i> Alerts
