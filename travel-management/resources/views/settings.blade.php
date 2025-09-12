@@ -7,10 +7,15 @@
 @endpush
 
 @section('content')
+@php
+    $previous = request()->get('previous', 'home');
+    $backRoute = $previous === 'map' ? route('map') : route('home');
+@endphp
+
 <div class="settings-wrapper">
 
     <nav class="settings-nav">
-        <a href="{{ route('home') }}" class="nav-back">
+        <a href="{{ $backRoute }}" class="nav-back">
             <i class="fas fa-arrow-left"></i>
         </a>
         <h1>Settings</h1>
