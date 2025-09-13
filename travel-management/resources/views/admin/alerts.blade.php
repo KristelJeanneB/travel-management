@@ -13,7 +13,7 @@
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f4f4f4;
-          color: #333;
+        color: #333;
         line-height: 1.6;
     }
     .header {
@@ -29,13 +29,13 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
+
     .header h1 {
         margin: 0;
         font-size: 1.5rem;
         font-weight: 600;
         color: white;
     }
-
     .dashboard-container {
         position: relative;
         width: 95%;
@@ -62,7 +62,6 @@
         margin: 0;
     }
 
-    
     .sidebar li {
         padding: 14px 20px;
         cursor: pointer;
@@ -87,18 +86,13 @@
     }
 
 
-    .sidebar i {
-        margin-right: 12px;
-        width: 20px;
-        text-align: center;
-    }
-
     .main-content {
         flex: 1;
         padding: 30px;
         background: white;
         min-height: calc(100vh - 120px);
     }
+
 
     header {
         display: flex;
@@ -140,38 +134,6 @@
         background: #6a8cb3;
     }
 
-    input[type="text"] {
-        flex: 1;
-        padding: 12px 16px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        outline: none;
-        font-size: 14px;
-        transition: border-color 0.3s ease;
-    }
-
-    input[type="text"]:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
-
-    button {
-        background: #007bff;
-        border: none;
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.3s ease;
-    }
-
-    button:hover {
-        background: #0056b3;
-    }
 
     .overview h2 {
         text-align: center;
@@ -193,14 +155,13 @@
         padding: 22px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        width: 260px;
+        width: 220px;
         text-align: center;
         font-weight: 600;
         color: #444;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border-top: 4px solid #86A8CF;
         user-select: none;
-        cursor: pointer;
     }
 
     .card:hover {
@@ -220,142 +181,76 @@
         margin-top: 6px;
     }
 
-    .card a {
-        display: inline-block;
-        margin-top: 10px;
-        color: #86A8CF;
-        text-decoration: none;
-        font-size: 14px;
-    }
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
 
-    .card a:hover {
-        text-decoration: underline;
-    }
+.modal-content {
+    background: white;
+    margin: 8% auto;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    color: #333;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-    .card button {
-        margin-top: 12px;
-        padding: 10px 36px;
-        border-radius: 20px;
-        font-weight: 600;
-        border: none;
-        background-color: #f28b82;
-        color: white;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(242, 139, 130, 0.4);
-        transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-        font-size: 15px;
-        display: inline-block;
-        text-align: center;
-        user-select: none;
-        min-width: 140px;
-    }
+.modal-header h3 {
+    margin: 0;
+    color: #007bff;
+    font-weight: 700;
+}
 
-    .card button:hover {
-        background-color: #d1605f;
-        box-shadow: 0 6px 16px rgba(209, 96, 95, 0.6);
-        transform: translateY(-2px);
-    }
+.close-btn {
+    font-size: 26px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.3s ease;
+}
 
-    .card button:active {
-        transform: translateY(0);
-        box-shadow: 0 3px 6px rgba(209, 96, 95, 0.4);
-    }
+.close-btn:hover {
+    color: #007bff;
+}
 
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.5);
-    }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
 
-    .modal-content {
-        background: white;
-        margin: 8% auto;
-        padding: 25px;
-        border-radius: 12px;
-        width: 90%;
-        max-width: 700px;
-        max-height: 70vh;
-        overflow-y: auto;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        font-size: 15px;
-        color: #333;
-    }
+table thead tr {
+    background-color: #007bff;
+    color: white;
+}
 
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+table th, table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
 
-    .modal-header h3 {
-        margin: 0;
-        color: #007bff;
-        font-weight: 700;
-    }
-
-    .close-btn {
-        font-size: 26px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #555;
-        transition: color 0.3s ease;
-    }
-
-    .close-btn:hover {
-        color: #007bff;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-    }
-
-    table thead tr {
-        background-color: #007bff;
-        color: white;
-    }
-
-    table th, table td {
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    table tbody tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-
-     @media (max-width: 768px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 10px 0;
-            }
-
-            .card-group {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .card {
-                width: 90%;
-            }
-
-            .main-content {
-                padding: 20px;
-            }
-        }
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
 </style>
 
 <div class="header">
@@ -363,16 +258,12 @@
 </div>
 
 <div class="dashboard-container">
+
     <div class="sidebar">
         <ul>
             <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
                 <a href="{{ route('homeAdmin') }}"><i class="fas fa-home"></i> Dashboard</a>
             </li>
-            <!--<li class="{{ request()->routeIs('view') ? 'active' : '' }}">
-                <a href="{{ route('view') }}">
-                    <i class="fas fa-map-marked-alt"></i> Map View
-                </a>
-            </li>-->
             <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
                 <a href="{{ route('alerts') }}"><i class="fas fa-bell"></i> Alerts</a>
             </li>
@@ -387,10 +278,11 @@
         </ul>
     </div>
 
+
     <div class="main-content">
         <header>
-            <input type="text" placeholder="Search..." />
-           <button class="profile-btn" aria-label="User Profile">
+            <input type="text" placeholder="Search..." class="search-bar" />
+            <button class="profile-btn" aria-label="User Profile">
                 <i class="fas fa-user"></i>
             </button>
         </header>
@@ -398,27 +290,25 @@
         <section class="overview">
             <h2>Alerts</h2>
             <div class="card-group">
-
-               
+            
                 <div class="card" id="failedAttemptsBtn">
                     <p>Failed Login Attempts</p>
                     <small>Someone tried to log in many times</small>
-
                 </div>
 
-                <div class="card-group">
-                <div class="card">
-                    <p>Manage Users</p>
+            
+                <div class="card" id="manageUsersBtn">
+                    <p>Manage All Users</p>
+                    <small>View and manage all registered users</small>
                 </div>
 
+            
                 <div class="card" id="newUsersBtn">
                     <p>New Users</p>
                     <small>Recently registered accounts</small>
-                    @if(!$newUsers->count())
-                        <small>No new users recently</small>
-                    @endif
                 </div>
 
+            
                 <div class="card" id="accidentReportsBtn">
                     <p>Accident Reports</p>
                     <small>User Reports</small>
@@ -464,9 +354,43 @@
                     <th>Date</th>
                 </tr>
             </thead>
-            <tbody id="incidentTableBody">
-            </tbody>
+            <tbody id="incidentTableBody"></tbody>
         </table>
+    </div>
+</div>
+
+<div id="manageUsersModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Manage All Users</h3>
+            <button class="close-btn" id="closeManageUsersModal">&times;</button>
+        </div>
+        <table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Registered</th>
+        </tr>
+    </thead>
+    <tbody id="usersTableBody">
+    @if(isset($allUsers) && $allUsers->isNotEmpty())
+        @foreach($allUsers as $user)
+            <tr>
+                <td>{{ $user->name }}</td>
+                <td>{{ $user->email }}</td>
+                <td>{{ $user->is_admin ? 'Admin' : 'User' }}</td>
+                <td>{{ $user->created_at->format('M d, Y') }}</td>
+            </tr>
+        @endforeach
+    @else
+        <tr>
+            <td colspan="4" style="text-align:center; color:#777;">No users found</td>
+        </tr>
+    @endif
+</tbody>
+</table>
     </div>
 </div>
 
@@ -481,7 +405,7 @@
                 <ul>
                     @foreach($newUsers as $user)
                         <li>
-                            <strong>{{ $user->name }}</strong> <br>
+                            <strong>{{ $user->name }}</strong><br>
                             <small>{{ $user->email }} — {{ $user->created_at->diffForHumans() }}</small>
                         </li>
                     @endforeach
@@ -493,7 +417,7 @@
     </div>
 </div>
 
-<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
 
@@ -512,7 +436,7 @@
             .then(data => {
                 const tbody = document.getElementById('incidentTableBody');
                 tbody.innerHTML = '';
-                if(data.length === 0) {
+                if (data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No reports found</td></tr>';
                 } else {
                     data.forEach(item => {
@@ -537,6 +461,14 @@
         document.getElementById('incidentModal').style.display = 'none';
     };
 
+    document.getElementById('manageUsersBtn').addEventListener('click', () => {
+        document.getElementById('manageUsersModal').style.display = 'block';
+    });
+
+    document.getElementById('closeManageUsersModal').onclick = () => {
+        document.getElementById('manageUsersModal').style.display = 'none';
+    };
+
     document.getElementById('newUsersBtn').addEventListener('click', () => {
         document.getElementById('newUsersModal').style.display = 'block';
     });
@@ -544,8 +476,9 @@
     document.getElementById('closeNewUsersModal').onclick = () => {
         document.getElementById('newUsersModal').style.display = 'none';
     };
+
     window.onclick = function(event) {
-        if(event.target.classList.contains('modal')) {
+        if (event.target.classList.contains('modal')) {
             event.target.style.display = 'none';
         }
     };

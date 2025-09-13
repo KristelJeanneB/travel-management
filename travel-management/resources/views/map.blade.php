@@ -16,7 +16,6 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <nav class="nav">
         <a href="{{ route('home') }}" class="back-button" title="Back to Home">
@@ -39,7 +38,6 @@
     </nav>
 </div>
 
-<!-- ROUTE PLANNER PANEL -->
 <div class="route-guidance">
     <h3>Route Planner</h3>
     <form id="route-form">
@@ -57,7 +55,6 @@
             <button id="open-incident-modal" type="button" class="btn">Report Incident</button>
         </div>
 
-        <!-- Premium Section -->
         <div class="premium-section" style="margin-top: 20px; text-align: center;">
             <h3 style="margin-bottom: 10px;">Want More Features?</h3>
             <a href="{{ route('premium') }}" class="btn" style="padding: 10px 20px; background-color: lightgray; color: #000; border-radius: 5px; text-decoration: none; font-weight: bold;">
@@ -66,7 +63,6 @@
         </div>
     </form>
 
-    <!-- AUTOMATIC ROUTE BOX (moved down, styled like planner) -->
     <div class="route-options-box" style="
         margin-top: 25px;
         padding: 15px 20px;
@@ -91,19 +87,21 @@
     </div>
 </div>
 
-<!-- MAP + SUMMARY -->
 <div class="map-container">
     <div id="map"></div>
     <div id="route-summary" class="route-summary hidden"></div>
 </div>
 
-<!-- INCIDENT MODAL -->
-<div id="incident-modal" class="modal" style="display:none;">
-    <div class="modal-content" style="font-family: 'Quicksand', sans-serif;">
-        <span id="close-incident-modal" class="modal-close">&times;</span>
+<div id="incident-modal" class="modal" style="display:none; z-index: 1050;">
+    <div class="modal-content" style="max-width: 500px; margin: 40px auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        <span id="close-incident-modal" class="modal-close" style="float:right; font-size:28px; cursor:pointer;">&times;</span>
         <h2>Report an Incident</h2>
+
         <form id="incident-form">
             @csrf
+            <input type="hidden" name="lat" id="form-lat">
+            <input type="hidden" name="lng" id="form-lng">
+
             <div class="form-group">
                 <label for="incident-type">Incident Type:</label>
                 <select id="incident-type" name="type" required>
@@ -114,26 +112,39 @@
                     <option value="hazard">Hazard</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label for="incident-description">Add Location:</label>
-                <textarea id="incident-description" name="description" rows="4" placeholder="Please Indicate location for the authorities..."></textarea>
+                <label for="incident-description">Add Details (Optional):</label>
+                <textarea id="incident-description" name="description" rows="3" placeholder="Please indicate details..."></textarea>
             </div>
-            <button type="submit" class="btn">Submit Report</button>
+
+            <div class="form-group">
+                <label>Your Location:</label>
+                <p style="font-size:14px; color:#555;">Allow access to pin your current location.</p>
+                <div id="incident-map" style="height: 200px; border: 1px solid #ddd; border-radius: 8px;"></div>
+                <p id="location-status" style="color: #d97706; font-size: 14px; text-align: center; margin-top: 8px;">Getting your location...</p>
+            </div>
+
+            <button type="submit" class="btn" style="width:100%; padding:12px;">Submit Report</button>
         </form>
     </div>
 </div>
 
-<!-- SCRIPTS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    if (typeof L === 'undefined') {
+        console.error("❌ Leaflet failed to load!");
+        alert("Map library failed to load.");
+        return;
+    }
+
     const LINGAYEN_COORDS = [16.0212, 120.2315];
     let userCoords = LINGAYEN_COORDS;
     let routeControl = null;
 
-    // Dropdown menu
     const dropdownBtn = document.getElementById('dropdown-btn');
     const dropdownMenu = document.getElementById('dropdown-menu');
     dropdownBtn?.addEventListener('click', () => {
@@ -145,12 +156,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Map init
-    const map = L.map('map').setView(LINGAYEN_COORDS, 14);
+    const mainMap = L.map('map').setView(LINGAYEN_COORDS, 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    L.marker(LINGAYEN_COORDS).addTo(map).bindPopup("Lingayen, Pangasinan").openPopup();
+    }).addTo(mainMap);
+    L.marker(LINGAYEN_COORDS).addTo(mainMap).bindPopup("Lingayen, Pangasinan").openPopup();
 
     async function geocode(place) {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`);
@@ -159,7 +169,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
     }
 
-    // Route form
     const routeForm = document.getElementById('route-form');
     routeForm?.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -176,8 +185,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function drawRoute(startCoords, endCoords, color='blue') {
-        if (routeControl) map.removeControl(routeControl);
+    function drawRoute(startCoords, endCoords, color = 'blue') {
+        if (routeControl) mainMap.removeControl(routeControl);
+
         routeControl = L.Routing.control({
             waypoints: [L.latLng(startCoords), L.latLng(endCoords)],
             router: L.Routing.osrmv1(),
@@ -185,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
             show: false,
             addWaypoints: false,
             draggableWaypoints: false
-        }).addTo(map);
+        }).addTo(mainMap);
 
         routeControl.on('routesfound', function(e) {
             const r = e.routes[0].summary;
@@ -196,16 +206,90 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Incident Modal
     const modal = document.getElementById("incident-modal");
     const openBtn = document.getElementById("open-incident-modal");
     const closeBtn = document.getElementById("close-incident-modal");
     const incidentForm = document.getElementById('incident-form');
-    openBtn?.addEventListener('click', () => modal.style.display = "block");
-    closeBtn?.addEventListener('click', () => modal.style.display = "none");
-    window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+    
+    let incidentMap = null;
 
-    incidentForm?.addEventListener('submit', async function(e) {
+    function initIncidentMap(lat, lng) {
+    if (incidentMap) {
+        incidentMap.off();
+        incidentMap.remove();
+    }
+
+    incidentMap = L.map('incident-map').setView([lat, lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(incidentMap);
+
+    L.marker([lat, lng]).addTo(incidentMap).bindPopup("Your reported location").openPopup();
+
+    document.getElementById('form-lat').value = lat;
+    document.getElementById('form-lng').value = lng;
+
+    document.getElementById('location-status').innerHTML = `<strong>📍 Pinned:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+}
+
+    function getUserLocationForIncident() {
+        const statusEl = document.getElementById('location-status');
+        statusEl.textContent = "Getting your location...";
+
+        if (!navigator.geolocation) {
+            statusEl.innerHTML = `<span style="color: red;">❌ Geolocation not supported</span>`;
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                initIncidentMap(lat, lng);
+            },
+            (error) => {
+                console.error("Geolocation error:", error);
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        statusEl.innerHTML = `<span style="color: red;">❌ Permission denied</span>`;
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        statusEl.innerHTML = `<span style="color: red;">❌ Location unavailable</span>`;
+                        break;
+                    case error.TIMEOUT:
+                        statusEl.innerHTML = `<span style="color: red;">❌ Request timeout</span>`;
+                        break;
+                    default:
+                        statusEl.innerHTML = `<span style="color: red;">❌ Failed to submit report/span>`;
+                }
+            }
+        );
+    }
+
+    openBtn?.addEventListener('click', () => {
+        modal.style.display = "block";
+        setTimeout(() => getUserLocationForIncident(), 300);
+    });
+
+    closeBtn?.addEventListener('click', () => {
+        modal.style.display = "none";
+        if (incidentMap) {
+            incidentMap.off();
+            incidentMap.remove();
+            incidentMap = null;
+        }
+    });
+
+    window.onclick = e => { 
+        if (e.target === modal) {
+            modal.style.display = "none";
+            if (incidentMap) {
+                incidentMap.off();
+                incidentMap.remove();
+                incidentMap = null;
+            }
+        }
+    };
+
+ incidentForm?.addEventListener('submit', async function(e) {
         e.preventDefault();
         const type = document.getElementById('incident-type').value;
         const description = document.getElementById('incident-description').value.trim();
@@ -236,7 +320,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // NEW Auto Route Switch
     const routeSelector = document.getElementById('route-selector');
     const trafficStatus = document.getElementById('traffic-status');
     const routeCoords = {
@@ -265,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         } catch (err) {
-            
         }
     }, 5000);
 });

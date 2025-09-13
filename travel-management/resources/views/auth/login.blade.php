@@ -50,7 +50,7 @@
                 <a href="{{ route('password.request') }}" class="forgot-password">Forgot Password?</a>
             </div>
 
-            <!-- CAPTCHA Field -->
+
             <div class="form-group">
                 <label>{{ $math_question }} = ?</label>
                 <input type="number" name="captcha_answer" value="{{ old('captcha_answer') }}" required>
@@ -66,13 +66,6 @@
             <p style="text-align:center; margin-top:10px;">
                 Don't have an account? <a href="{{ route('register') }}">Register</a>
             </p>
-
-            <div class="social-logins">
-                <a href="#" class="social-login"><i class="fab fa-facebook"></i></a>
-                <a href="#" class="social-login"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="social-login"><i class="fas fa-globe"></i></a>
-                <a href="#" class="social-login"><i class="fab fa-google"></i></a>
-            </div>
         </form>
     </div>
 
