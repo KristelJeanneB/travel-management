@@ -1,62 +1,71 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Alerts</title>
 
-@section('title', 'Alerts')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-@section('content')
 <style>
     * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f4f4f4;
-        color: #333;
-        line-height: 1.6;
-    }
-    .header {
-        background-color: #86A8CF;
-        height: 56px;
-        display: flex;
-        align-items: center;
-        padding: 0 24px;
-        position: fixed;
-        width: 100%;
-        top: 0;
-        z-index: 1100;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #E1CBD7;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
+        .header {
+            background-color: #86A8CF;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
 
-    .header h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: white;
-    }
-    .dashboard-container {
-        position: relative;
-        width: 95%;
-        max-width: 100%;
-        margin: 20px auto;
-        border-radius: 12px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        display: flex;
-        flex-direction: row;
-    }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
 
-    .sidebar {
+        .dashboard-container {
+            position: relative;
+            width: 95%;
+            max-width: 100%;
+            margin: 80px auto 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            min-height: calc(100vh - 100px); 
+        }
+
+        .sidebar {
         width: 240px;
         background: #86A8CF;
         color: white;
         padding: 20px 0;
-        height: 100%;
+        min-height: 100%;
     }
 
-    .sidebar ul {
+        .sidebar ul {
         list-style: none;
         padding: 0;
         margin: 0;
@@ -85,22 +94,19 @@
         gap: 10px;
     }
 
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background: white;
+            min-height: 100%;
+        }
 
-    .main-content {
-        flex: 1;
-        padding: 30px;
-        background: white;
-        min-height: calc(100vh - 120px);
-    }
-
-
-    header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
-        gap: 12px;
-    }
-
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 12px;
+        }
     .search-bar {
         flex: 1;
         padding: 12px 16px;
@@ -483,4 +489,4 @@ table tbody tr:nth-child(even) {
         }
     };
 </script>
-@endsection
+</html>

@@ -12,7 +12,7 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #E1CBD7;
     display: flex;
     justify-content: center;
     align-items: center;
