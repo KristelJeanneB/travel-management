@@ -14,6 +14,7 @@ use App\Http\Controllers\ViewAdminController;
 use App\Http\Controllers\AlertsController;
 use App\Http\Controllers\AdminIncidentController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController; // ✅ Added this line
 use App\Models\FailedLogin;
 use App\Models\User;
 
@@ -61,8 +62,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/payments/confirm/{id}', [PaymentController::class, 'confirmPaymentById'])->name('admin.payments.confirm');
 });
 
-// Settings
-Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+// ✅ Profile/Account Settings (Authenticated)
+Route::middleware('auth')->group(function () {
+    Route::get('/settings', [ProfileController::class, 'index'])->name('settings');
+    Route::post('/settings/update', [ProfileController::class, 'update'])->name('settings.update');
+    Route::post('/settings/toggle-theme', [ProfileController::class, 'toggleTheme'])->name('settings.toggleTheme');
+});
 
 // Incident Reporting (User)
 Route::get('/incident', [IncidentController::class, 'index']);

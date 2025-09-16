@@ -30,9 +30,10 @@
                 </a>
 
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">@csrf</form>
+                <!--
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt"></i> Log Out
-                </a>
+                        <i class="fas fa-sign-out-alt"></i> Log Out
+                </a>-->
             </div>
         </div>
     </nav>
