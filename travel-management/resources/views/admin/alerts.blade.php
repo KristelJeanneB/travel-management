@@ -6,6 +6,12 @@
     <title>Admin Alerts</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/mi8+tsdM9Gmf5K+M=" crossorigin="" />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
 
 <style>
     * {
@@ -352,16 +358,18 @@ table tbody tr:nth-child(even) {
             <h3>Incident Reports</h3>
             <button class="close-btn" id="closeIncidentModal">&times;</button>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody id="incidentTableBody"></tbody>
-        </table>
+       <table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Location (Coordinates)</th>
+            <th>Full Address</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody id="incidentTableBody"></tbody>
+</table>
     </div>
 </div>
 
@@ -436,32 +444,67 @@ table tbody tr:nth-child(even) {
         document.getElementById('failedAttemptsModal').style.display = 'none';
     };
 
-    document.getElementById('accidentReportsBtn').addEventListener('click', () => {
-        fetch('{{ route("incidents.fetch") }}')
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.getElementById('incidentTableBody');
-                tbody.innerHTML = '';
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No reports found</td></tr>';
-                } else {
-                    data.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${item.title || 'N/A'}</td>
-                            <td>${item.description || 'N/A'}</td>
-                            <td>${new Date(item.created_at).toLocaleString()}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+  document.getElementById('accidentReportsBtn').addEventListener('click', () => {
+    console.log("Fetching incidents...");
+
+    fetch('{{ route("incidents.fetch") }}')
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log("Fetched data:", data); // 🔥 Check this!
+            const tbody = document.getElementById('incidentTableBody');
+            tbody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No reports found</td></tr>';
+                return;
+            }
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+
+                const coordsText = item.lat && item.lng
+                    ? `${parseFloat(item.lat).toFixed(6)}, ${parseFloat(item.lng).toFixed(6)}`
+                    : 'Not available';
+
+                let addressText = 'Address unavailable';
+                if (item.lat && item.lng) {
+                    try {
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${item.lat}&lon=${item.lng}`)
+                            .then(res => res.json())
+                            .then(geoData => {
+                                const addrCell = tr.cells[3];
+                                addrCell.innerHTML = geoData.display_name || 'Unknown location';
+                            })
+                            .catch(err => {
+                                console.error("Geocode error:", err);
+                                const addrCell = tr.cells[3];
+                                addrCell.innerHTML = 'Failed to load';
+                            });
+                    } catch (err) {
+                        console.error("Fetch failed:", err);
+                    }
                 }
-                document.getElementById('incidentModal').style.display = 'block';
-            })
-            .catch(error => {
-                alert('Failed to load incident reports.');
-                console.error(error);
+
+                tr.innerHTML = `
+                    <td>${item.title || 'N/A'}</td>
+                    <td>${item.description || 'N/A'}</td>
+                    <td><code>${coordsText}</code></td>
+                    <td style="font-size:13px; color:#555;">${addressText}</td>
+                    <td>${new Date(item.created_at).toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
             });
-    });
+
+            document.getElementById('incidentModal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error("Fetch error:", error);
+            alert('❌ Failed to load incidents. Check console.');
+        });
+});
 
     document.getElementById('closeIncidentModal').onclick = () => {
         document.getElementById('incidentModal').style.display = 'none';
@@ -488,5 +531,15 @@ table tbody tr:nth-child(even) {
             event.target.style.display = 'none';
         }
     };
+
+    async function getAddress(lat, lng) {
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+        const data = await res.json();
+        return data.display_name || "Unknown location";
+    } catch (err) {
+        return "Address lookup failed";
+    }
+}
 </script>
 </html>

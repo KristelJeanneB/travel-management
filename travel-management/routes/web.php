@@ -73,7 +73,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/incident', [IncidentController::class, 'index']);
 Route::get('/incident/create', [IncidentController::class, 'create'])->name('incident.create');
 Route::post('/incident', [IncidentController::class, 'store'])->name('incident.store');
-Route::post('/incidents', [IncidentController::class, 'store'])->name('incident.store');
 
 // Incident Reporting (Admin)
 Route::get('/admin/incident', [IncidentController::class, 'index'])->name('admin.incident');
@@ -81,10 +80,12 @@ Route::get('/admin/incident/{id}', [IncidentController::class, 'show'])->name('a
 Route::get('/admin/incidents', [AdminIncidentController::class, 'index'])->name('admin.incident');
 Route::get('/admin/incidents/fetch', [AdminIncidentController::class, 'fetchIncidents'])->name('admin.incidents.fetch');
 
-// API route to fetch incidents (used in dashboard JS)
+// API route to fetch incidents (used in dashboard JS) – includes location
 Route::get('/incidents/fetch', function () {
-    return \App\Models\Incident::select('title', 'description', 'created_at')->get();
+    return \App\Models\Incident::select('title', 'description', 'lat', 'lng', 'created_at')->get();
 })->name('incidents.fetch');
+
+Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
 
 // Map View
 Route::get('/map', [MapController::class, 'show'])->name('map');

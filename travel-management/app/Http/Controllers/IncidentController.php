@@ -16,34 +16,47 @@ class IncidentController extends Controller
         return view('incident.index', compact('incidents'));
     }
 
-    /**
-     * Show the form for creating a new incident.
-     */
     public function create()
     {
         return view('incident.create');
     }
 
-    /**
-     * Store a newly created incident in storage.
-     */
+ 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'type' => 'required|string|in:accident,traffic_jam,road_closure,hazard',
-            'description' => 'nullable|string',
-            'lat' => 'required|numeric',
-            'lng' => 'required|numeric',
+            'description' => 'nullable|string|max:1000',
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
         ]);
 
-        Incident::create([
-            'title' => ucfirst(str_replace('_', ' ', $request->type)),
-            'description' => $request->description,
-            'lat' => $request->lat,
-            'lng' => $request->lng,
+        $incident = Incident::create([
+            'title' => ucfirst(str_replace('_', ' ', $validated['type'])),
+            'description' => $validated['description'],
+            'lat' => $validated['lat'],
+            'lng' => $validated['lng'],
             'status' => 'reported',
         ]);
 
-        return response()->json(['message' => 'Incident reported successfully!']);
+        return response()->json([
+            'message' => 'Incident reported successfully!',
+            'incident' => $incident
+        ], 201);
+    }
+
+
+    public function fetch()
+    {
+        $incidents = Incident::latest()->get([
+            'id',
+            'title',
+            'description',
+            'lat',
+            'lng',
+            'created_at'
+        ]);
+
+        return response()->json($incidents);
     }
 }
