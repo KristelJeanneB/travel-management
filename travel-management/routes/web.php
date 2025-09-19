@@ -44,6 +44,20 @@ Route::get('/home', function () {
     return view('home');
 })->name('home')->middleware('auth');
 
+// Admin: Get total user count
+Route::get('/admin/users/count', function () {
+    return response()->json(['count' => User::count()]);
+})->name('admin.users.count');
+
+// Admin: Get all users
+Route::get('/admin/users/all', function () {
+    return response()->json(User::select('id', 'name', 'email', 'is_admin', 'created_at')->orderBy('created_at', 'desc')->get());
+})->name('admin.users.all');
+
+Route::delete('/admin/users/{id}', [App\Http\Controllers\Admin\DashboardController::class, 'deleteUser'])
+    ->name('admin.users.delete')
+    ->middleware('auth');
+
 // Admin Routes (Authenticated)
 Route::middleware(['auth'])->group(function () {
     Route::get('/homeAdmin', [HomeAdminController::class, 'index'])->name('homeAdmin');

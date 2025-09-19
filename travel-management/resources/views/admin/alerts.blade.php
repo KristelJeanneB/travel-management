@@ -321,10 +321,10 @@ table tbody tr:nth-child(even) {
                 </div>
 
             
-                <div class="card" id="accidentReportsBtn">
+                <!--<div class="card" id="accidentReportsBtn">
                     <p>Accident Reports</p>
                     <small>User Reports</small>
-                </div>
+                </div>-->
             </div>
         </section>
     </div>
@@ -352,7 +352,7 @@ table tbody tr:nth-child(even) {
     </div>
 </div>
 
-<div id="incidentModal" class="modal">
+<!--<div id="incidentModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Incident Reports</h3>
@@ -370,7 +370,7 @@ table tbody tr:nth-child(even) {
     </thead>
     <tbody id="incidentTableBody"></tbody>
 </table>
-    </div>
+    </div>-->
 </div>
 
 <div id="manageUsersModal" class="modal">
@@ -380,31 +380,17 @@ table tbody tr:nth-child(even) {
             <button class="close-btn" id="closeManageUsersModal">&times;</button>
         </div>
         <table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Registered</th>
-        </tr>
-    </thead>
-    <tbody id="usersTableBody">
-    @if(isset($allUsers) && $allUsers->isNotEmpty())
-        @foreach($allUsers as $user)
-            <tr>
-                <td>{{ $user->name }}</td>
-                <td>{{ $user->email }}</td>
-                <td>{{ $user->is_admin ? 'Admin' : 'User' }}</td>
-                <td>{{ $user->created_at->format('M d, Y') }}</td>
-            </tr>
-        @endforeach
-    @else
-        <tr>
-            <td colspan="4" style="text-align:center; color:#777;">No users found</td>
-        </tr>
-    @endif
-</tbody>
-</table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Registered</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+        </table>
     </div>
 </div>
 
@@ -436,110 +422,214 @@ table tbody tr:nth-child(even) {
 </form>
 
 <script>
-    document.getElementById('failedAttemptsBtn').addEventListener('click', () => {
-        document.getElementById('failedAttemptsModal').style.display = 'block';
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    const failedAttemptsBtn = document.getElementById('failedAttemptsBtn');
+    const accidentReportsBtn = document.getElementById('accidentReportsBtn');
+    const manageUsersBtn = document.getElementById('manageUsersBtn');
+    const newUsersBtn = document.getElementById('newUsersBtn');
 
-    document.getElementById('closeFailedAttemptsModal').onclick = () => {
-        document.getElementById('failedAttemptsModal').style.display = 'none';
+    const failedAttemptsModal = document.getElementById('failedAttemptsModal');
+    const incidentModal = document.getElementById('incidentModal');
+    const manageUsersModal = document.getElementById('manageUsersModal');
+    const newUsersModal = document.getElementById('newUsersModal');
+
+    const closeFailedAttemptsModal = document.getElementById('closeFailedAttemptsModal');
+    const closeIncidentModal = document.getElementById('closeIncidentModal');
+    const closeManageUsersModal = document.getElementById('closeManageUsersModal');
+    const closeNewUsersModal = document.getElementById('closeNewUsersModal');
+
+    const incidentTableBody = document.getElementById('incidentTableBody');
+    const usersTableBody = document.getElementById('usersTableBody');
+
+    // === MODAL OPEN/CLOSE HANDLERS ===
+    failedAttemptsBtn?.addEventListener('click', () => failedAttemptsModal.style.display = 'block');
+    closeFailedAttemptsModal?.addEventListener('click', () => failedAttemptsModal.style.display = 'none');
+
+    accidentReportsBtn?.addEventListener('click', loadIncidents);
+    closeIncidentModal?.addEventListener('click', () => incidentModal.style.display = 'none');
+
+    manageUsersBtn?.addEventListener('click', loadAllUsers);
+    closeManageUsersModal?.addEventListener('click', () => manageUsersModal.style.display = 'none');
+
+    newUsersBtn?.addEventListener('click', () => newUsersModal.style.display = 'block');
+    closeNewUsersModal?.addEventListener('click', () => newUsersModal.style.display = 'none');
+
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
     };
 
-  document.getElementById('accidentReportsBtn').addEventListener('click', () => {
-    console.log("Fetching incidents...");
+    // === LOAD INCIDENTS ===
+    function loadIncidents() {
+        console.log("🔍 Loading incidents...");
 
-    fetch('{{ route("incidents.fetch") }}')
+        // Show loading
+        incidentTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+
+        fetch('{{ route("incidents.fetch") }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+        })
         .then(response => {
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             return response.json();
         })
         .then(data => {
-            console.log("Fetched data:", data); // 🔥 Check this!
-            const tbody = document.getElementById('incidentTableBody');
-            tbody.innerHTML = '';
+            console.log("📥 Fetched incidents:", data);
 
-            if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No reports found</td></tr>';
+            incidentTableBody.innerHTML = '';
+
+            // Handle no data
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                incidentTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No reports found</td></tr>';
+                incidentModal.style.display = 'block';
                 return;
             }
 
+            // Process each incident
             data.forEach(item => {
                 const tr = document.createElement('tr');
 
-                const coordsText = item.lat && item.lng
-                    ? `${parseFloat(item.lat).toFixed(6)}, ${parseFloat(item.lng).toFixed(6)}`
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lng);
+                const coords = !isNaN(lat) && !isNaN(lng)
+                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
                     : 'Not available';
-
-                let addressText = 'Address unavailable';
-                if (item.lat && item.lng) {
-                    try {
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${item.lat}&lon=${item.lng}`)
-                            .then(res => res.json())
-                            .then(geoData => {
-                                const addrCell = tr.cells[3];
-                                addrCell.innerHTML = geoData.display_name || 'Unknown location';
-                            })
-                            .catch(err => {
-                                console.error("Geocode error:", err);
-                                const addrCell = tr.cells[3];
-                                addrCell.innerHTML = 'Failed to load';
-                            });
-                    } catch (err) {
-                        console.error("Fetch failed:", err);
-                    }
-                }
 
                 tr.innerHTML = `
                     <td>${item.title || 'N/A'}</td>
                     <td>${item.description || 'N/A'}</td>
-                    <td><code>${coordsText}</code></td>
-                    <td style="font-size:13px; color:#555;">${addressText}</td>
+                    <td><code>${coords}</code></td>
+                    <td style="font-size:13px; color:#555;">Loading address...</td>
                     <td>${new Date(item.created_at).toLocaleString()}</td>
                 `;
-                tbody.appendChild(tr);
+                incidentTableBody.appendChild(tr);
+
+                // Only try reverse geocoding if valid coordinates
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    reverseGeocode(lat, lng)
+                        .then(address => {
+                            if (tr.cells[3]) {
+                                tr.cells[3].textContent = address.length > 100 
+                                    ? address.substring(0, 100) + '...' 
+                                    : address;
+                            }
+                        })
+                        .catch(err => {
+                            console.warn("Geocode failed:", err);
+                            if (tr.cells[3]) tr.cells[3].textContent = "Address unavailable";
+                        });
+                } else {
+                    tr.cells[3].textContent = "No location";
+                }
             });
 
-            document.getElementById('incidentModal').style.display = 'block';
+            incidentModal.style.display = 'block';
         })
-        .catch(error => {
-            console.error("Fetch error:", error);
-            alert('❌ Failed to load incidents. Check console.');
+        .catch(err => {
+            console.error("❌ Failed to load incidents:", err);
+            incidentTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center; color:red;">
+                        Error loading data.<br>
+                        <small>Check console for details</small>
+                    </td>
+                </tr>`;
+            incidentModal.style.display = 'block';
         });
-});
-
-    document.getElementById('closeIncidentModal').onclick = () => {
-        document.getElementById('incidentModal').style.display = 'none';
-    };
-
-    document.getElementById('manageUsersBtn').addEventListener('click', () => {
-        document.getElementById('manageUsersModal').style.display = 'block';
-    });
-
-    document.getElementById('closeManageUsersModal').onclick = () => {
-        document.getElementById('manageUsersModal').style.display = 'none';
-    };
-
-    document.getElementById('newUsersBtn').addEventListener('click', () => {
-        document.getElementById('newUsersModal').style.display = 'block';
-    });
-
-    document.getElementById('closeNewUsersModal').onclick = () => {
-        document.getElementById('newUsersModal').style.display = 'none';
-    };
-
-    window.onclick = function(event) {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-        }
-    };
-
-    async function getAddress(lat, lng) {
-    try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-        const data = await res.json();
-        return data.display_name || "Unknown location";
-    } catch (err) {
-        return "Address lookup failed";
     }
-}
+
+    // === LOAD ALL USERS ===
+    function loadAllUsers() {
+        fetch('{{ route("admin.users.all") }}')
+            .then(r => r.json())
+            .then(users => {
+                usersTableBody.innerHTML = '';
+                if (!users.length) {
+                    usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found</td></tr>';
+                    return;
+                }
+
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.dataset.id = user.id;
+                    tr.innerHTML = `
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.is_admin ? 'Admin' : 'User'}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            ${user.is_admin ? '—' : `<button class="remove-user-btn" style="background:red; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Remove</button>`}
+                        </td>
+                    `;
+                    usersTableBody.appendChild(tr);
+                });
+
+                document.querySelectorAll('.remove-user-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const row = this.closest('tr');
+                        const userId = row.dataset.id;
+                        const userName = row.cells[0].textContent;
+
+                        if (confirm(`Are you sure you want to delete "${userName}"?`)) {
+                            deleteUser(userId, row);
+                        }
+                    });
+                });
+
+                manageUsersModal.style.display = 'block';
+            })
+            .catch(err => {
+                console.error('Fetch users error:', err);
+                alert('Failed to load users.');
+            });
+    }
+
+    // === DELETE USER ===
+    function deleteUser(id, row) {
+        fetch(`{{ url('/admin/users') }}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                row.remove();
+                alert(data.message || 'User deleted.');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error('Delete error:', err);
+            alert('Network error. Could not delete user.');
+        });
+    }
+
+    // === REVERSE GEOCODING UTILITY ===
+    async function reverseGeocode(lat, lng) {
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+                { mode: 'cors' }
+            );
+            if (!res.ok) throw new Error(`Geocode failed: ${res.status}`);
+            const data = await res.json();
+            return data.display_name || 'Unknown location';
+        } catch (err) {
+            console.error("Reverse geocode error:", err);
+            return 'Address unavailable';
+        }
+    }
+});
 </script>
 </html>

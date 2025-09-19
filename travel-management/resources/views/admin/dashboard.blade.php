@@ -6,9 +6,8 @@
     <title>Admin Dashboard</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
 <style>
-    * {
+   * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -187,6 +186,76 @@
         margin-top: 6px;
     }
 
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: white;
+    margin: 8% auto;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    color: #333;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #007bff;
+    font-weight: 700;
+}
+
+.close-btn {
+    font-size: 26px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+    color: #007bff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+table thead tr {
+    background-color: #007bff;
+    color: white;
+}
+
+table th, table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
     #payments-modal {
         display: none;
         position: fixed;
@@ -320,18 +389,17 @@
         <section class="overview" aria-labelledby="overview-heading">
             <h2 id="overview-heading">Dashboard Overview</h2>
             <div class="card-group">
-                <div class="card" role="article" tabindex="0">
-                    <p>Data summary</p>
-                </div>
-                <div class="card" role="article" tabindex="0">
-                    <p>Traffic Overview</p>
-                    <small>An overview of website traffic</small>
-                </div>
-                <div class="card" role="article" tabindex="0">
-                    <p>Total Visits</p>
+                <div class="card" id="totalUsersCard" role="button" tabindex="0" aria-haspopup="dialog">
+                    <p>Total Users</p>
+                    <small id="userCount">Loading...</small>
                 </div>
                 <div class="card" id="payments-card" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="payments-modal" aria-label="View Payments">
                     <p>Payments</p>
+                    <small>User Payments</small>
+                </div>
+                <div class="card" id="accidentReportsBtn">
+                    <p>Accident Reports</p>
+                    <small>User Reports</small>
                 </div>
             </div>
         </section>
@@ -348,131 +416,348 @@
     </div>
 </div>
 
+<!-- ALL USERS MODAL -->
+<div id="usersModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" id="closeUsersModal">&times;</button>
+        <h2>All Users</h2>
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- INCIDENT REPORTS MODAL -->
+<div id="incidentModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" id="closeIncidentModal">&times;</button>
+        <h2>Incident Reports</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Coords</th>
+                    <th>Address</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="incidentTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const paymentsCard = document.getElementById('payments-card');
-        const paymentsModal = document.getElementById('payments-modal');
-        const closeModalBtn = document.getElementById('close-modal');
-        const paymentsContent = document.getElementById('payments-content');
+document.addEventListener('DOMContentLoaded', () => {
+    const paymentsCard = document.getElementById('payments-card');
+    const totalUsersCard = document.getElementById('totalUsersCard');
+    const usersModal = document.getElementById('usersModal');
+    const paymentsModal = document.getElementById('payments-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const closeUsersModalBtn = document.getElementById('closeUsersModal');
+    const paymentsContent = document.getElementById('payments-content');
+    const usersTableBody = document.querySelector('#usersTable tbody');
+    const userCountEl = document.getElementById('userCount');
 
-        const openModal = () => {
-            paymentsModal.style.display = 'flex';
-            loadPayments();
-        };
+    const accidentReportsBtn = document.getElementById('accidentReportsBtn');
+    const incidentModal = document.getElementById('incidentModal');
+    const closeIncidentModal = document.getElementById('closeIncidentModal');
+    const incidentTableBody = document.getElementById('incidentTableBody');
 
-        const closeModal = () => {
-            paymentsModal.style.display = 'none';
-            paymentsContent.innerHTML = '<p>Loading payments...</p>';
-        };
+    accidentReportsBtn?.addEventListener('click', loadIncidents);
+    closeIncidentModal?.addEventListener('click', () => incidentModal.style.display = 'none');
 
-        function loadPayments() {
-            fetch('{{ route('admin.payments.data') }}', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.length) {
-                    paymentsContent.innerHTML = '<p>No payments found.</p>';
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    };
+
+    // === LOAD INCIDENTS ===
+    function loadIncidents() {
+        console.log("🔍 Loading incidents...");
+
+        // Show loading
+        incidentTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+
+        fetch('{{ route("incidents.fetch") }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("📥 Fetched incidents:", data);
+
+            incidentTableBody.innerHTML = '';
+
+            // Handle no data
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                incidentTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No reports found</td></tr>';
+                incidentModal.style.display = 'block';
+                return;
+            }
+
+            // Process each incident
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lng);
+                const coords = !isNaN(lat) && !isNaN(lng)
+                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                    : 'Not available';
+
+                tr.innerHTML = `
+                    <td>${item.title || 'N/A'}</td>
+                    <td>${item.description || 'N/A'}</td>
+                    <td><code>${coords}</code></td>
+                    <td style="font-size:13px; color:#555;">Loading address...</td>
+                    <td>${new Date(item.created_at).toLocaleString()}</td>
+                `;
+                incidentTableBody.appendChild(tr);
+
+                // Only try reverse geocoding if valid coordinates
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    reverseGeocode(lat, lng)
+                        .then(address => {
+                            if (tr.cells[3]) {
+                                tr.cells[3].textContent = address.length > 100 
+                                    ? address.substring(0, 100) + '...' 
+                                    : address;
+                            }
+                        })
+                        .catch(err => {
+                            console.warn("Geocode failed:", err);
+                            if (tr.cells[3]) tr.cells[3].textContent = "Address unavailable";
+                        });
+                } else {
+                    tr.cells[3].textContent = "No location";
+                }
+            });
+
+            incidentModal.style.display = 'block';
+        })
+        .catch(err => {
+            console.error("❌ Failed to load incidents:", err);
+            incidentTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center; color:red;">
+                        Error loading data.<br>
+                        <small>Check console for details</small>
+                    </td>
+                </tr>`;
+            incidentModal.style.display = 'block';
+        });
+    }
+
+    // === LOAD USER COUNT ===
+    fetch('{{ route("admin.users.count") }}')
+        .then(res => res.json())
+        .then(data => {
+            userCountEl.textContent = data.count;
+        })
+        .catch(err => {
+            console.error('Failed to load user count:', err);
+            userCountEl.textContent = 'Error';
+        });
+
+    // === OPEN USERS MODAL ===
+    totalUsersCard.addEventListener('click', () => {
+        usersModal.style.display = 'flex';
+        loadAllUsers();
+    });
+
+    totalUsersCard.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            totalUsersCard.click();
+        }
+    });
+
+    function loadAllUsers() {
+        fetch('{{ route("admin.users.all") }}')
+            .then(res => res.json())
+            .then(users => {
+                usersTableBody.innerHTML = '';
+                if (users.length === 0) {
+                    usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found</td></tr>';
                     return;
                 }
 
-                let tableHtml = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>User</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                data.forEach(payment => {
-                    tableHtml += `
-                        <tr data-id="${payment.id}">
-                            <td>${payment.id}</td>
-                            <td>${payment.user_name}</td>
-                            <td>${payment.amount}</td>
-                            <td class="status">${payment.status}</td>
-                            <td>
-                                ${payment.status === 'pending' 
-                                    ? `<button class="confirm-btn">Confirm</button>` 
-                                    : ''}
-                            </td>
-                        </tr>
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.is_admin ? 'Admin' : 'User'}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
                     `;
-                });
-
-                tableHtml += `</tbody></table>`;
-                paymentsContent.innerHTML = tableHtml;
-
-                document.querySelectorAll('.confirm-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const row = btn.closest('tr');
-                        const paymentId = row.dataset.id;
-                        btn.disabled = true;
-                        btn.textContent = 'Confirming...';
-
-                        fetch(`{{ url('admin/payments/confirm') }}/${paymentId}`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                        })
-                        .then(res => res.json())
-                        .then(resData => {
-                            if (resData.success) {
-                                row.querySelector('.status').textContent = 'confirmed';
-                                btn.remove();
-                            } else {
-                                alert('Failed to confirm payment.');
-                                btn.disabled = false;
-                                btn.textContent = 'Confirm';
-                            }
-                        })
-                        .catch(() => {
-                            alert('Error confirming payment.');
-                            btn.disabled = false;
-                            btn.textContent = 'Confirm';
-                        });
-                    });
+                    usersTableBody.appendChild(tr);
                 });
             })
             .catch(() => {
-                paymentsContent.innerHTML = '<p>Failed to load payments.</p>';
+                usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load users</td></tr>';
             });
-        }
+    }
 
-        paymentsCard.addEventListener('click', openModal);
-        paymentsCard.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openModal();
-            }
-        });
-
-        closeModalBtn.addEventListener('click', closeModal);
-        window.addEventListener('click', e => {
-            if (e.target === paymentsModal) closeModal();
-        });
-
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && paymentsModal.style.display === 'flex') {
-                closeModal();
-            }
-        });
+    // === CLOSE MODALS ===
+    closeUsersModalBtn.addEventListener('click', () => {
+        usersModal.style.display = 'none';
     });
+
+    closeModalBtn.addEventListener('click', () => {
+        paymentsModal.style.display = 'none';
+        paymentsContent.innerHTML = '<p>Loading payments...</p>';
+    });
+
+    window.addEventListener('click', e => {
+        if (e.target === usersModal) usersModal.style.display = 'none';
+        if (e.target === paymentsModal) paymentsModal.style.display = 'none';
+    });
+
+    window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            if (usersModal.style.display === 'flex') usersModal.style.display = 'none';
+            if (paymentsModal.style.display === 'flex') paymentsModal.style.display = 'none';
+        }
+    });
+
+    // === PAYMENTS MODAL (existing logic) ===
+    paymentsCard.addEventListener('click', () => {
+        paymentsModal.style.display = 'flex';
+        loadPayments();
+    });
+
+    paymentsCard.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            paymentsCard.click();
+        }
+    });
+
+    function loadPayments() {
+        fetch('{{ route('admin.payments.data') }}', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.length) {
+                paymentsContent.innerHTML = '<p>No payments found.</p>';
+                return;
+            }
+
+            let tableHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(payment => {
+                tableHtml += `
+                    <tr data-id="${payment.id}">
+                        <td>${payment.id}</td>
+                        <td>${payment.user_name}</td>
+                        <td>${payment.amount}</td>
+                        <td class="status">${payment.status}</td>
+                        <td>
+                            ${payment.status === 'pending' 
+                                ? `<button class="confirm-btn">Confirm</button>` 
+                                : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += `</tbody></table>`;
+            paymentsContent.innerHTML = tableHtml;
+
+            document.querySelectorAll('.confirm-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const row = btn.closest('tr');
+                    const paymentId = row.dataset.id;
+                    btn.disabled = true;
+                    btn.textContent = 'Confirming...';
+
+                    fetch(`{{ url('admin/payments/confirm') }}/${paymentId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    })
+                    .then(res => res.json())
+                    .then(resData => {
+                        if (resData.success) {
+                            row.querySelector('.status').textContent = 'confirmed';
+                            btn.remove();
+                        } else {
+                            alert('Failed to confirm payment.');
+                            btn.disabled = false;
+                            btn.textContent = 'Confirm';
+                        }
+                    })
+                    .catch(() => {
+                        alert('Error confirming payment.');
+                        btn.disabled = false;
+                        btn.textContent = 'Confirm';
+                    });
+                });
+            });
+        })
+        .catch(() => {
+            paymentsContent.innerHTML = '<p>Failed to load payments.</p>';
+        });
+    }
+
+     // === REVERSE GEOCODING UTILITY ===
+    async function reverseGeocode(lat, lng) {
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+                { mode: 'cors' }
+            );
+            if (!res.ok) throw new Error(`Geocode failed: ${res.status}`);
+            const data = await res.json();
+            return data.display_name || 'Unknown location';
+        } catch (err) {
+            console.error("Reverse geocode error:", err);
+            return 'Address unavailable';
+        }
+    }
+});
 </script>
 </html>
