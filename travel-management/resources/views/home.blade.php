@@ -29,9 +29,9 @@ HOME
           <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
             @csrf
           </form>
-          <a href="#" aria-label="Log Out" role="menuitem" tabindex="0" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+          <!---<a href="#" aria-label="Log Out" role="menuitem" tabindex="0" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="fas fa-sign-out-alt"></i> Log Out
-          </a>
+          </a> -->
         </div>
       </div>
     </nav>
