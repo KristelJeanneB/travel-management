@@ -100,6 +100,9 @@ Route::get('/incidents/fetch', function () {
 })->name('incidents.fetch');
 
 Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
+Route::delete('/incidents/{id}', [App\Http\Controllers\IncidentController::class, 'destroy'])
+    ->name('incident.destroy')
+    ->middleware('auth');
 
 // Map View
 Route::get('/map', [MapController::class, 'show'])->name('map');

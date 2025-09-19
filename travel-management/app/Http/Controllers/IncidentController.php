@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Incident;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class IncidentController extends Controller
 {
@@ -16,13 +17,18 @@ class IncidentController extends Controller
         return view('incident.index', compact('incidents'));
     }
 
+    /**
+     * Show the form for creating a new incident.
+     */
     public function create()
     {
         return view('incident.create');
     }
 
- 
-    public function store(Request $request)
+    /**
+     * Store a newly created incident in storage.
+     */
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'type' => 'required|string|in:accident,traffic_jam,road_closure,hazard',
@@ -45,8 +51,10 @@ class IncidentController extends Controller
         ], 201);
     }
 
-
-    public function fetch()
+    /**
+     * Fetch all incidents (for admin dashboard)
+     */
+    public function fetch(): JsonResponse
     {
         $incidents = Incident::latest()->get([
             'id',
@@ -58,5 +66,16 @@ class IncidentController extends Controller
         ]);
 
         return response()->json($incidents);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $incident = Incident::findOrFail($id);
+        $incident->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Incident removed successfully.'
+        ]);
     }
 }

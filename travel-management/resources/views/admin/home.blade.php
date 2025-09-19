@@ -449,6 +449,7 @@ table tbody tr:nth-child(even) {
                     <th>Coords</th>
                     <th>Address</th>
                     <th>Date</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="incidentTableBody"></tbody>
@@ -488,88 +489,130 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === LOAD INCIDENTS ===
     function loadIncidents() {
-        console.log("🔍 Loading incidents...");
+    console.log("🔍 Loading incidents...");
 
-        // Show loading
-        incidentTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+    incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
 
-        fetch('{{ route("incidents.fetch") }}', {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    fetch('{{ route("incidents.fetch") }}', {
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        console.log("📥 Fetched incidents:", data);
+        incidentTableBody.innerHTML = '';
+
+        if (!data.length) {
+            incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No reports found</td></tr>';
+            incidentModal.style.display = 'block';
+            return;
+        }
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.dataset.id = item.id;
+
+            const lat = parseFloat(item.lat);
+            const lng = parseFloat(item.lng);
+            const coords = !isNaN(lat) && !isNaN(lng)
+                ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                : 'Not available';
+
+            tr.innerHTML = `
+                <td>${item.title || 'N/A'}</td>
+                <td>${item.description || 'N/A'}</td>
+                <td><code>${coords}</code></td>
+                <td style="font-size:13px; color:#555;">Loading...</td>
+                <td>${new Date(item.created_at).toLocaleString()}</td>
+                <td>
+                <button class="remove-btn" style="
+                    background:green;
+                    color:white;
+                    border:none;
+                    padding:6px 10px;
+                    border-radius:4px;
+                    cursor:pointer;
+                    font-size:13px;
+                    font-weight:bold;">
+                    ✓ Resolve
+                </button>
+                </td>
+            `;
+            incidentTableBody.appendChild(tr);
+
+            // Reverse geocode
+            if (lat && lng) {
+                reverseGeocode(lat, lng).then(addr => {
+                    if (tr.cells[3]) tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
+                });
+            } else {
+                tr.cells[3].textContent = "No location";
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log("📥 Fetched incidents:", data);
+        });
 
-            incidentTableBody.innerHTML = '';
+        document.querySelectorAll('.checked-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const row = this.closest('tr');
+        const id = row.dataset.id;
 
-            // Handle no data
-            if (!data || !Array.isArray(data) || data.length === 0) {
-                incidentTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No reports found</td></tr>';
-                incidentModal.style.display = 'block';
-                return;
-            }
+        // Visual feedback
+        if (this.textContent.trim() === '✓ Checked') {
+            this.textContent = '✔️ Resolved';
+            this.style.background = '#17a2b8';
+            this.disabled = true;
+        }
+    });
+});
+        // Attach remove handlers
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const row = this.closest('tr');
+                const id = row.dataset.id;
+                const type = row.cells[0].textContent;
 
-            // Process each incident
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-
-                const lat = parseFloat(item.lat);
-                const lng = parseFloat(item.lng);
-                const coords = !isNaN(lat) && !isNaN(lng)
-                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-                    : 'Not available';
-
-                tr.innerHTML = `
-                    <td>${item.title || 'N/A'}</td>
-                    <td>${item.description || 'N/A'}</td>
-                    <td><code>${coords}</code></td>
-                    <td style="font-size:13px; color:#555;">Loading address...</td>
-                    <td>${new Date(item.created_at).toLocaleString()}</td>
-                `;
-                incidentTableBody.appendChild(tr);
-
-                // Only try reverse geocoding if valid coordinates
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    reverseGeocode(lat, lng)
-                        .then(address => {
-                            if (tr.cells[3]) {
-                                tr.cells[3].textContent = address.length > 100 
-                                    ? address.substring(0, 100) + '...' 
-                                    : address;
-                            }
-                        })
-                        .catch(err => {
-                            console.warn("Geocode failed:", err);
-                            if (tr.cells[3]) tr.cells[3].textContent = "Address unavailable";
-                        });
-                } else {
-                    tr.cells[3].textContent = "No location";
+                if (confirm(`Are you sure you this was reported? "${type}" report?`)) {
+                    deleteIncident(id, row);
                 }
             });
-
-            incidentModal.style.display = 'block';
-        })
-        .catch(err => {
-            console.error("❌ Failed to load incidents:", err);
-            incidentTableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" style="text-align:center; color:red;">
-                        Error loading data.<br>
-                        <small>Check console for details</small>
-                    </td>
-                </tr>`;
-            incidentModal.style.display = 'block';
         });
-    }
+
+        incidentModal.style.display = 'block';
+    })
+    .catch(err => {
+        console.error("❌ Failed to load incidents:", err);
+        incidentTableBody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center; color:red;">
+                    Error loading data.<br>
+                    <small>Check console</small>
+                </td>
+            </tr>`;
+        incidentModal.style.display = 'block';
+    });
+}
+
+// === DELETE INCIDENT ===
+function deleteIncident(id, row) {
+    fetch(`{{ url('/incidents') }}/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            row.remove();
+            alert(data.message || 'Report removed.');
+        } else {
+            alert('Failed: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error('Delete error:', err);
+        alert('Network error. Could not remove report.');
+    });
+}
 
     // === LOAD USER COUNT ===
     fetch('{{ route("admin.users.count") }}')
