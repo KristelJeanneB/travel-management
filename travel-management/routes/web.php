@@ -19,6 +19,7 @@ use App\Models\FailedLogin;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Factory;
+use App\Http\Controllers\UserController;
 
 Route::get('/test-firebase', function () {
     try {
@@ -127,3 +128,5 @@ Route::get('/premium', function () {
 // Payment Routes (User payment submission form)
 Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment');
 Route::post('/payment/confirm', [PaymentController::class, 'confirmPayment'])->name('payment.confirm');
+
+Route::get('/migrate-users', [UserController::class, 'migrateUsers']);
