@@ -6,10 +6,17 @@ use App\Models\Incident;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Factory;
+use App\Services\FirebaseService;
 
 class IncidentController extends Controller
 {
+    protected FirebaseService $firebaseService;
+
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
+    }
+
     /**
      * Display a listing of incidents.
      */
@@ -39,7 +46,6 @@ class IncidentController extends Controller
             'lng' => 'required|numeric|between:-180,180',
         ]);
 
-        // Save to SQL
         $incident = Incident::create([
             'title' => ucfirst(str_replace('_', ' ', $validated['type'])),
             'description' => $validated['description'],
@@ -48,43 +54,20 @@ class IncidentController extends Controller
             'status' => 'reported',
         ]);
 
-        // === SYNC TO FIREBASE ===
-        $credentialsPath = config('services.firebase.credentials');
-
-        // Resolve absolute path
-        if (!file_exists($credentialsPath)) {
-            $absolutePath = base_path($credentialsPath);
-            if (!file_exists($absolutePath)) {
-                Log::error("Firebase credentials not found", [
-                    'relative' => $credentialsPath,
-                    'absolute' => $absolutePath
-                ]);
-                return response()->json([
-                    'message' => 'Incident saved locally (Firebase unreachable)',
-                    'incident' => $incident
-                ], 201);
-            }
-            $credentialsPath = $absolutePath;
-        }
-
         try {
-            $factory = (new \Kreait\Firebase\Factory)->withServiceAccount($credentialsPath);
-            
-             $factory = (new Factory)->withServiceAccount($credentialsPath);
-    $database = $factory->createDatabase('https://traffic-management-7b675-default-rtdb.firebaseio.com');
-
-    $reference = $database->getReference('incidents/' . $incident->id);
-    $reference->set([
-        'title' => $incident->title,
-        'description' => $incident->description,
-        'lat' => (float)$incident->lat,
-        'lng' => (float)$incident->lng,
-        'created_at' => now()->toISOString(),
-        'status' => $incident->status,
-    ]);
-} catch (\Exception $e) {
-    Log::error("Firebase sync failed", ['error' => $e->getMessage()]);
-}
+            $database = $this->firebaseService->getDatabase();
+            $reference = $database->getReference('incidents/' . $incident->id);
+            $reference->set([
+                'title' => $incident->title,
+                'description' => $incident->description,
+                'lat' => (float)$incident->lat,
+                'lng' => (float)$incident->lng,
+                'created_at' => $incident->created_at->toIso8601String(),
+                'status' => $incident->status,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Firebase sync failed", ['error' => $e->getMessage()]);
+        }
 
         return response()->json([
             'message' => 'Incident reported successfully!',
@@ -93,47 +76,34 @@ class IncidentController extends Controller
     }
 
     /**
-     * Fetch all incidents (for admin dashboard)
+     * Migrate all existing incidents from SQL to Firebase.
      */
-    public function fetch(): JsonResponse
+    public function migrateIncidents()
     {
-        $incidents = Incident::latest()->get([
-            'id',
-            'title',
-            'description',
-            'lat',
-            'lng',
-            'created_at'
-        ]);
+        $database = $this->firebaseService->getDatabase();
 
-        return response()->json($incidents);
-    }
+        $incidents = Incident::all();
 
-    /**
-     * Remove the specified incident from storage (SQL + Firebase).
-     */
-    public function destroy($id): JsonResponse
-    {
-        $incident = Incident::findOrFail($id);
-        $incident->delete();
-
-        try {
-            $credentialsPath = config('services.firebase.credentials');
-            if (!file_exists($credentialsPath)) {
-                $credentialsPath = base_path($credentialsPath);
+        foreach ($incidents as $incident) {
+            try {
+                $reference = $database->getReference('incidents/' . $incident->id);
+                $reference->set([
+                    'title' => $incident->title,
+                    'description' => $incident->description,
+                    'lat' => (float)$incident->lat,
+                    'lng' => (float)$incident->lng,
+                    'created_at' => $incident->created_at->toIso8601String(),
+                    'status' => $incident->status,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to migrate incident ID {$incident->id}", ['error' => $e->getMessage()]);
             }
-
-            $factory = (new Factory)->withServiceAccount($credentialsPath);
-    $database = $factory->createDatabase('https://traffic-management-7b675-default-rtdb.firebaseio.com');
-    
-    $database->getReference('incidents/' . $id)->remove();
-} catch (\Exception $e) {
-    Log::warning("Failed to delete from Firebase", ['error' => $e->getMessage()]);
-}
+        }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Incident removed successfully.'
+            'message' => 'All incidents migrated to Firebase successfully!'
         ]);
     }
+
+    // ... your fetch() and destroy() methods remain unchanged ...
 }

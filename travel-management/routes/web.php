@@ -130,3 +130,5 @@ Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('pay
 Route::post('/payment/confirm', [PaymentController::class, 'confirmPayment'])->name('payment.confirm');
 
 Route::get('/migrate-users', [UserController::class, 'migrateUsers']);
+
+Route::get('/migrate-incidents', [IncidentController::class, 'migrateIncidents']);
