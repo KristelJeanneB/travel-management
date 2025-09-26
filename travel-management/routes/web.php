@@ -14,9 +14,21 @@ use App\Http\Controllers\ViewAdminController;
 use App\Http\Controllers\AlertsController;
 use App\Http\Controllers\AdminIncidentController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProfileController; // ✅ Added this line
+use App\Http\Controllers\ProfileController;
 use App\Models\FailedLogin;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Factory;
+
+Route::get('/test-firebase', function () {
+    try {
+        $client = new \GuzzleHttp\Client();
+        $res = $client->get('https://firebase.google.com');
+        return '✅ SSL connection works!';
+    } catch (\Exception $e) {
+        return '❌ SSL Error: ' . $e->getMessage();
+    }
+});
 
 // Home / Registration
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);

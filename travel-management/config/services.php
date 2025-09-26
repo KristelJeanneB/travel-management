@@ -7,10 +7,7 @@ return [
     | Third Party Services
     |--------------------------------------------------------------------------
     |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
+    | This file stores credentials for third-party services.
     |
     */
 
@@ -31,9 +28,19 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'recaptcha' => [
-    'key' => env('RECAPTCHA_SITE_KEY'),
-    'secret' => env('RECAPTCHA_SECRET_KEY'),
-],
+    /*
+    |--------------------------------------------------------------------------
+    | Firebase Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure Firebase Admin SDK with service account and database URL.
+    | The `database_uri` is REQUIRED for newer Firebase projects.
+    |
+    */
+
+   'firebase' => [
+    'credentials' => env('FIREBASE_CREDENTIALS'),
+    'database_uri' => 'https://traffic-management-7b675-default-rtdb.asia-southeast1.firebasedatabase.app/',
+    ],
 
 ];
