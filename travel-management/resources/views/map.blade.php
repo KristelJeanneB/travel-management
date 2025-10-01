@@ -12,6 +12,17 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
+        .btn { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #5D7EA3; color: #fff; border: none; border-radius: 5px; }
+        .modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 12px; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .modal-close { float: right; font-size: 28px; cursor: pointer; color: #888; }
+        .modal-close:hover { color: #000; }
+        h2 { margin-top: 0; color: #5D7EA3; }
+        .route-status { margin: 12px 0; font-size: 18px; }
+        .traffic-yes { color: red; font-weight: 700; }
+        .traffic-no { color: green; font-weight: 700; }
+        #loading { color: #555; font-style: italic; }
     </style>
 </head>
 <body>
@@ -30,10 +41,6 @@
                 </a>
 
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">@csrf</form>
-                <!--
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        <i class="fas fa-sign-out-alt"></i> Log Out
-                </a>-->
             </div>
         </div>
     </nav>
@@ -55,37 +62,23 @@
         <div class="report-incident-trigger">
             <button id="open-incident-modal" type="button" class="btn">Report Incident</button>
         </div>
-
-        <!-- IT BUSINESS SOLUTION 
-        <div class="premium-section" style="margin-top: 20px; text-align: center;">
-            <h3 style="margin-bottom: 10px;">Want More Features?</h3>
-            <a href="{{ route('premium') }}" class="btn" style="padding: 10px 20px; background-color: lightgray; color: #000; border-radius: 5px; text-decoration: none; font-weight: bold;">
-                Go Premium
-            </a>
-        </div>-->
     </form>
 
-    <div class="route-options-box" style="
-        margin-top: 25px;
-        padding: 15px 20px;
-        background-color: #f4edf2;
-        border-radius: 12px;
-        box-shadow: 0 0 12px rgba(134,168,207,0.6);
-    ">
-        <h4 style="font-weight:700; color:#5D7EA3; margin-bottom:10px;">Automatic Route Selection</h4>
-        <select id="route-selector" disabled style="
-            width:100%;
-            padding:8px 10px;
-            border:none;
-            border-radius:6px;
-            font-size:16px;
-            box-shadow: inset 0 0 6px rgba(134,168,207,0.4);
-        ">
-            <option value="A">Route A</option>
-            <option value="B">Route B</option>
-            <option value="C">Route C</option>
-        </select>
-        <p id="traffic-status" class="traffic-status" style="margin-top:10px; font-weight:600; color:#5D7EA3;">Status: Waiting for Arduino data…</p>
+    <!-- ✅ Added Traffic Modal Trigger -->
+    <button id="open-traffic-modal" class="btn" style="margin-top: 15px;"><i class="fas fa-car-side"></i> Show Traffic Status</button>
+</div>
+
+<div id="traffic-modal" class="modal">
+    <div class="modal-content">
+        <span id="close-traffic-modal" class="modal-close">&times;</span>
+        <h2>Traffic Status</h2>
+        <div id="loading">Loading traffic data...</div>
+        <div id="traffic-results" style="display:none;">
+            <div class="route-status" id="routeA">Route A: <span></span></div>
+            <div class="route-status" id="routeB">Route B: <span></span></div>
+            <div class="route-status" id="routeC">Route C: <span></span></div>
+            <div class="route-status" id="routeD">Route D: <span></span></div>
+        </div>
     </div>
 </div>
 
@@ -132,10 +125,90 @@
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
+// Firebase Traffic Modal Logic
+const firebaseConfig = {
+    apiKey: "AIzaSyC2A2rUd1SjeEmm7qyMHFz8y1afLmQpJ_0",
+    authDomain: "management-6d07b.firebaseapp.com",
+    databaseURL: "https://management-6d07b-default-rtdb.firebaseio.com/",
+    projectId: "management-6d07b",
+    storageBucket: "management-6d07b.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+const modal = document.getElementById('traffic-modal');
+const openBtn = document.getElementById('open-traffic-modal');
+const closeBtn = document.getElementById('close-traffic-modal');
+const loadingEl = document.getElementById('loading');
+const resultsEl = document.getElementById('traffic-results');
+
+const routes = ['A', 'B', 'C', 'D'];
+
+function updateTrafficStatus(data) {
+    loadingEl.style.display = 'none';
+    resultsEl.style.display = 'block';
+
+    routes.forEach(route => {
+        const el = document.getElementById('route' + route).querySelector('span');
+        const trafficBool = data?.[`sensor${route}`]?.traffic;
+
+        if (trafficBool === true) {
+            el.textContent = 'Traffic';
+            el.className = 'traffic-yes';
+        } else if (trafficBool === false) {
+            el.textContent = 'No Traffic';
+            el.className = 'traffic-no';
+        } else {
+            el.textContent = 'No Data';
+            el.className = '';
+        }
+    });
+}
+
+async function fetchTrafficData() {
+    loadingEl.style.display = 'block';
+    resultsEl.style.display = 'none';
+
+    try {
+        const snapshot = await database.ref('traffic_logs').limitToLast(1).once('value');
+        let latestEntry = null;
+        snapshot.forEach(child => {
+            latestEntry = child.val();
+        });
+        if (latestEntry) {
+            updateTrafficStatus(latestEntry);
+        } else {
+            loadingEl.textContent = 'No traffic data available.';
+        }
+    } catch (error) {
+        loadingEl.textContent = 'Error loading data.';
+        console.error(error);
+    }
+}
+
+openBtn.addEventListener('click', () => {
+    modal.style.display = 'block';
+    fetchTrafficData();
+});
+
+closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+window.onclick = function(event) {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof L === 'undefined') {
         console.error("❌ Leaflet failed to load!");
@@ -354,6 +427,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 5000);
 });
 </script>
+
 
 </body>
 </html>
