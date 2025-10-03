@@ -9,9 +9,81 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
+.btn-route {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background: #5D7EA3 !important; /* Force color */
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-route:hover {
+    background: #4a6482 !important;
+}
+
+.btn-report {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background: #e74c3c !important;
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-report:hover {
+    background: #c0392b !important;
+}
+
+.btn-view-reports {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background: #28a745 !important;
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-view-reports:hover {
+    background: #218838 !important;
+}
+
+/* Ensure icons show up */
+.form-group label i,
+.btn-report i,
+.btn-view-reports i,
+.btn-route i {
+    color: white;
+}
 
         .btn {
             padding: 10px 20px;
@@ -28,7 +100,7 @@
             position: fixed;
             z-index: 1050;
             left: 0;
-            top: 0;
+            top: 50px;
             width: 100%;
             height: 100%;
             overflow: auto;
@@ -82,7 +154,7 @@
 
         #legend {
             position: fixed;
-            bottom: 150px;
+            bottom: 50px;
             left: 20px;
             width: 320px;
             padding: 20px 25px;
@@ -93,6 +165,64 @@
             max-height: calc(100vh - 90px);
             overflow-y: auto;
         }
+
+        #incident-modal .fa-check-circle {
+    color: #28a745;
+    animation: grow 0.5s ease-out;
+}
+
+
+@keyframes grow {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+        /* User Location Marker */
+.user-location-dot .dot {
+    width: 12px;
+    height: 12px;
+    background-color: #007bff;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+}
+
+.user-location-dot .pulse {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0, 123, 255, 0.3);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+    z-index: -1;
+}
+
+.incident-marker .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 5px rgba(0,0,0,0.4);
+}
+
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
     </style>
 </head>
 <body>
@@ -119,18 +249,40 @@
     <h3>Route Planner</h3>
     <form id="route-form">
         <div class="form-group">
-            <label for="start-from"><i class="fas fa-map-marker-alt"></i> Start from:</label>
-            <input type="text" id="start-from" placeholder="Leave empty to use Lingayen center">
-        </div>
-        <div class="form-group">
-            <label for="destination"><i class="fas fa-map-marker-alt"></i> Destination:</label>
-            <input type="text" id="destination" placeholder="Enter city/place name">
-        </div>
-        <button type="submit">Get Directions</button>
+        <label for="start-from">
+            <i class="fas fa-location-dot"></i> Start from:
+        </label>
+    <input 
+        type="text" 
+        id="start-from" 
+        placeholder="Leave empty to use current location">
+    </div>
 
-        <div class="report-incident-trigger">
-            <button id="open-incident-modal" type="button" class="btn">Report Incident</button>
-        </div>
+    <div class="form-group">
+        <label for="destination">
+            <i class="fas fa-flag-checkered"></i> Destination:
+        </label>
+    <input 
+        type="text" 
+        id="destination" 
+        placeholder="Enter city/place name">
+    </div>
+
+    <button type="submit" class="btn-route">
+    <i class="fas fa-directions"></i> Get Directions
+</button>
+
+<div class="report-incident-trigger">
+    <button id="open-incident-modal" type="button" class="btn-report">
+        <i class="fas fa-exclamation-circle"></i> Report Incident
+    </button>
+</div>
+
+<div class="report-incident-trigger">
+    <button id="open-user-incident-modal" class="btn-view-reports">
+        <i class="fas fa-list-alt"></i> View All Incident Reports
+    </button>
+</div>
     </form>
 
     <button id="open-traffic-modal" class="btn" style="margin-top: 15px;">
@@ -164,6 +316,30 @@
     <span style="color:purple;">●</span> Route D<br>
     <small>All share start & destination</small>
 </div>
+</div>
+
+<div id="userIncidentModal" class="modal">
+    <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+        <span id="closeUserIncidentModal" class="modal-close">&times;</span>
+        <h2>Community Incident Reports</h2>
+        <p style="color: #555; margin-bottom: 15px;">See real-time reports from other users.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Location</th>
+                    <th>Full Address</th>
+                    <th>Reported On</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+             <tbody id="userIncidentTableBody">
+                <tr><td colspan="5" style="text-align:center;">Loading reports...</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <div id="incident-modal" class="modal">
@@ -210,7 +386,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyC2A2rUd1SjeEmm7qyMHFz8y1afLmQpJ_0",
     authDomain: "management-6d07b.firebaseapp.com",
@@ -225,16 +400,181 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 document.addEventListener('DOMContentLoaded', function () {
+    let userMarker = null;
+    let accuracyCircle = null;
+    let incidentMarkers = [];
+
+
     if (typeof L === 'undefined') {
         console.error("❌ Leaflet failed to load!");
         alert("Map library failed to load.");
         return;
     }
 
+    // Reference to Firebase 'incidents' node
+const incidentsRef = db.ref('incidents').on('value', (snapshot) => {
+    clearAllMarkers(); // e.g., remove old ones
+
+    snapshot.forEach(child => {
+        const data = child.val();
+        createMarkerOnMap(data); 
+        
+    });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('userIncidentModal');
+    const openBtn = document.getElementById('open-user-incident-modal');
+    const closeBtn = document.getElementById('closeUserIncidentModal');
+    const tableBody = document.getElementById('userIncidentTableBody');
+
+    // Open modal
+    openBtn?.addEventListener('click', () => {
+        loadIncidents();
+        modal.style.display = 'block';
+    });
+
+    // Close modal
+    closeBtn?.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.onclick = (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    };
+
+    // Fetch and display incidents
+    function loadIncidents() {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+
+        fetch('{{ route("incidents.fetch") }}', {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No incidents reported yet.</td></tr>';
+                return;
+            }
+
+            // Sort by newest first
+            data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            data.forEach(item => {
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lng);
+                const coords = !isNaN(lat) && !isNaN(lng)
+                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                    : 'Not available';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.title || 'N/A'}</td>
+                    <td>${item.description || 'No details'}</td>
+                    <td><code>${coords}</code></td>
+                    <td style="font-size:13px; color:#555;">Loading address...</td>
+                    <td>${new Date(item.created_at).toLocaleString()}</td>
+                `;
+                tableBody.appendChild(tr);
+
+                // Reverse geocode
+                if (lat && lng) {
+                    reverseGeocode(lat, lng).then(addr => {
+                        tr.cells[3].textContent = addr.length > 100 
+                            ? addr.substring(0, 100) + '...' 
+                            : addr;
+                    }).catch(() => {
+                        tr.cells[3].textContent = "Address unavailable";
+                    });
+                } else {
+                    tr.cells[3].textContent = "No location";
+                }
+            });
+        })
+        .catch(err => {
+            console.error("Failed to load incidents:", err);
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error loading data.</td></tr>';
+        });
+    }
+
+    
+});
+
+function formatDate(dateStr) {
+    try {
+        return new Date(dateStr).toLocaleString();
+    } catch {
+        return 'Invalid Date';
+    }
+}
+
+function loadAndDisplayIncidents() {
+    incidentsRef.on('value', (snapshot) => {
+
+        incidentMarkers.forEach(marker => mainMap.removeLayer(marker));
+        incidentMarkers = [];
+
+        snapshot.forEach(child => {
+            const data = child.val();
+            const id = child.key;
+
+            if (data.lat && data.lng) {
+                let iconColor;
+                switch(data.type) {
+                    case 'accident':
+                        iconColor = 'red';
+                        break;
+                    case 'traffic_jam':
+                        iconColor = 'orange';
+                        break;
+                    case 'road_closure':
+                        iconColor = 'purple';
+                        break;
+                    case 'hazard':
+                        iconColor = 'yellow';
+                        break;
+                    default:
+                        iconColor = 'blue';
+                }
+
+                const marker = L.marker([data.lat, data.lng], {
+                    icon: L.divIcon({
+                        className: 'incident-marker',
+                        html: `<div style="
+                            background: ${iconColor};
+                            width: 14px;
+                            height: 14px;
+                            border-radius: 50%;
+                            border: 2px solid white;
+                            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+                        "></div>`,
+                        iconSize: [18, 18],
+                        iconAnchor: [9, 9]
+                    })
+                }).addTo(mainMap).bindPopup(`
+                    <b>${data.title}</b><br>
+                    ${data.description || 'No details'}<br>
+                    <small>Status: ${data.status}</small>
+                `);
+
+                incidentMarkers.push(marker);
+            }
+        });
+    }, (error) => {
+        console.error("Failed to load incidents from Firebase:", error);
+    });
+loadAndDisplayIncidents();
+}
+
     const LINGAYEN_COORDS = [16.0212, 120.2315];
     let userCoords = LINGAYEN_COORDS;
 
-    // --- Dropdown Menu ---
     const dropdownBtn = document.getElementById('dropdown-btn');
     const dropdownMenu = document.getElementById('dropdown-menu');
     dropdownBtn?.addEventListener('click', () => {
@@ -246,14 +586,71 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Initialize Map ---
-    const mainMap = L.map('map').setView(LINGAYEN_COORDS, 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(mainMap);
-    //L.marker(LINGAYEN_COORDS).addTo(mainMap).bindPopup("Lingayen, Pangasinan").openPopup();
+const mainMap = L.map('map').setView(userCoords, 14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(mainMap);
 
-    // --- Route Form & Alternate Routes ---
+updateUserLocation();
+    function updateUserLocation() {
+    if (!navigator.geolocation) {
+        console.warn("Geolocation not supported");
+        return;
+    }
+
+    navigator.geolocation.watchPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            userCoords = [lat, lng];
+
+            if (userMarker) mainMap.removeLayer(userMarker);
+            if (accuracyCircle) mainMap.removeLayer(accuracyCircle);
+
+            userMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'user-location-dot',
+                    html: '<div class="dot"></div><div class="pulse"></div>',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                })
+            }).addTo(mainMap).bindPopup("Your Location").openPopup();
+
+            accuracyCircle = L.circle([lat, lng], {
+                radius: pos.coords.accuracy,
+                weight: 1,
+                fillColor: '#3388ff',
+                fillOpacity: 0.1
+            }).addTo(mainMap);
+
+            mainMap.setView([lat, lng], 15);
+        },
+        (error) => {
+            console.error("Location error:", error);
+            let msg = "";
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    msg = "Location access denied.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    msg = "Location unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    msg = "Location request timed out.";
+                    break;
+                default:
+                    msg = "Unknown location error.";
+            }
+            console.warn(msg);
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 10000,
+            timeout: 10000
+        }
+    );
+}
     const routeForm = document.getElementById('route-form');
     const summaryBox = document.getElementById('route-summary');
     let currentRouteLayers = [];
@@ -285,13 +682,12 @@ async function drawAlternateRoutes(start, end) {
         const data = await res.json();
 
         if (data.routes && data.routes.length > 1) {
-            // Use real OSRM alternatives (up to 4)
             const routesToShow = data.routes.slice(0, 4);
 
             routesToShow.forEach((route, i) => {
                 const coords = route.geometry.coordinates.map(coord => [
-                    coord[1], // lat
-                    coord[0]  // lng
+                    coord[1], 
+                    coord[0]  
                 ]);
 
                 const polyline = L.polyline(coords, {
@@ -306,7 +702,6 @@ async function drawAlternateRoutes(start, end) {
 
                 currentRouteLayers.push(polyline);
 
-                // Show summary for main route only
                 if (i === 0) {
                     document.getElementById('route-summary').innerHTML = `
                         Best Option: ${(route.distance / 1000).toFixed(2)} km • 
@@ -316,7 +711,6 @@ async function drawAlternateRoutes(start, end) {
                 }
             });
 
-            // Add destination marker
             L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
             return;
         }
@@ -324,12 +718,10 @@ async function drawAlternateRoutes(start, end) {
         console.warn("OSRM alternatives failed, using manual detours", err);
     }
 
-    // 🔁 Fallback: Create 4 artificial detours
     for (let i = 0; i < 4; i++) {
         try {
             let midLat, midLng;
 
-            // Create 4 distinct via points around center
             const offsets = [
                 { lat: +0.007, lng: -0.003 }, // NE
                 { lat: -0.007, lng: -0.003 }, // SE
@@ -341,7 +733,7 @@ async function drawAlternateRoutes(start, end) {
             midLat = (start[0] + end[0]) / 2 + offset.lat;
             midLng = (start[1] + end[1]) / 2 + offset.lng;
 
-            const isDirect = i === 0; // First is direct
+            const isDirect = i === 0; 
             const viaPointUrl = isDirect
                 ? `${start[1]},${start[0]};${end[1]},${end[0]}`
                 : `${start[1]},${start[0]};${midLng},${midLat};${end[1]},${end[0]}`;
@@ -365,7 +757,6 @@ async function drawAlternateRoutes(start, end) {
 
             currentRouteLayers.push(polyline);
 
-            // Summary for first route
             if (i === 0) {
                 document.getElementById('route-summary').innerHTML = `
                     🏆 <strong>Best Option: ${names[i]}</strong><br>
@@ -379,11 +770,10 @@ async function drawAlternateRoutes(start, end) {
         }
     }
 
-    // Always add destination pin
     L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
 }
 
-    // Fallback: Create manual detours via artificial waypoints
+
     async function createDetourRoutes(start, end) {
         const names = ['Route A', 'Route B', 'Route C'];
         const colors = ['red', 'blue', 'green'];
@@ -392,10 +782,9 @@ async function drawAlternateRoutes(start, end) {
             let url;
 
             if (i === 0) {
-                // Direct route
+        
                 url = `https://router.project-osrm.org/route/v1/car/${start[1]},${start[0]};${end[1]},${end[0]}?geometries=geojson`;
             } else {
-                // Add detour point (north/south variation)
                 const offset = (i - 1) * 0.007;
                 const midLat = (start[0] + end[0]) / 2 + offset;
                 const midLng = (start[1] + end[1]) / 2 - offset;
@@ -425,27 +814,36 @@ async function drawAlternateRoutes(start, end) {
         }
     }
 
-    // Handle form submission
     routeForm?.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        const startInput = document.getElementById('start-from').value.trim();
-        const destInput = document.getElementById('destination').value.trim();
-        if (!destInput) return alert("Please enter a destination.");
+    const startInput = document.getElementById('start-from').value.trim();
+    const destInput = document.getElementById('destination').value.trim();
+    if (!destInput) return alert("Please enter a destination.");
 
-        try {
-            const startCoords = startInput ? await geocode(startInput) : LINGAYEN_COORDS;
-            const endCoords = await geocode(destInput);
+    try {
+        let startCoords;
 
-            clearRoutes();
-            await drawAlternateRoutes(startCoords, endCoords);
-
-        } catch (err) {
-            alert("Error: " + (err.message || "Location not found"));
+        if (startInput) {
+            startCoords = await geocode(startInput);
+        } else {
+            if (userCoords[0] && userCoords[1]) {
+                startCoords = userCoords;
+            } else {
+                startCoords = [16.0212, 120.2315]; 
+            }
         }
-    });
 
-    // --- Incident Reporting Modal ---
+        const endCoords = await geocode(destInput);
+
+        clearRoutes();
+        await drawAlternateRoutes(startCoords, endCoords);
+
+    } catch (err) {
+        alert("Error: " + (err.message || "Location not found"));
+    }
+});
+
     const incidentModal = document.getElementById("incident-modal");
     const openIncidentBtn = document.getElementById("open-incident-modal");
     const closeIncidentBtn = document.getElementById("close-incident-modal");
@@ -529,9 +927,31 @@ async function drawAlternateRoutes(start, end) {
                 body: JSON.stringify({ type, description, lat, lng })
             });
             const data = await res.json();
-            alert(data.message || 'Report submitted!');
-            incidentForm.reset();
-            incidentModal.style.display = 'none';
+
+document.getElementById('incident-form').style.display = 'none';
+
+const modalContent = document.querySelector('#incident-modal .modal-content');
+modalContent.insertAdjacentHTML('beforeend', `
+    <div id="success-message" style="
+        text-align: center;
+        padding: 30px;
+        font-family: 'Quicksand', sans-serif;
+        color: #28a745;
+    ">
+        <i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+        <h3>Report Submitted!</h3>
+        <p>${data.message || 'Thank you for reporting the incident.'}</p>
+        <button onclick="closeSuccess()" class="btn" style="margin-top: 10px;">Close</button>
+    </div>
+`);
+
+function closeSuccess() {
+    const successMsg = document.getElementById('success-message');
+    if (successMsg) successMsg.remove();
+    document.getElementById('incident-form').style.display = 'block';
+    incidentForm.reset();
+    incidentModal.style.display = 'none';
+}
         } catch (err) {
             alert('Failed to submit report.');
             console.error(err);
@@ -576,13 +996,189 @@ async function drawAlternateRoutes(start, end) {
     function updateTrafficStatus(data) {
         loadingEl.style.display = 'none';
         resultsEl.style.display = 'block';
+
+        trafficData = {
+            A: data?.sensorA?.traffic === true,
+            B: data?.sensorB?.traffic === true,
+            C: data?.sensorC?.traffic === true,
+            D: data?.sensorD?.traffic === true
+        };
+
         ['A', 'B', 'C', 'D'].forEach(r => {
             const el = document.getElementById(`route${r}`).querySelector('span');
-            const hasTraffic = data?.[`sensor${r}`]?.traffic;
-            el.textContent = hasTraffic === true ? 'Traffic' : hasTraffic === false ? 'No Traffic' : 'No Data';
-            el.className = hasTraffic === true ? 'traffic-yes' : hasTraffic === false ? 'traffic-no' : '';
+            const hasTraffic = trafficData[r];
+            el.textContent = hasTraffic ? 'Traffic' : 'No Traffic';
+            el.className = hasTraffic ? 'traffic-yes' : 'traffic-no';
         });
+
+        // Re-evaluate best route when traffic changes
+        const start = userCoords;
+        const end = window.lastEndCoords;
+        if (start && end) {
+            drawAlternateRoutes(start, end);
+        }
     }
+   document.querySelector('#userIncidentModal thead tr').innerHTML = `
+    <th>Type</th>
+    <th>Description</th>
+    <th>Location (Coords)</th>
+    <th>Full Address</th>
+    <th>Reported</th>
+    <th>Status</th>
+`;
+
+// Ensure we have the correct element references
+const modal = document.getElementById('userIncidentModal');
+const openBtn = document.getElementById('open-user-incident-modal');
+const closeBtn = document.getElementById('closeUserIncidentModal');
+const tableBody = document.getElementById('userIncidentTableBody');
+
+// Reverse geocoding utility
+async function reverseGeocode(lat, lng) {
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+            { mode: 'cors' }
+        );
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        return data.display_name || 'Unknown location';
+    } catch (err) {
+        return 'Address unavailable';
+    }
+}
+
+// Load incidents from Laravel backend
+function loadIncidents() {
+    const tableBody = document.getElementById('userIncidentTableBody');
+    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>';
+
+    fetch('{{ route("incidents.fetch") }}', {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+    })
+    .then(data => {
+        tableBody.innerHTML = '';
+
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No incidents reported yet.</td></tr>';
+            return;
+        }
+
+        // Sort by newest first
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+       const typeLabels = {
+            accident: '🚗 Accident',
+            traffic_jam: '🚦 Traffic Jam',
+            road_closure: '🚧 Road Closure',
+            hazard: '⚠️ Hazard',
+            other: 'ℹ️ Other',
+            fire: '🔥 Fire',        
+            flooding: '🌊 Flooding'
+        };
+        data.forEach(item => {
+            const lat = parseFloat(item.lat);
+            const lng = parseFloat(item.lng);
+            const coords = !isNaN(lat) && !isNaN(lng)
+                ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                : 'Not available';
+
+            // Use friendly label; fallback to capitalized type
+           const displayType = typeLabels[item.title] || (item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1).replace('_', ' ') : 'Unknown');
+
+            // Status badge
+            const statusBadge = item.status === 'resolved'
+                ? '<span style="color:#17a2b8; font-weight:bold;">✅ Resolved</span>'
+                : '<span style="color:#d9534f; font-weight:bold;">🔴 Active</span>';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${displayType}</strong></td>
+                <td>${item.description ? item.description : '<em>No details provided</em>'}</td>
+                <td><code>${coords}</code></td>
+                <td style="font-size:13px; color:#555;">Loading address...</td>
+                <td style="white-space:nowrap;">${formatDate(item.created_at)}</td>
+                <td>${statusBadge}</td>
+            `;
+            tableBody.appendChild(tr);
+
+            // Reverse geocode for full address
+            if (lat && lng) {
+                reverseGeocode(lat, lng).then(addr => {
+                    if (tr.cells[3]) {
+                        tr.cells[3].textContent = addr.length > 100 
+                            ? addr.substring(0, 100) + '...' 
+                            : addr;
+                    }
+                }).catch(() => {
+                    if (tr.cells[3]) tr.cells[3].textContent = "Address unavailable";
+                });
+            } else {
+                if (tr.cells[3]) tr.cells[3].textContent = "No location";
+            }
+        });
+    })
+    .catch(err => {
+        console.error("Failed to load incident reports:", err);
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load reports. Please try again.</td></tr>';
+    });
+}
+
+// Open modal and load reports
+openBtn?.addEventListener('click', () => {
+    loadIncidents();
+    modal.style.display = 'block';
+});
+
+// Close modal
+closeBtn?.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+// Click outside to close
+window.onclick = (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+};
+
+// Optional: Also update markers on map with status
+db.ref('incidents').on('value', (snapshot) => {
+    // Clear old markers
+    window.incidentMarkers = window.incidentMarkers || [];
+    window.incidentMarkers.forEach(marker => {
+        if (mainMap.hasLayer(marker)) mainMap.removeLayer(marker);
+    });
+    window.incidentMarkers = [];
+
+    snapshot.forEach(child => {
+        const data = child.val();
+        if (!data.lat || !data.lng) return;
+
+        const color = data.status === 'resolved' ? 'gray' : 
+                     { accident: 'red', traffic_jam: 'orange', road_closure: 'purple', hazard: 'yellow' }[data.type] || 'blue';
+
+        const statusText = data.status === 'resolved' ? '✅ Resolved' : '🔴 Active';
+
+        const marker = L.marker([data.lat, data.lng], {
+            icon: L.divIcon({
+                html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>`,
+                className: 'incident-marker',
+                iconSize: [18, 18],
+                iconAnchor: [9, 9]
+            })
+        }).bindPopup(`<b>${data.type}</b><br>${data.description || 'No details'}<br><small>Status: ${statusText}</small>`).addTo(mainMap);
+
+        window.incidentMarkers.push(marker);
+    });
+});
+
 });
 </script>
 

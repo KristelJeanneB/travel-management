@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard</title>
 
+    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-<style>
-   * {
+
+    <style>
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -53,45 +55,50 @@
             overflow: hidden;
             display: flex;
             flex-direction: row;
-            min-height: calc(100vh - 100px); 
+            min-height: calc(100vh - 100px);
         }
 
         .sidebar {
-        width: 240px;
-        background: #86A8CF;
-        color: white;
-        padding: 20px 0;
-        min-height: 100%;
-    }
+            width: 240px;
+            background: #86A8CF;
+            color: white;
+            padding: 20px 0;
+            min-height: 100%;
+        }
 
         .sidebar ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-    .sidebar li {
-        padding: 14px 20px;
-        cursor: pointer;
-        font-size: 15px;
-        transition: background 0.3s ease;
-    }
+        .sidebar li {
+            padding: 14px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
 
-    .sidebar li:hover,
-    .sidebar li.active {
-        background: rgba(255, 255, 255, 0.2);
-        padding-left: 25px;
-    }
+        .sidebar li:hover,
+        .sidebar li.active {
+            background: rgba(255, 255, 255, 0.2);
+            padding-left: 25px;
+            font-weight: 600;
+        }
 
-    .sidebar a {
-        color: white;
-        text-decoration: none;
-        display: block;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+        .sidebar li.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-left: 3px solid white;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
 
         .main-content {
             flex: 1;
@@ -106,224 +113,251 @@
             margin-bottom: 25px;
             gap: 12px;
         }
-    .search-bar {
-        flex: 1;
-        padding: 12px 16px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        outline: none;
-        font-size: 14px;
-        transition: border-color 0.3s ease;
-    }
 
-    .search-bar:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
+        .search-bar {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
 
-    .profile-btn {
-        background: #86A8CF;
-        border: none;
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.3s ease;
-    }
+        .search-bar:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
 
-    .profile-btn:hover {
-        background: #6a8cb3;
-    }
+        .profile-btn {
+            background: #86A8CF;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
 
+        .profile-btn:hover {
+            background: #6a8cb3;
+        }
 
-    .overview h2 {
-        text-align: center;
-        margin-bottom: 25px;
-        color: #333;
-        font-size: 22px;
-        font-weight: 600;
-    }
+        .overview h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+            font-size: 22px;
+            font-weight: 600;
+        }
 
-    .card-group {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .card {
-        background-color: #ffffff;
-        padding: 22px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        width: 220px;
-        text-align: center;
-        font-weight: 600;
-        color: #444;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-top: 4px solid #86A8CF;
-        user-select: none;
-    }
-
-    .card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .card p {
-        margin-bottom: 8px;
-        font-size: 16px;
-    }
-
-    .card small {
-        display: block;
-        font-size: 12px;
-        color: #777;
-        margin-top: 6px;
-    }
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-    background: white;
-    margin: 8% auto;
-    padding: 25px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 70vh;
-    overflow-y: auto;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    font-size: 15px;
-    color: #333;
-}
-.modal-header {
+       .card-group {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    gap: 24px; /* Just enough space without feeling sparse */
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 10px 0;
 }
 
-.modal-header h3 {
-    margin: 0;
-    color: #007bff;
-    font-weight: 700;
-}
-
-.close-btn {
-    font-size: 26px;
-    background: none;
-    border: none;
+.card {
+    background: #ffffff;
+    border: 1px solid #dfe6eb; /* Soft blue-gray border */
+    border-radius: 12px;
+    padding: 24px 20px;
+    width: 250px; /* Medium size – not too small, not overwhelming */
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Softer shadow */
+    transition: 
+        transform 0.3s cubic-bezier(0.25, 0.7, 0.25, 1),
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
     cursor: pointer;
-    color: #555;
-    transition: color 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.close-btn:hover {
-    color: #007bff;
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+    border-color: #a0cfff; 
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
+.card p {
+    margin-bottom: 8px;
+    font-size: 18px; 
+    font-weight: 600;
+    color: #2c3e50;
+    letter-spacing: 0.2px;
 }
 
-table thead tr {
-    background-color: #007bff;
-    color: white;
+.card small {
+    display: block;
+    font-size: 14px;
+    color: #6b7a89; 
+    margin-top: 6px;
+    line-height: 1.4;
 }
+        /* Modal Base Style */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
 
-table th, table td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
 
-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-    #payments-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
-    }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
 
-    #payments-modal .modal-content {
-        background: white;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 800px;
-        max-height: 80vh;
-        overflow-y: auto;
-        padding: 20px;
-        position: relative;
-    }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
 
-    #payments-modal .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 24px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #333;
-    }
+        .modal-header h3 {
+            margin: 0;
+            color: #007bff;
+            font-weight: 700;
+        }
 
-    #payments-modal table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+        .close-btn {
+            font-size: 26px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #555;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
 
-    #payments-modal th,
-    #payments-modal td {
-        padding: 8px;
-        border: 1px solid #ddd;
-        text-align: left;
-    }
+        .close-btn:hover {
+            color: #007bff;
+            transform: rotate(90deg);
+        }
 
-    #payments-modal thead tr {
-        background-color: #007bff;
-        color: white;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
 
-    #payments-modal button.confirm-btn {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 6px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
+        table thead tr {
+            background-color: #007bff;
+            color: white;
+        }
 
-    #payments-modal button.confirm-btn:disabled {
-        background-color: #6c757d;
-        cursor: default;
-    }
+        table th, table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
 
-     @media (max-width: 768px) {
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background-color: #f1f7ff;
+        }
+
+        .status-toggle-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-toggle-btn:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .status-toggle-btn:disabled {
+            opacity: 0.8;
+            cursor: default;
+        }
+
+        .btn-resolved {
+            background: #17a2b8 !important;
+        }
+
+        .confirm-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .confirm-btn:hover {
+            background-color: #218838;
+        }
+
+        .confirm-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
             .dashboard-container {
                 flex-direction: column;
             }
@@ -338,15 +372,33 @@ table tbody tr:nth-child(even) {
                 align-items: center;
             }
 
-            .card {
-                width: 90%;
+           .card {
+        width: 220px;
+        padding: 20px 16px;
             }
-
+            .card p {
+        font-size: 17px;
+        }
+            .card small {
+        font-size: 13px;
+        }
             .main-content {
                 padding: 20px;
             }
+
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .close-btn {
+                font-size: 24px;
+            }
         }
-</style>
+    </style>
+</head>
+
+<body>
 
 <div class="header">
     <h1>Admin</h1>
@@ -355,17 +407,26 @@ table tbody tr:nth-child(even) {
 <div class="dashboard-container">
     <nav class="sidebar" aria-label="Sidebar Navigation">
         <ul>
-            <li class="{{ request()->routeIs('homeAdmin') ? 'active' : '' }}">
+            <li class="active">
                 <a href="{{ route('homeAdmin') }}">
                     <i class="fas fa-home"></i> Dashboard
                 </a>
             </li>
-            <li class="{{ request()->routeIs('alerts') ? 'active' : '' }}">
+            <li>
                 <a href="{{ route('alerts') }}">
-                    <i class="fas fa-bell"></i> Alerts
+                    <i class="fas fa-bell"></i> Alerts 
+                    <span id="alert-count-badge" style="
+                        float: right;
+                        background: #dc3545;
+                        color: white;
+                        font-size: 12px;
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        display: none;
+                    ">0</span>
                 </a>
             </li>
-            <li class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+            <li>
                 <a href="{{ route('admin.settings') }}">
                     <i class="fas fa-cog"></i> Settings
                 </a>
@@ -380,7 +441,7 @@ table tbody tr:nth-child(even) {
 
     <main class="main-content" role="main">
         <header>
-            <input type="search" placeholder="Search..." class="search-bar" aria-label="Search" />
+            <!--<input type="search" placeholder="Search..." class="search-bar" aria-label="Search" />-->
             <button class="profile-btn" aria-label="User Profile">
                 <i class="fas fa-user"></i>
             </button>
@@ -389,15 +450,15 @@ table tbody tr:nth-child(even) {
         <section class="overview" aria-labelledby="overview-heading">
             <h2 id="overview-heading">Dashboard Overview</h2>
             <div class="card-group">
-                <div class="card" id="totalUsersCard" role="button" tabindex="0" aria-haspopup="dialog">
+                <div class="card" id="totalUsersCard" role="button" tabindex="0">
                     <p>Total Users</p>
                     <small id="userCount">Loading...</small>
                 </div>
-                <div class="card" id="payments-card" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="payments-modal" aria-label="View Payments">
+                <div class="card" id="payments-card" role="button" tabindex="0">
                     <p>Payments</p>
                     <small>User Payments</small>
                 </div>
-                <div class="card" id="accidentReportsBtn">
+                <div class="card" id="accidentReportsBtn" role="button" tabindex="0">
                     <p>Accident Reports</p>
                     <small>User Reports</small>
                 </div>
@@ -406,10 +467,13 @@ table tbody tr:nth-child(even) {
     </main>
 </div>
 
-<div id="payments-modal" role="dialog" aria-modal="true" aria-labelledby="payments-modal-title" tabindex="-1">
+<!-- PAYMENTS MODAL -->
+<div id="payments-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="payments-modal-title">
     <div class="modal-content">
-        <button class="close-btn" id="close-modal">&times;</button>
-        <h2 id="payments-modal-title">Payments</h2>
+        <div class="modal-header">
+            <h3 id="payments-modal-title">User Payments</h3>
+            <button class="close-btn" id="close-modal">&times;</button>
+        </div>
         <div id="payments-content">
             <p>Loading payments...</p>
         </div>
@@ -417,10 +481,12 @@ table tbody tr:nth-child(even) {
 </div>
 
 <!-- ALL USERS MODAL -->
-<div id="usersModal" class="modal">
+<div id="usersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="users-modal-title">
     <div class="modal-content">
-        <button class="close-btn" id="closeUsersModal">&times;</button>
-        <h2>All Users</h2>
+        <div class="modal-header">
+            <h3 id="users-modal-title">All Users</h3>
+            <button class="close-btn" id="closeUsersModal">&times;</button>
+        </div>
         <table id="usersTable">
             <thead>
                 <tr>
@@ -437,10 +503,12 @@ table tbody tr:nth-child(even) {
 </div>
 
 <!-- INCIDENT REPORTS MODAL -->
-<div id="incidentModal" class="modal">
+<div id="incidentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="incident-modal-title">
     <div class="modal-content">
-        <button class="close-btn" id="closeIncidentModal">&times;</button>
-        <h2>Incident Reports</h2>
+        <div class="modal-header">
+            <h3 id="incident-modal-title">Incident Reports</h3>
+            <button class="close-btn" id="closeIncidentModal">&times;</button>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -449,7 +517,7 @@ table tbody tr:nth-child(even) {
                     <th>Coords</th>
                     <th>Address</th>
                     <th>Date</th>
-                    <th>Action</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody id="incidentTableBody"></tbody>
@@ -457,197 +525,60 @@ table tbody tr:nth-child(even) {
     </div>
 </div>
 
+<!-- Logout Form -->
 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
 
+<!-- Toast Notification -->
+<div id="toast">Report updated successfully!</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const paymentsCard = document.getElementById('payments-card');
     const totalUsersCard = document.getElementById('totalUsersCard');
+    const paymentsCard = document.getElementById('payments-card');
+    const accidentReportsBtn = document.getElementById('accidentReportsBtn');
+
     const usersModal = document.getElementById('usersModal');
     const paymentsModal = document.getElementById('payments-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const closeUsersModalBtn = document.getElementById('closeUsersModal');
-    const paymentsContent = document.getElementById('payments-content');
-    const usersTableBody = document.querySelector('#usersTable tbody');
-    const userCountEl = document.getElementById('userCount');
-
-    const accidentReportsBtn = document.getElementById('accidentReportsBtn');
     const incidentModal = document.getElementById('incidentModal');
+
+    const closeUsersModalBtn = document.getElementById('closeUsersModal');
+    const closeModalBtn = document.getElementById('close-modal');
     const closeIncidentModal = document.getElementById('closeIncidentModal');
+
+    const userCountEl = document.getElementById('userCount');
+    const paymentsContent = document.getElementById('payments-content');
     const incidentTableBody = document.getElementById('incidentTableBody');
-
-    accidentReportsBtn?.addEventListener('click', loadIncidents);
-    closeIncidentModal?.addEventListener('click', () => incidentModal.style.display = 'none');
-
-    window.onclick = (e) => {
-        if (e.target.classList.contains('modal')) {
-            e.target.style.display = 'none';
-        }
-    };
-
-    // === LOAD INCIDENTS ===
-    function loadIncidents() {
-    console.log("🔍 Loading incidents...");
-
-    incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
-
-    fetch('{{ route("incidents.fetch") }}', {
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-    })
-    .then(r => r.json())
-    .then(data => {
-        console.log("📥 Fetched incidents:", data);
-        incidentTableBody.innerHTML = '';
-
-        if (!data.length) {
-            incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No reports found</td></tr>';
-            incidentModal.style.display = 'block';
-            return;
-        }
-
-        data.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.dataset.id = item.id;
-
-            const lat = parseFloat(item.lat);
-            const lng = parseFloat(item.lng);
-            const coords = !isNaN(lat) && !isNaN(lng)
-                ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-                : 'Not available';
-
-            tr.innerHTML = `
-                <td>${item.title || 'N/A'}</td>
-                <td>${item.description || 'N/A'}</td>
-                <td><code>${coords}</code></td>
-                <td style="font-size:13px; color:#555;">Loading...</td>
-                <td>${new Date(item.created_at).toLocaleString()}</td>
-                <td>
-                <button class="remove-btn" style="
-                    background:green;
-                    color:white;
-                    border:none;
-                    padding:6px 10px;
-                    border-radius:4px;
-                    cursor:pointer;
-                    font-size:13px;
-                    font-weight:bold;">
-                    ✓ Resolve
-                </button>
-                </td>
-            `;
-            incidentTableBody.appendChild(tr);
-
-            // Reverse geocode
-            if (lat && lng) {
-                reverseGeocode(lat, lng).then(addr => {
-                    if (tr.cells[3]) tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
-                });
-            } else {
-                tr.cells[3].textContent = "No location";
-            }
-        });
-
-        document.querySelectorAll('.checked-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const row = this.closest('tr');
-        const id = row.dataset.id;
-
-        // Visual feedback
-        if (this.textContent.trim() === '✓ Checked') {
-            this.textContent = '✔️ Resolved';
-            this.style.background = '#17a2b8';
-            this.disabled = true;
-        }
-    });
-});
-        // Attach remove handlers
-        document.querySelectorAll('.remove-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const row = this.closest('tr');
-                const id = row.dataset.id;
-                const type = row.cells[0].textContent;
-
-                if (confirm(`Are you sure you this was reported? "${type}" report?`)) {
-                    deleteIncident(id, row);
-                }
-            });
-        });
-
-        incidentModal.style.display = 'block';
-    })
-    .catch(err => {
-        console.error("❌ Failed to load incidents:", err);
-        incidentTableBody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align:center; color:red;">
-                    Error loading data.<br>
-                    <small>Check console</small>
-                </td>
-            </tr>`;
-        incidentModal.style.display = 'block';
-    });
-}
-
-// === DELETE INCIDENT ===
-function deleteIncident(id, row) {
-    fetch(`{{ url('/incidents') }}/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            row.remove();
-            alert(data.message || 'Report removed.');
-        } else {
-            alert('Failed: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(err => {
-        console.error('Delete error:', err);
-        alert('Network error. Could not remove report.');
-    });
-}
+    const usersTableBody = document.querySelector('#usersTable tbody');
 
     // === LOAD USER COUNT ===
     fetch('{{ route("admin.users.count") }}')
         .then(res => res.json())
         .then(data => {
-            userCountEl.textContent = data.count;
+            userCountEl.textContent = data.count || 0;
         })
-        .catch(err => {
-            console.error('Failed to load user count:', err);
+        .catch(() => {
             userCountEl.textContent = 'Error';
         });
 
     // === OPEN USERS MODAL ===
-    totalUsersCard.addEventListener('click', () => {
+    totalUsersCard?.addEventListener('click', () => {
         usersModal.style.display = 'flex';
         loadAllUsers();
     });
 
-    totalUsersCard.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            totalUsersCard.click();
-        }
-    });
-
     function loadAllUsers() {
+        usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+
         fetch('{{ route("admin.users.all") }}')
             .then(res => res.json())
             .then(users => {
                 usersTableBody.innerHTML = '';
-                if (users.length === 0) {
+                if (!users.length) {
                     usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found</td></tr>';
                     return;
                 }
-
                 users.forEach(user => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -665,51 +596,25 @@ function deleteIncident(id, row) {
             });
     }
 
-    // === CLOSE MODALS ===
-    closeUsersModalBtn.addEventListener('click', () => {
-        usersModal.style.display = 'none';
-    });
-
-    closeModalBtn.addEventListener('click', () => {
-        paymentsModal.style.display = 'none';
-        paymentsContent.innerHTML = '<p>Loading payments...</p>';
-    });
-
-    window.addEventListener('click', e => {
-        if (e.target === usersModal) usersModal.style.display = 'none';
-        if (e.target === paymentsModal) paymentsModal.style.display = 'none';
-    });
-
-    window.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            if (usersModal.style.display === 'flex') usersModal.style.display = 'none';
-            if (paymentsModal.style.display === 'flex') paymentsModal.style.display = 'none';
-        }
-    });
-
-    // === PAYMENTS MODAL (existing logic) ===
-    paymentsCard.addEventListener('click', () => {
+    // === OPEN PAYMENTS MODAL ===
+    paymentsCard?.addEventListener('click', () => {
         paymentsModal.style.display = 'flex';
         loadPayments();
     });
 
-    paymentsCard.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            paymentsCard.click();
-        }
-    });
-
     function loadPayments() {
+        paymentsContent.innerHTML = '<p>Loading payments...</p>';
+
         fetch('{{ route('admin.payments.data') }}', {
+            method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
+            }
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            if (!data.length) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
                 paymentsContent.innerHTML = '<p>No payments found.</p>';
                 return;
             }
@@ -729,16 +634,17 @@ function deleteIncident(id, row) {
             `;
 
             data.forEach(payment => {
+                const statusClass = payment.status === 'confirmed' ? 'style="color:green;font-weight:bold;"' : '';
                 tableHtml += `
                     <tr data-id="${payment.id}">
                         <td>${payment.id}</td>
                         <td>${payment.user_name}</td>
-                        <td>${payment.amount}</td>
-                        <td class="status">${payment.status}</td>
+                        <td>$${parseFloat(payment.amount).toFixed(2)}</td>
+                        <td ${statusClass}>${payment.status}</td>
                         <td>
                             ${payment.status === 'pending' 
                                 ? `<button class="confirm-btn">Confirm</button>` 
-                                : ''}
+                                : '<small>Completed</small>'}
                         </td>
                     </tr>
                 `;
@@ -747,8 +653,9 @@ function deleteIncident(id, row) {
             tableHtml += `</tbody></table>`;
             paymentsContent.innerHTML = tableHtml;
 
+            // Confirm Payment Handler
             document.querySelectorAll('.confirm-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', function () {
                     const row = btn.closest('tr');
                     const paymentId = row.dataset.id;
                     btn.disabled = true;
@@ -758,35 +665,166 @@ function deleteIncident(id, row) {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
+                            'Content-Type': 'application/json'
+                        }
                     })
-                    .then(res => res.json())
-                    .then(resData => {
-                        if (resData.success) {
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
                             row.querySelector('.status').textContent = 'confirmed';
+                            row.querySelector('.status').style.color = 'green';
+                            row.querySelector('.status').style.fontWeight = 'bold';
                             btn.remove();
+                            showToast('Payment confirmed!');
                         } else {
                             alert('Failed to confirm payment.');
                             btn.disabled = false;
                             btn.textContent = 'Confirm';
                         }
                     })
-                    .catch(() => {
-                        alert('Error confirming payment.');
+                    .catch(err => {
+                        console.error('Error:', err);
+                        alert('Network error. Try again.');
                         btn.disabled = false;
                         btn.textContent = 'Confirm';
                     });
                 });
             });
         })
-        .catch(() => {
-            paymentsContent.innerHTML = '<p>Failed to load payments.</p>';
+        .catch(err => {
+            console.error('Fetch error:', err);
+            paymentsContent.innerHTML = '<p>Failed to load payments. Please try again.</p>';
         });
     }
 
-     // === REVERSE GEOCODING UTILITY ===
+    // === INCIDENT REPORTS ===
+    accidentReportsBtn?.addEventListener('click', loadIncidents);
+
+    function loadIncidents() {
+        incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>';
+        incidentModal.style.display = 'flex';
+
+        fetch('{{ route("incidents.fetch") }}', {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response failed');
+            return response.json();
+        })
+        .then(data => {
+            incidentTableBody.innerHTML = '';
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No reports available</td></tr>';
+                return;
+            }
+
+            const reportedCount = data.filter(i => i.status === 'reported').length;
+            updateAlertBadge(reportedCount);
+
+            data.forEach(item => {
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lng);
+                const coords = !isNaN(lat) && !isNaN(lng)
+                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                    : 'Not available';
+
+                const tr = document.createElement('tr');
+                tr.dataset.id = item.id;
+
+                const isResolved = item.status === 'resolved';
+                const btnText = isResolved ? '✅ Resolved' : '✓ Resolve';
+                const button = document.createElement('button');
+                button.className = 'status-toggle-btn';
+                button.textContent = btnText;
+                button.dataset.status = item.status;
+                button.style.background = isResolved ? '#17a2b8' : '#28a745';
+                button.disabled = false;
+
+                button.addEventListener('click', function () {
+                    const currentStatus = this.dataset.status;
+                    const newStatus = currentStatus === 'reported' ? 'resolved' : 'reported';
+                    const id = tr.dataset.id;
+
+                    // Optimistic UI Update
+                    if (newStatus === 'resolved') {
+                        this.textContent = '✅ Resolved';
+                        this.style.background = '#17a2b8';
+                        this.dataset.status = 'resolved';
+                    } else {
+                        this.textContent = '✓ Resolve';
+                        this.style.background = '#28a745';
+                        this.dataset.status = 'reported';
+                    }
+
+                    // Send to server
+                    fetch(`{{ url('/incidents') }}/${id}/update-status`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.success) {
+                            showToast(`Incident ${newStatus}!`);
+                            updateAlertBadge(); // Refresh count
+                        } else {
+                            throw new Error('Update failed');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error updating status:', err);
+                        alert('Could not update status. Reverting...');
+                        // Rollback UI
+                        const revertStatus = this.dataset.status === 'resolved' ? 'reported' : 'resolved';
+                        const wasResolved = revertStatus === 'resolved';
+                        this.textContent = wasResolved ? '✅ Resolved' : '✓ Resolve';
+                        this.style.background = wasResolved ? '#17a2b8' : '#28a745';
+                        this.dataset.status = revertStatus;
+                    });
+                });
+
+                const tdButton = document.createElement('td');
+                tdButton.appendChild(button);
+
+                tr.innerHTML = `
+                    <td>${item.title || 'N/A'}</td>
+                    <td>${item.description || 'N/A'}</td>
+                    <td><code>${coords}</code></td>
+                    <td style="font-size:13px; color:#555;">Loading address...</td>
+                    <td>${new Date(item.created_at).toLocaleString()}</td>
+                `;
+                tr.appendChild(tdButton);
+                incidentTableBody.appendChild(tr);
+
+                if (lat && lng) {
+                    reverseGeocode(lat, lng).then(addr => {
+                        tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
+                    }).catch(() => {
+                        tr.cells[3].textContent = "Address unavailable";
+                    });
+                }
+            });
+        })
+        .catch(err => {
+            console.error("❌ Failed to load incidents:", err);
+            incidentTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center; color:red;">
+                        Error loading reports.<br><small>Check console</small>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    // Reverse Geocoding Helper
     async function reverseGeocode(lat, lng) {
         try {
             const res = await fetch(
@@ -801,6 +839,77 @@ function deleteIncident(id, row) {
             return 'Address unavailable';
         }
     }
+
+    // === MODAL CLOSE HANDLERS ===
+    [closeUsersModalBtn, closeModalBtn, closeIncidentModal].forEach(btn => {
+        btn?.addEventListener('click', () => {
+            if (btn === closeUsersModalBtn) usersModal.style.display = 'none';
+            if (btn === closeModalBtn) paymentsModal.style.display = 'none';
+            if (btn === closeIncidentModal) incidentModal.style.display = 'none';
+        });
+    });
+
+    // Close modal when clicking overlay
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    };
+
+    // Escape key closes any open modal
+    window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            ['usersModal', 'paymentsModal', 'incidentModal'].forEach(id => {
+                const modal = document.getElementById(id);
+                if (modal) modal.style.display = 'none';
+            });
+        }
+    });
+
+    // === ALERT BADGE UPDATER ===
+    function updateAlertBadge(force = null) {
+        if (force !== null) {
+            updateAlertCountManual(force);
+            return;
+        }
+        fetch('{{ route("incidents.fetch") }}')
+            .then(r => r.json())
+            .then(data => {
+                const count = Array.isArray(data) ? data.filter(i => i.status === 'reported').length : 0;
+                updateAlertCountManual(count);
+            })
+            .catch(console.error);
+    }
+
+    function updateAlertCountManual(count) {
+        const badge = document.getElementById('alert-count-badge');
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // Initial load
+    updateAlertBadge();
+
+    // Auto-refresh every 30 seconds
+    setInterval(updateAlertBadge, 30000);
+
+    // === TOAST NOTIFICATION ===
+    window.showToast = function(message = "Action completed", type = "success") {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
+        toast.style.opacity = 1;
+
+        setTimeout(() => {
+            toast.style.opacity = 0;
+        }, 3000);
+    }
 });
 </script>
+
+</body>
 </html>

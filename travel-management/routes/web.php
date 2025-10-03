@@ -107,6 +107,15 @@ Route::get('/admin/incident/{id}', [IncidentController::class, 'show'])->name('a
 Route::get('/admin/incidents', [AdminIncidentController::class, 'index'])->name('admin.incident');
 Route::get('/admin/incidents/fetch', [AdminIncidentController::class, 'fetchIncidents'])->name('admin.incidents.fetch');
 
+Route::post('/incidents/{id}/resolve', [App\Http\Controllers\IncidentController::class, 'resolve'])->name('incident.resolve')->middleware('auth');
+Route::post('/incidents/{id}/update-status', [IncidentController::class, 'updateStatus']);
+
+// Fetch incidents
+Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
+
+// Resolve incident
+Route::post('/incidents/{id}/resolve', [IncidentController::class, 'resolve'])->name('incidents.resolve');
+
 // API route to fetch incidents (used in dashboard JS) – includes location
 Route::get('/incidents/fetch', function () {
     return \App\Models\Incident::select('title', 'description', 'lat', 'lng', 'created_at')->get();

@@ -60,7 +60,7 @@ HOME
       <div class="steps">
         <div class="step">
           <i class="fas fa-map-marked-alt"></i>
-          <h3>1. Open the App</h3>
+          <h3>1. Open the Website</h3>
           <p>Access our web app from any device.</p>
         </div>
         <div class="step">
@@ -116,8 +116,8 @@ HOME
           <p>Live Updates</p>
         </div>
         <div class="stat">
-          <h3>3</h3>
-          <p>Cities Monitored</p>
+          <h3>1</h3>
+          <p>Lingayen Monitored</p>
         </div>
       </div>
     </section>
@@ -134,29 +134,29 @@ HOME
       <h2>Meet the Team</h2>
       <div class="team-members">
         <div class="member">
-          <img src="{{ asset('images/member3.jpg') }}" alt="Team Member 1">
+          <img src="{{ asset('images/ray.jpg') }}" alt="Team Member 1">
           <h4>RAY-EM</h4>
           <p>Project Lead</p>
         </div>
         <div class="member">
-          <img src="{{ asset('images/member1.jpg') }}" alt="Team Member 2">
-          <h4>RANIEL</h4>
-          <p>Documentator</p>
-        </div>
-        <div class="member">
-          <img src="{{ asset('images/member1.jpg') }}" alt="Team Member 3">
+          <img src="{{ asset('images/kristel.jpg') }}" alt="Team Member 3">
           <h4>KRISTEL</h4>
           <p>Developer</p>
         </div>
         <div class="member">
-          <img src="{{ asset('images/member2.jpg') }}" alt="Team Member 4">
+          <img src="{{ asset('images/noel.jpg') }}" alt="Team Member 4">
           <h4>NOEL</h4>
           <p>Developer</p>
         </div>
         <div class="member">
-          <img src="{{ asset('images/member1.jpg') }}" alt="Team Member 5">
+          <img src="{{ asset('images/bea.jpg') }}" alt="Team Member 5">
           <h4>BABY BEA</h4>
           <p>UI/UX Designer</p>
+        </div>
+        <div class="member">
+          <img src="{{ asset('images/raniel.jpg') }}" alt="Team Member 2">
+          <h4>RANIEL</h4>
+          <p>Documentator</p>
         </div>
       </div>
     </section>
