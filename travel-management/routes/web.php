@@ -115,6 +115,8 @@ Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('inci
 
 // Resolve incident
 Route::post('/incidents/{id}/resolve', [IncidentController::class, 'resolve'])->name('incidents.resolve');
+//delete incident
+Route::delete('/incidents/{id}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
 
 // API route to fetch incidents (used in dashboard JS) – includes location
 Route::get('/incidents/fetch', function () {

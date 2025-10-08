@@ -48,7 +48,6 @@ class IncidentController extends Controller
         ]);
 
         try {
-            // Save to Laravel DB
             $incident = Incident::create([
                 'title' => ucfirst(str_replace('_', ' ', $validated['type'])),
                 'description' => $validated['description'],
@@ -59,7 +58,6 @@ class IncidentController extends Controller
 
             Log::info('✅ Incident saved locally', ['id' => $incident->id]);
 
-            // Sync to Firebase
             $this->syncToFirebase($incident);
 
             return response()->json([
@@ -79,9 +77,6 @@ class IncidentController extends Controller
         }
     }
 
-    /**
-     * Fetch all incidents
-     */
     public function fetch()
     {
         $incidents = Incident::select('id', 'title', 'description', 'lat', 'lng', 'status', 'created_at')
@@ -102,7 +97,7 @@ class IncidentController extends Controller
 
         Log::info("✅ Incident marked as resolved", ['id' => $id]);
 
-        // Sync updated status to Firebase
+
         try {
             $this->syncToFirebase($incident);
         } catch (\Exception $e) {
@@ -131,7 +126,7 @@ class IncidentController extends Controller
         }
 
         try {
-            // 🔧 FIXED: Removed extra spaces in URL
+          
             $response = Http::withHeaders([
                 'User-Agent' => 'TrafficMonitorApp/1.0' // Required by Nominatim
             ])->timeout(5)->get('https://nominatim.openstreetmap.org/reverse', [
@@ -178,7 +173,7 @@ class IncidentController extends Controller
                 'id' => $incident->id,
                 'error' => $e->getMessage()
             ]);
-            throw $e; // Let caller handle retry or log
+            throw $e; 
         }
     }
 
@@ -191,7 +186,7 @@ class IncidentController extends Controller
     $oldStatus = $incident->status;
     $newStatus = $request->status;
 
-    // Update DB
+
     $incident->status = $newStatus;
     $incident->save();
 
@@ -205,21 +200,21 @@ class IncidentController extends Controller
         $resolvedRef = $database->getReference("resolved_incidents/{$id}");
 
         if ($newStatus === 'resolved' && $oldStatus !== 'resolved') {
-            // Move from /incidents → /resolved_incidents
+
             $snapshot = $reference->getSnapshot();
             if ($snapshot->exists()) {
                 $data = $snapshot->getValue();
                 $resolvedRef->set(array_merge($data, [
                     'resolved_at' => now()->toISOString()
                 ]));
-                $reference->remove(); // Remove from active list
+                $reference->remove(); 
             }
         } elseif ($newStatus === 'reported' && $oldStatus === 'resolved') {
-            // Move back: /resolved_incidents → /incidents
+        
             $snapshot = $resolvedRef->getSnapshot();
             if ($snapshot->exists()) {
                 $data = $snapshot->getValue();
-                unset($data['resolved_at']); // Clean up
+                unset($data['resolved_at']); 
                 $reference->set($data);
                 $resolvedRef->remove();
             }
@@ -238,5 +233,12 @@ class IncidentController extends Controller
             'message' => 'Failed to sync with Firebase.'
         ], 500);
     }
+}
+public function destroy($id)
+{
+    $incident = Incident::findOrFail($id);
+    $incident->delete(); 
+
+    return response()->json(['success' => true]);
 }
 }

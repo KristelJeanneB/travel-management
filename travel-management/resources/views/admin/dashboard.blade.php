@@ -25,7 +25,7 @@
             flex-direction: column;
         }
 
-        .header {
+         .header {
             background-color: #86A8CF;
             height: 56px;
             display: flex;
@@ -44,22 +44,22 @@
             font-weight: 600;
             color: white;
         }
-
         .dashboard-container {
             position: relative;
             width: 95%;
             max-width: 100%;
             margin: 80px auto 20px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 14px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             display: flex;
             flex-direction: row;
             min-height: calc(100vh - 100px);
         }
 
+        /* Sidebar */
         .sidebar {
-            width: 240px;
+            width: 250px;
             background: #86A8CF;
             color: white;
             padding: 20px 0;
@@ -73,36 +73,37 @@
         }
 
         .sidebar li {
-            padding: 14px 20px;
+            padding: 15px 20px;
             cursor: pointer;
             font-size: 15px;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .sidebar li:hover,
         .sidebar li.active {
-            background: rgba(255, 255, 255, 0.2);
-            padding-left: 25px;
+            background: rgba(255, 255, 255, 0.25);
+            padding-left: 28px;
             font-weight: 600;
         }
 
         .sidebar li.active {
             background: rgba(255, 255, 255, 0.3);
-            border-left: 3px solid white;
+            border-left: 4px solid white;
         }
 
         .sidebar a {
             color: white;
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             font-weight: 500;
         }
 
+        /* Main Content */
         .main-content {
             flex: 1;
-            padding: 30px;
+            padding: 35px;
             background: white;
             min-height: 100%;
         }
@@ -110,8 +111,8 @@
         header {
             display: flex;
             align-items: center;
-            margin-bottom: 25px;
-            gap: 12px;
+            margin-bottom: 30px;
+            gap: 14px;
         }
 
         .search-bar {
@@ -126,15 +127,15 @@
 
         .search-bar:focus {
             border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
         }
 
         .profile-btn {
             background: #86A8CF;
             border: none;
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -149,12 +150,11 @@
 
         .overview h2 {
             text-align: center;
-            margin-bottom: 25px;
-            color: #333;
-            font-size: 22px;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-size: 24px;
             font-weight: 600;
         }
-
        .card-group {
     display: flex;
     gap: 24px; /* Just enough space without feeling sparse */
@@ -339,6 +339,17 @@
             cursor: not-allowed;
         }
 
+        .card i.icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.card:hover i.icon {
+    transform: scale(1.1);
+}
+
         /* Toast Notification */
         #toast {
             position: fixed;
@@ -395,13 +406,25 @@
                 font-size: 24px;
             }
         }
+        .status-toggle-btn.delete-btn {
+    background: #dc3545;
+    margin-top: 6px;
+}
+
+.status-toggle-btn.delete-btn:hover:not(:disabled) {
+    background: #c82333;
+}
+
+#confirmModal .modal-content {
+    background: white;
+}
     </style>
 </head>
 
 <body>
 
 <div class="header">
-    <h1>Admin</h1>
+    <h1>Admin Panel</h1>
 </div>
 
 <div class="dashboard-container">
@@ -448,26 +471,31 @@
         </header>
 
         <section class="overview" aria-labelledby="overview-heading">
-            <h2 id="overview-heading">Dashboard Overview</h2>
-            <div class="card-group">
-                <div class="card" id="totalUsersCard" role="button" tabindex="0">
-                    <p>Total Users</p>
-                    <small id="userCount">Loading...</small>
-                </div>
-                <div class="card" id="payments-card" role="button" tabindex="0">
-                    <p>Payments</p>
-                    <small>User Payments</small>
-                </div>
-                <div class="card" id="accidentReportsBtn" role="button" tabindex="0">
-                    <p>Accident Reports</p>
-                    <small>User Reports</small>
-                </div>
-            </div>
-        </section>
+    <h2 id="overview-heading">Dashboard Overview</h2>
+    <div class="card-group">
+   
+        <div class="card" id="totalUsersCard" role="button" tabindex="0">
+            <i class="fas fa-users icon" style="color: #3498db;"></i>
+            <p>Total Users</p>
+            <small id="userCount">Loading...</small>
+        </div>
+
+        <div class="card" id="payments-card" role="button" tabindex="0">
+            <i class="fas fa-wallet icon" style="color: #27ae60;"></i>
+            <p>Payments</p>
+            <small>User Payments</small>
+        </div>
+
+        <div class="card" id="accidentReportsBtn" role="button" tabindex="0">
+            <i class="fas fa-car-crash icon" style="color: #e74c3c;"></i>
+            <p>Accident Reports</p>
+            <small>User Reports</small>
+        </div>
+    </div>
+</section>
     </main>
 </div>
 
-<!-- PAYMENTS MODAL -->
 <div id="payments-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="payments-modal-title">
     <div class="modal-content">
         <div class="modal-header">
@@ -480,7 +508,6 @@
     </div>
 </div>
 
-<!-- ALL USERS MODAL -->
 <div id="usersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="users-modal-title">
     <div class="modal-content">
         <div class="modal-header">
@@ -502,7 +529,6 @@
     </div>
 </div>
 
-<!-- INCIDENT REPORTS MODAL -->
 <div id="incidentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="incident-modal-title">
     <div class="modal-content">
         <div class="modal-header">
@@ -511,27 +537,37 @@
         </div>
         <table>
             <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Description</th>
-                    <th>Coords</th>
-                    <th>Address</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
+    <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Coords</th>
+        <th>Address</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Actions</th> 
+    </tr>
+</thead>
             <tbody id="incidentTableBody"></tbody>
         </table>
     </div>
 </div>
 
-<!-- Logout Form -->
 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
 
-<!-- Toast Notification -->
 <div id="toast">Report updated successfully!</div>
+
+<div id="confirmModal" class="modal" style="display: none; z-index: 2000;">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 25px; font-size: medium;">
+        <h3 style="margin-top: 0; color: #e74c3c;">CONFIRM DELETE</h3>
+        <p id="confirmMessage" style="margin-top: 0; color: black; font-size: large;">Are you sure you want to delete this report?</p>
+        <div style="margin-top: 20px;">
+            <button id="confirmNoBtn" class="btn" style="background: #a0cfff; color: black; font-size: large;">Cancel</button>
+            <button id="confirmYesBtn" class="btn" style="background: #e74c3c; color: black; margin-right: 10px; font-size: large;">Delete</button>
+        </div>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -552,7 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const incidentTableBody = document.getElementById('incidentTableBody');
     const usersTableBody = document.querySelector('#usersTable tbody');
 
-    // === LOAD USER COUNT ===
     fetch('{{ route("admin.users.count") }}')
         .then(res => res.json())
         .then(data => {
@@ -562,7 +597,6 @@ document.addEventListener('DOMContentLoaded', () => {
             userCountEl.textContent = 'Error';
         });
 
-    // === OPEN USERS MODAL ===
     totalUsersCard?.addEventListener('click', () => {
         usersModal.style.display = 'flex';
         loadAllUsers();
@@ -596,7 +630,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // === OPEN PAYMENTS MODAL ===
     paymentsCard?.addEventListener('click', () => {
         paymentsModal.style.display = 'flex';
         loadPayments();
@@ -653,7 +686,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tableHtml += `</tbody></table>`;
             paymentsContent.innerHTML = tableHtml;
 
-            // Confirm Payment Handler
             document.querySelectorAll('.confirm-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const row = btn.closest('tr');
@@ -671,9 +703,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then(r => r.json())
                     .then(res => {
                         if (res.success) {
-                            row.querySelector('.status').textContent = 'confirmed';
-                            row.querySelector('.status').style.color = 'green';
-                            row.querySelector('.status').style.fontWeight = 'bold';
+                            row.querySelector('td:nth-child(4)').textContent = 'confirmed';
+                            row.querySelector('td:nth-child(4)').style.color = 'green';
+                            row.querySelector('td:nth-child(4)').style.fontWeight = 'bold';
                             btn.remove();
                             showToast('Payment confirmed!');
                         } else {
@@ -697,11 +729,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === INCIDENT REPORTS ===
     accidentReportsBtn?.addEventListener('click', loadIncidents);
 
     function loadIncidents() {
-        incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>';
+        incidentTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading reports...</td></tr>';
         incidentModal.style.display = 'flex';
 
         fetch('{{ route("incidents.fetch") }}', {
@@ -719,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
             incidentTableBody.innerHTML = '';
 
             if (!data || !Array.isArray(data) || data.length === 0) {
-                incidentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No reports available</td></tr>';
+                incidentTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No reports available</td></tr>';
                 return;
             }
 
@@ -736,32 +767,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tr = document.createElement('tr');
                 tr.dataset.id = item.id;
 
-                const isResolved = item.status === 'resolved';
-                const btnText = isResolved ? '✅ Resolved' : '✓ Resolve';
-                const button = document.createElement('button');
-                button.className = 'status-toggle-btn';
-                button.textContent = btnText;
-                button.dataset.status = item.status;
-                button.style.background = isResolved ? '#17a2b8' : '#28a745';
-                button.disabled = false;
+                const statusBtn = document.createElement('button');
+                statusBtn.className = 'status-toggle-btn';
+                statusBtn.textContent = item.status === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+                statusBtn.style.background = item.status === 'resolved' ? '#17a2b8' : '#28a745';
+                statusBtn.dataset.status = item.status;
 
-                button.addEventListener('click', function () {
+                statusBtn.addEventListener('click', function () {
                     const currentStatus = this.dataset.status;
                     const newStatus = currentStatus === 'reported' ? 'resolved' : 'reported';
                     const id = tr.dataset.id;
 
-                    // Optimistic UI Update
-                    if (newStatus === 'resolved') {
-                        this.textContent = '✅ Resolved';
-                        this.style.background = '#17a2b8';
-                        this.dataset.status = 'resolved';
-                    } else {
-                        this.textContent = '✓ Resolve';
-                        this.style.background = '#28a745';
-                        this.dataset.status = 'reported';
-                    }
+                    this.textContent = newStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+                    this.style.background = newStatus === 'resolved' ? '#17a2b8' : '#28a745';
+                    this.dataset.status = newStatus;
 
-                    // Send to server
                     fetch(`{{ url('/incidents') }}/${id}/update-status`, {
                         method: 'POST',
                         headers: {
@@ -774,7 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then(result => {
                         if (result.success) {
                             showToast(`Incident ${newStatus}!`);
-                            updateAlertBadge(); // Refresh count
+                            updateAlertBadge();
                         } else {
                             throw new Error('Update failed');
                         }
@@ -782,17 +802,71 @@ document.addEventListener('DOMContentLoaded', () => {
                     .catch(err => {
                         console.error('Error updating status:', err);
                         alert('Could not update status. Reverting...');
-                        // Rollback UI
                         const revertStatus = this.dataset.status === 'resolved' ? 'reported' : 'resolved';
-                        const wasResolved = revertStatus === 'resolved';
-                        this.textContent = wasResolved ? '✅ Resolved' : '✓ Resolve';
-                        this.style.background = wasResolved ? '#17a2b8' : '#28a745';
+                        this.textContent = revertStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+                        this.style.background = revertStatus === 'resolved' ? '#17a2b8' : '#28a745';
                         this.dataset.status = revertStatus;
                     });
                 });
 
-                const tdButton = document.createElement('td');
-                tdButton.appendChild(button);
+
+const deleteBtn = document.createElement('button');
+deleteBtn.className = 'status-toggle-btn delete-btn';
+deleteBtn.textContent = '🗑️ Delete';
+deleteBtn.addEventListener('click', function () {
+    const id = tr.dataset.id;
+
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmYesBtn = document.getElementById('confirmYesBtn');
+    const confirmNoBtn = document.getElementById('confirmNoBtn');
+
+    confirmModal.style.display = 'flex';
+
+    const handleYes = () => {
+        confirmYesBtn.removeEventListener('click', handleYes);
+        confirmNoBtn.removeEventListener('click', handleNo);
+        confirmModal.style.display = 'none';
+
+        fetch(`{{ url('/incidents') }}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                tr.remove();
+                showToast('Report deleted!', 'success');
+                updateAlertBadge();
+            } else {
+                throw new Error('Delete failed');
+            }
+        })
+        .catch(err => {
+            console.error('Delete error:', err);
+            showToast('Failed to delete report.', 'error');
+        });
+    };
+
+    const handleNo = () => {
+        confirmYesBtn.removeEventListener('click', handleYes);
+        confirmNoBtn.removeEventListener('click', handleNo);
+        confirmModal.style.display = 'none';
+    };
+
+    confirmYesBtn.addEventListener('click', handleYes);
+    confirmNoBtn.addEventListener('click', handleNo);
+
+    const closeOnOutsideClick = (e) => {
+        if (e.target === confirmModal) {
+            handleNo();
+            window.removeEventListener('click', closeOnOutsideClick);
+        }
+    };
+    window.addEventListener('click', closeOnOutsideClick);
+});
 
                 tr.innerHTML = `
                     <td>${item.title || 'N/A'}</td>
@@ -801,7 +875,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="font-size:13px; color:#555;">Loading address...</td>
                     <td>${new Date(item.created_at).toLocaleString()}</td>
                 `;
-                tr.appendChild(tdButton);
+
+       
+                const statusCell = document.createElement('td');
+                statusCell.appendChild(statusBtn);
+                tr.appendChild(statusCell);
+
+                const deleteCell = document.createElement('td');
+                deleteCell.appendChild(deleteBtn);
+                tr.appendChild(deleteCell);
+
                 incidentTableBody.appendChild(tr);
 
                 if (lat && lng) {
@@ -817,14 +900,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("❌ Failed to load incidents:", err);
             incidentTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" style="text-align:center; color:red;">
+                    <td colspan="7" style="text-align:center; color:red;">
                         Error loading reports.<br><small>Check console</small>
                     </td>
                 </tr>`;
         });
     }
 
-    // Reverse Geocoding Helper
+
     async function reverseGeocode(lat, lng) {
         try {
             const res = await fetch(
@@ -840,7 +923,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // === MODAL CLOSE HANDLERS ===
     [closeUsersModalBtn, closeModalBtn, closeIncidentModal].forEach(btn => {
         btn?.addEventListener('click', () => {
             if (btn === closeUsersModalBtn) usersModal.style.display = 'none';
@@ -849,14 +931,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Close modal when clicking overlay
     window.onclick = (e) => {
         if (e.target.classList.contains('modal')) {
             e.target.style.display = 'none';
         }
     };
 
-    // Escape key closes any open modal
     window.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             ['usersModal', 'paymentsModal', 'incidentModal'].forEach(id => {
@@ -866,7 +946,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // === ALERT BADGE UPDATER ===
     function updateAlertBadge(force = null) {
         if (force !== null) {
             updateAlertCountManual(force);
@@ -891,22 +970,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initial load
     updateAlertBadge();
-
-    // Auto-refresh every 30 seconds
     setInterval(updateAlertBadge, 30000);
 
-    // === TOAST NOTIFICATION ===
+
     window.showToast = function(message = "Action completed", type = "success") {
         const toast = document.getElementById('toast');
         toast.textContent = message;
         toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
         toast.style.opacity = 1;
-
-        setTimeout(() => {
-            toast.style.opacity = 0;
-        }, 3000);
+        setTimeout(() => { toast.style.opacity = 0; }, 3000);
     }
 });
 </script>
