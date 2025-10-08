@@ -8,417 +8,471 @@
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #E1CBD7;
-            color: #333;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #E1CBD7;
+        color: #333;
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header {
+        background-color: #86A8CF;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .dashboard-container {
+        position: relative;
+        width: 95%;
+        max-width: 100%;
+        margin: 80px auto 20px;
+        border-radius: 14px;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: row;
+        min-height: calc(100vh - 100px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 250px;
+        background: #86A8CF;
+        color: white;
+        padding: 20px 0;
+        min-height: 100%;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar li {
+        padding: 15px 20px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sidebar li:hover,
+    .sidebar li.active {
+        background: rgba(255, 255, 255, 0.25);
+        padding-left: 28px;
+        font-weight: 600;
+    }
+
+    .sidebar li.active {
+        background: rgba(255, 255, 255, 0.3);
+        border-left: 4px solid white;
+    }
+
+    .sidebar a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        padding: 35px;
+        background: white;
+        min-height: 100%;
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 14px;
+    }
+
+    .search-bar {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        outline: none;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-bar:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+    }
+
+    .profile-btn {
+        background: #86A8CF;
+        border: none;
+        color: white;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+    }
+
+    .profile-btn:hover {
+        background: #6a8cb3;
+    }
+
+    .overview h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #2c3e50;
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    .card-group {
+        display: flex;
+        gap: 24px;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 10px 0;
+    }
+
+    .card {
+        background: #ffffff;
+        border: 1px solid #dfe6eb;
+        border-radius: 12px;
+        padding: 24px 20px;
+        width: 250px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        transition: transform 0.3s cubic-bezier(0.25, 0.7, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+        border-color: #a0cfff;
+    }
+
+    .card p {
+        margin-bottom: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        letter-spacing: 0.2px;
+    }
+
+    .card small {
+        display: block;
+        font-size: 14px;
+        color: #6b7a89;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    /* Modal Base Style */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 25px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        position: relative;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: #007bff;
+        font-weight: 700;
+    }
+
+    .close-btn {
+        font-size: 26px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #555;
+        transition: color 0.3s ease, transform 0.2s ease;
+    }
+
+    .close-btn:hover {
+        color: #007bff;
+        transform: rotate(90deg);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    table thead tr {
+        background-color: #007bff;
+        color: white;
+    }
+
+    table th, table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+
+    table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    table tbody tr:hover {
+        background-color: #f1f7ff;
+    }
+
+    .status-toggle-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+        width: 100%;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .status-toggle-btn:hover:not(:disabled) {
+        background: #218838;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+
+    .status-toggle-btn:disabled {
+        opacity: 0.8;
+        cursor: default;
+    }
+
+    .btn-resolved {
+        background: #17a2b8 !important;
+    }
+
+    .confirm-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .confirm-btn:hover {
+        background-color: #218838;
+    }
+
+    .confirm-btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    .card i.icon {
+        font-size: 36px;
+        margin-bottom: 12px;
+        display: block;
+        transition: transform 0.2s ease;
+    }
+
+    .card:hover i.icon {
+        transform: scale(1.1);
+    }
+
+    /* Toast Notification */
+    #toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        font-size: 14px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .dashboard-container {
             flex-direction: column;
         }
 
-         .header {
-            background-color: #86A8CF;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: white;
-        }
-        .dashboard-container {
-            position: relative;
-            width: 95%;
-            max-width: 100%;
-            margin: 80px auto 20px;
-            border-radius: 14px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: row;
-            min-height: calc(100vh - 100px);
-        }
-
-        /* Sidebar */
         .sidebar {
-            width: 250px;
-            background: #86A8CF;
-            color: white;
-            padding: 20px 0;
-            min-height: 100%;
-        }
-
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar li {
-            padding: 15px 20px;
-            cursor: pointer;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar li:hover,
-        .sidebar li.active {
-            background: rgba(255, 255, 255, 0.25);
-            padding-left: 28px;
-            font-weight: 600;
-        }
-
-        .sidebar li.active {
-            background: rgba(255, 255, 255, 0.3);
-            border-left: 4px solid white;
-        }
-
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 35px;
-            background: white;
-            min-height: 100%;
-        }
-
-        header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            gap: 14px;
-        }
-
-        .search-bar {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        .search-bar:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-        }
-
-        .profile-btn {
-            background: #86A8CF;
-            border: none;
-            color: white;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s ease;
-        }
-
-        .profile-btn:hover {
-            background: #6a8cb3;
-        }
-
-        .overview h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #2c3e50;
-            font-size: 24px;
-            font-weight: 600;
-        }
-       .card-group {
-    display: flex;
-    gap: 24px; /* Just enough space without feeling sparse */
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: 10px 0;
-}
-
-.card {
-    background: #ffffff;
-    border: 1px solid #dfe6eb; /* Soft blue-gray border */
-    border-radius: 12px;
-    padding: 24px 20px;
-    width: 250px; /* Medium size – not too small, not overwhelming */
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Softer shadow */
-    transition: 
-        transform 0.3s cubic-bezier(0.25, 0.7, 0.25, 1),
-        box-shadow 0.3s ease,
-        border-color 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-
-.card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
-    border-color: #a0cfff; 
-}
-
-.card p {
-    margin-bottom: 8px;
-    font-size: 18px; 
-    font-weight: 600;
-    color: #2c3e50;
-    letter-spacing: 0.2px;
-}
-
-.card small {
-    display: block;
-    font-size: 14px;
-    color: #6b7a89; 
-    margin-top: 6px;
-    line-height: 1.4;
-}
-        /* Modal Base Style */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
             width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .card-group {
+            flex-direction: column;
             align-items: center;
+        }
+
+        .card {
+            width: 220px;
+            padding: 20px 16px;
+        }
+
+        .card p {
+            font-size: 17px;
+        }
+
+        .card small {
+            font-size: 13px;
+        }
+
+        .main-content {
+            padding: 20px;
         }
 
         .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 25px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            position: relative;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            color: #007bff;
-            font-weight: 700;
+            width: 95%;
+            padding: 15px;
         }
 
         .close-btn {
-            font-size: 26px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #555;
-            transition: color 0.3s ease, transform 0.2s ease;
+            font-size: 24px;
         }
+    }
 
-        .close-btn:hover {
-            color: #007bff;
-            transform: rotate(90deg);
-        }
+    .status-toggle-btn.delete-btn {
+        background: #dc3545;
+        margin-top: 6px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 14px;
-        }
+    .status-toggle-btn.delete-btn:hover:not(:disabled) {
+        background: #c82333;
+    }
 
-        table thead tr {
-            background-color: #007bff;
-            color: white;
-        }
+    #confirmModal .modal-content {
+        background: white;
+    }
 
-        table th, table td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
+    /* Search in Incident Modal */
+    #incident-search {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        width: 200px;
+        margin-left: 10px;
+    }
 
-        table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        table tbody tr:hover {
-            background-color: #f1f7ff;
-        }
-
-        .status-toggle-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
+    @media (max-width: 768px) {
+        #incident-search {
+            width: 140px;
             font-size: 13px;
-            font-weight: bold;
-            width: 100%;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .status-toggle-btn:hover:not(:disabled) {
-            background: #218838;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-        }
-
-        .status-toggle-btn:disabled {
-            opacity: 0.8;
-            cursor: default;
-        }
-
-        .btn-resolved {
-            background: #17a2b8 !important;
-        }
-
-        .confirm-btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
             padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+        }
+    }
+
+    /* Mobile-friendly incident reports table */
+    @media (max-width: 768px) {
+        #incidentModal .modal-content {
+            padding: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        .confirm-btn:hover {
-            background-color: #218838;
+        #incidentModal table {
+            width: 100%;
+            font-size: 13px;
         }
 
-        .confirm-btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
+        #incidentModal th,
+        #incidentModal td {
+            padding: 8px 6px;
+            white-space: nowrap;
         }
 
-        .card i.icon {
-    font-size: 36px;
-    margin-bottom: 12px;
-    display: block;
-    transition: transform 0.2s ease;
-}
-
-.card:hover i.icon {
-    transform: scale(1.1);
-}
-
-        /* Toast Notification */
-        #toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            font-size: 14px;
+        #incidentModal .modal-content > :not(.modal-header):not(h3):not(p) {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
+    }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 10px 0;
-            }
-
-            .card-group {
-                flex-direction: column;
-                align-items: center;
-            }
-
-           .card {
-        width: 220px;
-        padding: 20px 16px;
-            }
-            .card p {
-        font-size: 17px;
+    @media (max-width: 480px) {
+        #incidentModal th:nth-child(4),
+        #incidentModal td:nth-child(4) {
+            display: none;
         }
-            .card small {
-        font-size: 13px;
-        }
-            .main-content {
-                padding: 20px;
-            }
-
-            .modal-content {
-                width: 95%;
-                padding: 15px;
-            }
-
-            .close-btn {
-                font-size: 24px;
-            }
-        }
-        .status-toggle-btn.delete-btn {
-    background: #dc3545;
-    margin-top: 6px;
-}
-
-.status-toggle-btn.delete-btn:hover:not(:disabled) {
-    background: #c82333;
-}
-
-#confirmModal .modal-content {
-    background: white;
-}
-    </style>
+    }
+</style>
 </head>
 
 <body>
@@ -464,7 +518,6 @@
 
     <main class="main-content" role="main">
         <header>
-            <!--<input type="search" placeholder="Search..." class="search-bar" aria-label="Search" />-->
             <button class="profile-btn" aria-label="User Profile">
                 <i class="fas fa-user"></i>
             </button>
@@ -533,7 +586,14 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="incident-modal-title">Incident Reports</h3>
-            <button class="close-btn" id="closeIncidentModal">&times;</button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input 
+                    type="text" 
+                    id="incident-search" 
+                    placeholder="Search: type, location, date..." 
+                />
+                <button class="close-btn" id="closeIncidentModal">&times;</button>
+            </div>
         </div>
         <table>
             <thead>
@@ -587,6 +647,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const paymentsContent = document.getElementById('payments-content');
     const incidentTableBody = document.getElementById('incidentTableBody');
     const usersTableBody = document.querySelector('#usersTable tbody');
+    const searchInput = document.getElementById('incident-search');
+
+    let allIncidentData = [];
 
     fetch('{{ route("admin.users.count") }}')
         .then(res => res.json())
@@ -596,6 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(() => {
             userCountEl.textContent = 'Error';
         });
+
 
     totalUsersCard?.addEventListener('click', () => {
         usersModal.style.display = 'flex';
@@ -732,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
     accidentReportsBtn?.addEventListener('click', loadIncidents);
 
     function loadIncidents() {
-        incidentTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading reports...</td></tr>';
+        incidentTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading reports...</td></tr>';
         incidentModal.style.display = 'flex';
 
         fetch('{{ route("incidents.fetch") }}', {
@@ -750,163 +814,214 @@ document.addEventListener('DOMContentLoaded', () => {
             incidentTableBody.innerHTML = '';
 
             if (!data || !Array.isArray(data) || data.length === 0) {
-                incidentTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No reports available</td></tr>';
+                incidentTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No reports available</td></tr>';
+                allIncidentData = [];
                 return;
             }
 
+            allIncidentData = data;
+            renderIncidents(data);
+
             const reportedCount = data.filter(i => i.status === 'reported').length;
             updateAlertBadge(reportedCount);
-
-            data.forEach(item => {
-                const lat = parseFloat(item.lat);
-                const lng = parseFloat(item.lng);
-                const coords = !isNaN(lat) && !isNaN(lng)
-                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-                    : 'Not available';
-
-                const tr = document.createElement('tr');
-                tr.dataset.id = item.id;
-
-                const statusBtn = document.createElement('button');
-                statusBtn.className = 'status-toggle-btn';
-                statusBtn.textContent = item.status === 'resolved' ? '✅ Resolved' : '✓ Resolve';
-                statusBtn.style.background = item.status === 'resolved' ? '#17a2b8' : '#28a745';
-                statusBtn.dataset.status = item.status;
-
-                statusBtn.addEventListener('click', function () {
-                    const currentStatus = this.dataset.status;
-                    const newStatus = currentStatus === 'reported' ? 'resolved' : 'reported';
-                    const id = tr.dataset.id;
-
-                    this.textContent = newStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
-                    this.style.background = newStatus === 'resolved' ? '#17a2b8' : '#28a745';
-                    this.dataset.status = newStatus;
-
-                    fetch(`{{ url('/incidents') }}/${id}/update-status`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ status: newStatus })
-                    })
-                    .then(res => res.json())
-                    .then(result => {
-                        if (result.success) {
-                            showToast(`Incident ${newStatus}!`);
-                            updateAlertBadge();
-                        } else {
-                            throw new Error('Update failed');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error updating status:', err);
-                        alert('Could not update status. Reverting...');
-                        const revertStatus = this.dataset.status === 'resolved' ? 'reported' : 'resolved';
-                        this.textContent = revertStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
-                        this.style.background = revertStatus === 'resolved' ? '#17a2b8' : '#28a745';
-                        this.dataset.status = revertStatus;
-                    });
-                });
-
-
-const deleteBtn = document.createElement('button');
-deleteBtn.className = 'status-toggle-btn delete-btn';
-deleteBtn.textContent = '🗑️ Delete';
-deleteBtn.addEventListener('click', function () {
-    const id = tr.dataset.id;
-
-    const confirmModal = document.getElementById('confirmModal');
-    const confirmYesBtn = document.getElementById('confirmYesBtn');
-    const confirmNoBtn = document.getElementById('confirmNoBtn');
-
-    confirmModal.style.display = 'flex';
-
-    const handleYes = () => {
-        confirmYesBtn.removeEventListener('click', handleYes);
-        confirmNoBtn.removeEventListener('click', handleNo);
-        confirmModal.style.display = 'none';
-
-        fetch(`{{ url('/incidents') }}/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(result => {
-            if (result.success) {
-                tr.remove();
-                showToast('Report deleted!', 'success');
-                updateAlertBadge();
-            } else {
-                throw new Error('Delete failed');
-            }
-        })
-        .catch(err => {
-            console.error('Delete error:', err);
-            showToast('Failed to delete report.', 'error');
-        });
-    };
-
-    const handleNo = () => {
-        confirmYesBtn.removeEventListener('click', handleYes);
-        confirmNoBtn.removeEventListener('click', handleNo);
-        confirmModal.style.display = 'none';
-    };
-
-    confirmYesBtn.addEventListener('click', handleYes);
-    confirmNoBtn.addEventListener('click', handleNo);
-
-    const closeOnOutsideClick = (e) => {
-        if (e.target === confirmModal) {
-            handleNo();
-            window.removeEventListener('click', closeOnOutsideClick);
-        }
-    };
-    window.addEventListener('click', closeOnOutsideClick);
-});
-
-                tr.innerHTML = `
-                    <td>${item.title || 'N/A'}</td>
-                    <td>${item.description || 'N/A'}</td>
-                    <td><code>${coords}</code></td>
-                    <td style="font-size:13px; color:#555;">Loading address...</td>
-                    <td>${new Date(item.created_at).toLocaleString()}</td>
-                `;
-
-       
-                const statusCell = document.createElement('td');
-                statusCell.appendChild(statusBtn);
-                tr.appendChild(statusCell);
-
-                const deleteCell = document.createElement('td');
-                deleteCell.appendChild(deleteBtn);
-                tr.appendChild(deleteCell);
-
-                incidentTableBody.appendChild(tr);
-
-                if (lat && lng) {
-                    reverseGeocode(lat, lng).then(addr => {
-                        tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
-                    }).catch(() => {
-                        tr.cells[3].textContent = "Address unavailable";
-                    });
-                }
-            });
         })
         .catch(err => {
             console.error("❌ Failed to load incidents:", err);
             incidentTableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" style="text-align:center; color:red;">
+                    <td colspan="8" style="text-align:center; color:red;">
                         Error loading reports.<br><small>Check console</small>
                     </td>
                 </tr>`;
         });
     }
 
+    function renderIncidents(data) {
+        incidentTableBody.innerHTML = '';
+
+        if (!data.length) {
+            incidentTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No matching reports</td></tr>';
+            return;
+        }
+
+        data.forEach(item => {
+            const lat = parseFloat(item.lat);
+            const lng = parseFloat(item.lng);
+            const coords = !isNaN(lat) && !isNaN(lng)
+                ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                : 'Not available';
+
+            const tr = document.createElement('tr');
+            tr.dataset.id = item.id;
+
+            const statusBtn = document.createElement('button');
+            statusBtn.className = 'status-toggle-btn';
+            statusBtn.textContent = item.status === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+            statusBtn.style.background = item.status === 'resolved' ? '#17a2b8' : '#28a745';
+            statusBtn.dataset.status = item.status;
+
+            statusBtn.addEventListener('click', function () {
+                const currentStatus = this.dataset.status;
+                const newStatus = currentStatus === 'reported' ? 'resolved' : 'reported';
+                const id = tr.dataset.id;
+
+                this.textContent = newStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+                this.style.background = newStatus === 'resolved' ? '#17a2b8' : '#28a745';
+                this.dataset.status = newStatus;
+
+                fetch(`{{ url('/incidents') }}/${id}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.success) {
+                        showToast(`Incident ${newStatus}!`);
+                        updateAlertBadge();
+                    } else {
+                        throw new Error('Update failed');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error updating status:', err);
+                    alert('Could not update status. Reverting...');
+
+                    const revertStatus = this.dataset.status === 'resolved' ? 'reported' : 'resolved';
+                    this.textContent = revertStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+                    this.style.background = revertStatus === 'resolved' ? '#17a2b8' : '#28a745';
+                    this.dataset.status = revertStatus;
+                });
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'status-toggle-btn delete-btn';
+            deleteBtn.textContent = '🗑️ Delete';
+            deleteBtn.addEventListener('click', function () {
+                const id = tr.dataset.id;
+
+                const confirmModal = document.getElementById('confirmModal');
+                const confirmYesBtn = document.getElementById('confirmYesBtn');
+                const confirmNoBtn = document.getElementById('confirmNoBtn');
+
+                confirmModal.style.display = 'flex';
+
+                const handleYes = () => {
+                    confirmYesBtn.removeEventListener('click', handleYes);
+                    confirmNoBtn.removeEventListener('click', handleNo);
+                    confirmModal.style.display = 'none';
+
+                    fetch(`{{ url('/incidents') }}/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.success) {
+                            tr.remove();
+                            showToast('Report deleted!', 'success');
+                            updateAlertBadge();
+                            allIncidentData = allIncidentData.filter(i => i.id != id);
+                        } else {
+                            throw new Error('Delete failed');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Delete error:', err);
+                        showToast('Failed to delete report.', 'error');
+                    });
+                };
+
+                const handleNo = () => {
+                    confirmYesBtn.removeEventListener('click', handleYes);
+                    confirmNoBtn.removeEventListener('click', handleNo);
+                    confirmModal.style.display = 'none';
+                };
+
+                confirmYesBtn.addEventListener('click', handleYes);
+                confirmNoBtn.addEventListener('click', handleNo);
+
+                const closeOnOutsideClick = (e) => {
+                    if (e.target === confirmModal) {
+                        handleNo();
+                        window.removeEventListener('click', closeOnOutsideClick);
+                    }
+                };
+                window.addEventListener('click', closeOnOutsideClick);
+            });
+
+            tr.innerHTML = `
+                <td>${item.title || 'N/A'}</td>
+                <td>${item.description || 'N/A'}</td>
+                <td><code>${coords}</code></td>
+                <td style="font-size:13px; color:#555;">${item.address || 'Loading address...'}</td>
+                <td>${new Date(item.created_at).toLocaleString()}</td>
+            `;
+
+            const statusCell = document.createElement('td');
+            statusCell.appendChild(statusBtn);
+            tr.appendChild(statusCell);
+
+            const deleteCell = document.createElement('td');
+            deleteCell.appendChild(deleteBtn);
+            tr.appendChild(deleteCell);
+
+            incidentTableBody.appendChild(tr);
+
+            if (lat && lng && !item.address) {
+                reverseGeocode(lat, lng).then(addr => {
+                    tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
+                    const index = allIncidentData.findIndex(i => i.id == item.id);
+                    if (index !== -1) {
+                        allIncidentData[index].address = addr;
+                    }
+                }).catch(() => {
+                    tr.cells[3].textContent = "Address unavailable";
+                });
+            } else if (item.address) {
+                tr.cells[3].textContent = item.address;
+            }
+        });
+    }
+
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = searchInput.value.toLowerCase().trim();
+            if (!query) {
+                renderIncidents(allIncidentData);
+                return;
+            }
+
+            const filtered = allIncidentData.filter(item => {
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lng);
+                const coords = !isNaN(lat) && !isNaN(lng)
+                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                    : '';
+
+                const address = item.address || '';
+                const dateStr = new Date(item.created_at).toLocaleString().toLowerCase();
+
+                return (
+                    (item.title && item.title.toLowerCase().includes(query)) ||
+                    (item.description && item.description.toLowerCase().includes(query)) ||
+                    coords.toLowerCase().includes(query) ||
+                    address.toLowerCase().includes(query) ||
+                    dateStr.includes(query)
+                );
+            });
+
+            renderIncidents(filtered);
+        }, 300);
+    });
 
     async function reverseGeocode(lat, lng) {
         try {
@@ -972,7 +1087,6 @@ deleteBtn.addEventListener('click', function () {
 
     updateAlertBadge();
     setInterval(updateAlertBadge, 30000);
-
 
     window.showToast = function(message = "Action completed", type = "success") {
         const toast = document.getElementById('toast');

@@ -320,7 +320,7 @@
         background: #f4edf2;
         border-radius: 12px;
         box-shadow: 0 0 12px rgba  (0,0,0,0.2);
-        z-index: 1060; /* Above map, modals, and controls */
+        z-index: 1060; 
     }
 
     #legend strong {
@@ -377,6 +377,27 @@
     #userIncidentModal th:nth-child(4),
     #userIncidentModal td:nth-child(4) {
         display: none; 
+    }
+}
+@media (max-width: 768px) {
+    #userIncidentModal .modal-content {
+        padding: 15px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    #userIncidentModal table {
+        width: 100%;
+        font-size: 13px;
+    }
+    #userIncidentModal th,
+    #userIncidentModal td {
+        padding: 8px 6px;
+        white-space: nowrap;
+    }
+    #user-incident-search {
+        width: 140px;
+        font-size: 13px;
+        padding: 6px 10px;
     }
 }
 }
@@ -479,10 +500,17 @@
 
 <div id="userIncidentModal" class="modal">
     <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-        <span id="closeUserIncidentModal" class="modal-close">&times;</span>
-        <h2>Community Incident Reports</h2>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+            <h2>Community Incident Reports</h2>
+            <input 
+                type="text" 
+                id="user-incident-search" 
+                placeholder="Search: type, location, date..." 
+                style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; width: 200px;"
+            />
+            <span id="closeUserIncidentModal" class="modal-close">&times;</span>
+        </div>
         <p style="color: #555; margin-bottom: 15px;">See real-time reports from other users.</p>
-
         <table>
             <thead>
                 <tr>
@@ -494,13 +522,12 @@
                     <th>Status</th>
                 </tr>
             </thead>
-             <tbody id="userIncidentTableBody">
-                <tr><td colspan="5" style="text-align:center;">Loading reports...</td></tr>
+            <tbody id="userIncidentTableBody">
+                <tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
-
 <div id="incident-modal" class="modal">
     <div class="modal-content" style="max-width: 500px; margin: 40px auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <span id="close-incident-modal" class="modal-close" style="float:right; font-size:28px; cursor:pointer;">&times;</span>
@@ -639,6 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 tableBody.appendChild(tr);
 
+                // Reverse geocode
                 if (lat && lng) {
                     reverseGeocode(lat, lng).then(addr => {
                         tr.cells[3].textContent = addr.length > 100 
@@ -1206,10 +1234,15 @@ async function reverseGeocode(lat, lng) {
     }
 }
 
+// === LOAD & SEARCH INCIDENTS ===
+let allIncidentData = [];
+
 function loadIncidents() {
     const tableBody = document.getElementById('userIncidentTableBody');
+    const searchInput = document.getElementById('user-incident-search');
+    
     tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>';
-
+    
     fetch('{{ route("incidents.fetch") }}', {
         method: 'GET',
         headers: {
@@ -1223,65 +1256,116 @@ function loadIncidents() {
     })
     .then(data => {
         tableBody.innerHTML = '';
-
         if (!data || !Array.isArray(data) || data.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No incidents reported yet.</td></tr>';
+            allIncidentData = [];
             return;
         }
 
         data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-       const typeLabels = {
-            accident: '🚗 Accident',
-            traffic_jam: '🚦 Traffic Jam',
-            road_closure: '🚧 Road Closure',
-            hazard: '⚠️ Hazard',
-            other: 'ℹ️ Other',
-            fire: '🔥 Fire',        
-            flooding: '🌊 Flooding'
-        };
-        data.forEach(item => {
-            const lat = parseFloat(item.lat);
-            const lng = parseFloat(item.lng);
-            const coords = !isNaN(lat) && !isNaN(lng)
-                ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-                : 'Not available';
-
-           const displayType = typeLabels[item.title] || (item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1).replace('_', ' ') : 'Unknown');
-
-    
-            const statusBadge = item.status === 'resolved'
-                ? '<span style="color:#17a2b8; font-weight:bold;">✅ Resolved</span>'
-                : '<span style="color:#d9534f; font-weight:bold;">🔴 Active</span>';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${displayType}</strong></td>
-                <td>${item.description ? item.description : '<em>No details provided</em>'}</td>
-                <td><code>${coords}</code></td>
-                <td style="font-size:13px; color:#555;">Loading address...</td>
-                <td style="white-space:nowrap;">${formatDate(item.created_at)}</td>
-                <td>${statusBadge}</td>
-            `;
-            tableBody.appendChild(tr);
-            if (lat && lng) {
-                reverseGeocode(lat, lng).then(addr => {
-                    if (tr.cells[3]) {
-                        tr.cells[3].textContent = addr.length > 100 
-                            ? addr.substring(0, 100) + '...' 
-                            : addr;
-                    }
-                }).catch(() => {
-                    if (tr.cells[3]) tr.cells[3].textContent = "Address unavailable";
-                });
-            } else {
-                if (tr.cells[3]) tr.cells[3].textContent = "No location";
-            }
-        });
+        allIncidentData = data;
+        renderIncidents(data);
     })
     .catch(err => {
         console.error("Failed to load incident reports:", err);
         tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load reports. Please try again.</td></tr>';
+    });
+
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = searchInput.value.toLowerCase().trim();
+            if (!query) {
+                renderIncidents(allIncidentData);
+                return;
+            }
+
+            const filtered = allIncidentData.filter(item => {
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lng);
+                const coords = !isNaN(lat) && !isNaN(lng)
+                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                    : '';
+
+                const address = item.address || '';
+                const dateStr = new Date(item.created_at).toLocaleString().toLowerCase();
+
+                return (
+                    (item.title && item.title.toLowerCase().includes(query)) ||
+                    (item.description && item.description.toLowerCase().includes(query)) ||
+                    coords.toLowerCase().includes(query) ||
+                    address.toLowerCase().includes(query) ||
+                    dateStr.includes(query)
+                );
+            });
+
+            renderIncidents(filtered);
+        }, 300);
+    });
+}
+
+function renderIncidents(data) {
+    const tableBody = document.getElementById('userIncidentTableBody');
+    tableBody.innerHTML = '';
+
+    if (!data.length) {
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No matching reports</td></tr>';
+        return;
+    }
+
+    const typeLabels = {
+        accident: '🚗 Accident',
+        traffic_jam: '🚦 Traffic Jam',
+        road_closure: '🚧 Road Closure',
+        hazard: '⚠️ Hazard',
+        other: 'ℹ️ Other',
+        fire: '🔥 Fire',        
+        flooding: '🌊 Flooding'
+    };
+
+    data.forEach(item => {
+        const lat = parseFloat(item.lat);
+        const lng = parseFloat(item.lng);
+        const coords = !isNaN(lat) && !isNaN(lng)
+            ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+            : 'Not available';
+
+        const displayType = typeLabels[item.title] || 
+            (item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1).replace('_', ' ') : 'Unknown');
+        
+        const statusBadge = item.status === 'resolved'
+            ? '<span style="color:#17a2b8; font-weight:bold;">✅ Resolved</span>'
+            : '<span style="color:#d9534f; font-weight:bold;">🔴 Active</span>';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${displayType}</strong></td>
+            <td>${item.description ? item.description : '<em>No details provided</em>'}</td>
+            <td><code>${coords}</code></td>
+            <td style="font-size:13px; color:#555;">${item.address || 'Loading address...'}</td>
+            <td style="white-space:nowrap;">${formatDate(item.created_at)}</td>
+            <td>${statusBadge}</td>
+        `;
+        tableBody.appendChild(tr);
+
+        if (lat && lng && !item.address) {
+            reverseGeocode(lat, lng).then(addr => {
+                if (tr.cells[3]) {
+                    tr.cells[3].textContent = addr.length > 100 
+                        ? addr.substring(0, 100) + '...' 
+                        : addr;
+                    const index = allIncidentData.findIndex(i => i.id == item.id);
+                    if (index !== -1) {
+                        allIncidentData[index].address = addr;
+                    }
+                }
+            }).catch(() => {
+                if (tr.cells[3]) tr.cells[3].textContent = "Address unavailable";
+            });
+        } else if (item.address && tr.cells[3]) {
+            tr.cells[3].textContent = item.address;
+        }
     });
 }
 
