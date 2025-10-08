@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Monitor</title>
 
     <link rel="stylesheet" href="{{ asset('css/map.css') }}">
@@ -13,6 +14,7 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
 
 .btn-route {
     display: flex;
@@ -152,20 +154,6 @@
             font-style: italic;
         }
 
-        #legend {
-            position: fixed;
-            bottom: 50px;
-            left: 20px;
-            width: 320px;
-            padding: 20px 25px;
-            background-color: #f4edf2;
-            border-radius: 12px;
-            box-shadow: 0 0 12px rgba(134, 168, 207, 0.8);
-            z-index: 1050;
-            max-height: calc(100vh - 90px);
-            overflow-y: auto;
-        }
-
         #incident-modal .fa-check-circle {
     color: #28a745;
     animation: grow 0.5s ease-out;
@@ -222,6 +210,175 @@
         transform: scale(1.4);
         opacity: 0;
     }
+
+    /* Mobile responsiveness */
+@media (max-width: 768px) {
+    .route-guidance {
+        width: 100%;
+        padding: 15px;
+        background: #f4edf2;
+        border-radius: 0;
+        box-shadow: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1050;
+        max-height: 100vh;
+        overflow-y: auto;
+        display: none; /* Hidden by default */
+    }
+
+    .route-guidance.active {
+        display: block;
+    }
+
+    .map-container {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+}
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+    .header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1050;
+    }
+
+    .nav {
+        padding: 10px 15px;
+    }
+
+    .back-button {
+        font-size: 16px;
+    }
+
+    .dropdown {
+        position: absolute;
+        right: 15px;
+        top: 10px;
+    }
+
+    .dropdown-content {
+        right: 0;
+        left: auto;
+        min-width: 150px;
+    }
+
+    .form-group label {
+        font-size: 14px;
+    }
+
+    .form-group input {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .btn-route,
+    .btn-report,
+    .btn-view-reports {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .modal-content {
+        max-width: 90%;
+        margin: 10% auto;
+        padding: 15px;
+    }
+    .mobile-menu-btn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1051;
+    background: #5D7EA3;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+}
+@media (max-width: 768px) {
+  #legend {
+        position: fixed;
+        bottom: 60px;
+        left: 20px;
+        width: 320px;
+        padding: 20px;
+        background: #f4edf2;
+        border-radius: 12px;
+        box-shadow: 0 0 12px rgba  (0,0,0,0.2);
+        z-index: 1060; /* Above map, modals, and controls */
+    }
+
+    #legend strong {
+        font-size: 14px;
+    }
+
+    #legend span {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    #userIncidentModal .modal-content {
+        padding: 15px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    #userIncidentModal table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    #userIncidentModal th,
+    #userIncidentModal td {
+        padding: 8px 6px;
+        white-space: nowrap;
+    }
+
+    #userIncidentModal th {
+        font-size: 12px;
+    }
+
+
+    #userIncidentModal .modal-content > :not(h2):not(p) {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 480px) {
+    #userIncidentModal th:nth-child(2),
+    #userIncidentModal td:nth-child(2) {
+        font-size: 12px;
+    }
+
+    #userIncidentModal th:nth-child(4),
+    #userIncidentModal td:nth-child(4) {
+        display: none; 
+    }
+}
 }
     </style>
 </head>
@@ -288,6 +445,15 @@
     <button id="open-traffic-modal" class="btn" style="margin-top: 15px;">
         <i class="fas fa-car-side"></i> Show Traffic Status
     </button>
+
+    <div id="" style="margin-top: 30px;">
+        <strong>Alternate Routes</strong><br>
+        <span style="color:red;">●</span> Route A<br>
+        <span style="color:blue;">●</span> Route B<br>
+        <span style="color:green;">●</span> Route C<br>
+        <span style="color:purple;">●</span> Route D<br>
+        <small>All share start & destination</small>
+    </div>
 </div>
 
 <div id="traffic-modal" class="modal">
@@ -308,14 +474,7 @@
     <div id="map"></div>
     <div id="route-summary" class="route-summary hidden"></div>
 
-    <div id="legend">
-    <strong>Alternate Routes</strong><br>
-    <span style="color:red;">●</span> Route A<br>
-    <span style="color:blue;">●</span> Route B<br>
-    <span style="color:green;">●</span> Route C<br>
-    <span style="color:purple;">●</span> Route D<br>
-    <small>All share start & destination</small>
-</div>
+    
 </div>
 
 <div id="userIncidentModal" class="modal">
@@ -411,9 +570,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Reference to Firebase 'incidents' node
+   
 const incidentsRef = db.ref('incidents').on('value', (snapshot) => {
-    clearAllMarkers(); // e.g., remove old ones
+    clearAllMarkers();
 
     snapshot.forEach(child => {
         const data = child.val();
@@ -428,13 +587,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('closeUserIncidentModal');
     const tableBody = document.getElementById('userIncidentTableBody');
 
-    // Open modal
     openBtn?.addEventListener('click', () => {
         loadIncidents();
         modal.style.display = 'block';
     });
 
-    // Close modal
+
     closeBtn?.addEventListener('click', () => {
         modal.style.display = 'none';
     });
@@ -443,7 +601,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === modal) modal.style.display = 'none';
     };
 
-    // Fetch and display incidents
     function loadIncidents() {
         tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
 
@@ -463,7 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Sort by newest first
             data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             data.forEach(item => {
@@ -483,7 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 tableBody.appendChild(tr);
 
-                // Reverse geocode
                 if (lat && lng) {
                     reverseGeocode(lat, lng).then(addr => {
                         tr.cells[3].textContent = addr.length > 100 
@@ -590,6 +745,10 @@ const mainMap = L.map('map').setView(userCoords, 14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(mainMap);
+
+window.addEventListener('resize', function() {
+    mainMap.invalidateSize();
+});
 
 updateUserLocation();
     function updateUserLocation() {
@@ -945,6 +1104,7 @@ modalContent.insertAdjacentHTML('beforeend', `
     </div>
 `);
 
+
 function closeSuccess() {
     const successMsg = document.getElementById('success-message');
     if (successMsg) successMsg.remove();
@@ -1011,7 +1171,6 @@ function closeSuccess() {
             el.className = hasTraffic ? 'traffic-yes' : 'traffic-no';
         });
 
-        // Re-evaluate best route when traffic changes
         const start = userCoords;
         const end = window.lastEndCoords;
         if (start && end) {
@@ -1027,13 +1186,12 @@ function closeSuccess() {
     <th>Status</th>
 `;
 
-// Ensure we have the correct element references
 const modal = document.getElementById('userIncidentModal');
 const openBtn = document.getElementById('open-user-incident-modal');
 const closeBtn = document.getElementById('closeUserIncidentModal');
 const tableBody = document.getElementById('userIncidentTableBody');
 
-// Reverse geocoding utility
+
 async function reverseGeocode(lat, lng) {
     try {
         const res = await fetch(
@@ -1048,7 +1206,6 @@ async function reverseGeocode(lat, lng) {
     }
 }
 
-// Load incidents from Laravel backend
 function loadIncidents() {
     const tableBody = document.getElementById('userIncidentTableBody');
     tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>';
@@ -1072,7 +1229,6 @@ function loadIncidents() {
             return;
         }
 
-        // Sort by newest first
         data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
        const typeLabels = {
@@ -1091,10 +1247,9 @@ function loadIncidents() {
                 ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
                 : 'Not available';
 
-            // Use friendly label; fallback to capitalized type
            const displayType = typeLabels[item.title] || (item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1).replace('_', ' ') : 'Unknown');
 
-            // Status badge
+    
             const statusBadge = item.status === 'resolved'
                 ? '<span style="color:#17a2b8; font-weight:bold;">✅ Resolved</span>'
                 : '<span style="color:#d9534f; font-weight:bold;">🔴 Active</span>';
@@ -1109,8 +1264,6 @@ function loadIncidents() {
                 <td>${statusBadge}</td>
             `;
             tableBody.appendChild(tr);
-
-            // Reverse geocode for full address
             if (lat && lng) {
                 reverseGeocode(lat, lng).then(addr => {
                     if (tr.cells[3]) {
@@ -1132,25 +1285,20 @@ function loadIncidents() {
     });
 }
 
-// Open modal and load reports
 openBtn?.addEventListener('click', () => {
     loadIncidents();
     modal.style.display = 'block';
 });
 
-// Close modal
 closeBtn?.addEventListener('click', () => {
     modal.style.display = 'none';
 });
 
-// Click outside to close
 window.onclick = (e) => {
     if (e.target === modal) modal.style.display = 'none';
 };
 
-// Optional: Also update markers on map with status
 db.ref('incidents').on('value', (snapshot) => {
-    // Clear old markers
     window.incidentMarkers = window.incidentMarkers || [];
     window.incidentMarkers.forEach(marker => {
         if (mainMap.hasLayer(marker)) mainMap.removeLayer(marker);
@@ -1178,7 +1326,6 @@ db.ref('incidents').on('value', (snapshot) => {
         window.incidentMarkers.push(marker);
     });
 });
-
 });
 </script>
 
