@@ -133,6 +133,68 @@
             border-color: #007bff;
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
         }
+.analytics-section {
+    margin-top: 40px;
+    padding: 0 20px;
+}
+
+.analytics-section h2 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.analytics-section .last-updated {
+    display: block;
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.chart-card {
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    height: 400px; /* fixed height so chart stretches */
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-card canvas {
+    flex: 1; /* canvas fills the card */
+}
+
+
+/* Responsive for smaller screens */
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .chart-card {
+        padding: 20px;
+    }
+
+    .chart-card h3 {
+        font-size: 20px;
+    }
+
+    .chart-card canvas {
+        height: 250px !important;
+    }
+}
+
 
         .profile-btn {
             background: #86A8CF;
@@ -467,7 +529,6 @@
         </ul>
     </nav>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header>
              <!--<input type="search" placeholder="Search..." class="search-bar" aria-label="Search" />-->
@@ -503,10 +564,23 @@
 
             </div>
         </section>
+   <section class="analytics-section">
+    <h2>Alert & User Analytics</h2>
+    <small id="lastUpdated" class="last-updated">Last updated: just now</small>
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Failed Login Attempts</h3>
+            <canvas id="loginAttemptsChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>New Users</h3>
+            <canvas id="newUsersChart"></canvas>
+        </div>
+    </div>
+</section>
     </main>
 </div>
 
-<!-- FAILED LOGIN ATTEMPTS MODAL -->
 <div id="failedAttemptsModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -524,7 +598,6 @@
                 </tr>
             </thead>
             <tbody id="failedAttemptsBody">
-                <!-- Dynamically populated -->
                 @if(isset($failedAttempts) && $failedAttempts->count())
                     @foreach($failedAttempts as $attempt)
                         <tr>
@@ -545,7 +618,6 @@
     </div>
 </div>
 
-<!-- MANAGE USERS MODAL -->
 <div id="manageUsersModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -567,7 +639,6 @@
     </div>
 </div>
 
-<!-- NEW USERS MODAL -->
 <div id="newUsersModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -591,17 +662,15 @@
     </div>
 </div>
 
-<!-- Logout Form -->
 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
     @csrf
 </form>
 
-<!-- Toast Notification -->
 <div id="toast">Action completed!</div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Modal Elements
+
     const failedAttemptsBtn = document.getElementById('failedAttemptsBtn');
     const newUsersBtn = document.getElementById('newUsersBtn');
     const manageUsersBtn = document.getElementById('manageUsersBtn');
@@ -617,26 +686,141 @@ document.addEventListener('DOMContentLoaded', () => {
     const failedAttemptsBody = document.getElementById('failedAttemptsBody');
     const usersTableBody = document.getElementById('usersTableBody');
 
-    // Open Modals
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const failedLoginsData = @json($failedAttempts ?? []);
+const loginCtx = document.getElementById('loginAttemptsChart').getContext('2d');
+
+if (failedLoginsData.length > 0) {
+    const dailyAttempts = {};
+    failedLoginsData.forEach(f => {
+        const day = formatDate(f.created_at);
+        dailyAttempts[day] = (dailyAttempts[day] || 0) + (f.attempts || 1);
+    });
+
+    const loginLabels = Object.keys(dailyAttempts);
+    const loginValues = Object.values(dailyAttempts);
+
+    new Chart(loginCtx, {
+        type: 'bar',
+        data: {
+            labels: loginLabels,
+            datasets: [{
+                label: 'Failed Login Attempts',
+                data: loginValues,
+                backgroundColor: '#e74c3c',
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { 
+                    callbacks: {
+                        label: (ctx) => `${ctx.parsed.y} attempt(s)`
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { stepSize: 1, precision: 0 }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+} else {
+    new Chart(loginCtx, {
+        type: 'bar',
+        data: { labels: ['No Data'], datasets: [{ data: [0], backgroundColor: '#ccc' }] },
+        options: { 
+            plugins: { legend: { display: false } },
+            scales: { y: { display: false }, x: { display: false } }
+        }
+    });
+}
+
+
+const newUsersData = @json($newUsers ?? []);
+const usersCtx = document.getElementById('newUsersChart').getContext('2d');
+
+if (newUsersData.length > 0) {
+    const dailyCounts = {};
+    newUsersData.forEach(u => {
+        const day = formatDate(u.created_at);
+        dailyCounts[day] = (dailyCounts[day] || 0) + 1;
+    });
+
+    const userLabels = Object.keys(dailyCounts);
+    const userValues = Object.values(dailyCounts);
+
+    new Chart(usersCtx, {
+        type: 'line',
+        data: {
+            labels: userLabels,
+            datasets: [{
+                label: 'New Users',
+                data: userValues,
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointBackgroundColor: '#27ae60'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.parsed.y} new user(s)`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+} else {
+    new Chart(usersCtx, {
+        type: 'line',
+        data: { labels: ['No Data'], datasets: [{ data: [0], borderColor: '#ccc' }] },
+        options: { 
+            plugins: { legend: { display: false } },
+            scales: { y: { display: false }, x: { display: false } }
+        }
+    });
+}
+
+document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+
+    document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
     failedAttemptsBtn?.addEventListener('click', () => failedAttemptsModal.style.display = 'flex');
     newUsersBtn?.addEventListener('click', () => newUsersModal.style.display = 'flex');
     manageUsersBtn?.addEventListener('click', loadAllUsers);
 
-    // Close Modals
     [closeFailedAttemptsModal, closeNewUsersModal, closeManageUsersModal].forEach(btn => {
         btn?.addEventListener('click', () => {
             btn.closest('.modal').style.display = 'none';
         });
     });
 
-    // Click outside to close
     window.onclick = (e) => {
         if (e.target.classList.contains('modal')) {
             e.target.style.display = 'none';
         }
     };
 
-    // ESC key closes modals
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal').forEach(modal => {
@@ -645,7 +829,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // === LOAD ALL USERS ===
     function loadAllUsers() {
         manageUsersModal.style.display = 'flex';
         usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Loading...</td></tr>';
@@ -688,7 +871,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     usersTableBody.appendChild(tr);
                 });
 
-                // Remove User Action
                 document.querySelectorAll('.remove-user-btn').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const row = this.closest('tr');
@@ -706,7 +888,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // Delete User Function
     function deleteUser(id, row) {
         fetch(`{{ url('/admin/users') }}/${id}`, {
             method: 'DELETE',
@@ -730,7 +911,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === TOAST NOTIFICATION ===
     window.showToast = function(message = "Action completed", type = "success") {
         const toast = document.getElementById('toast');
         toast.textContent = message;

@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard</title>
 
-    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
 <style>
     * {
         margin: 0;
@@ -350,6 +348,45 @@
         transform: scale(1.1);
     }
 
+    .route-status {
+        font-size: 16px;
+        margin: 10px 0;
+        padding: 8px;
+        border-radius: 6px;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+    }
+    .route-status span.traffic-yes {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    .route-status span.traffic-no {
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    #traffic-modal {
+        z-index: 1001;
+    }
+    .stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  margin: 20px 0;
+}
+.stat-card {
+  background: #f5f7fa;
+  border-radius: 12px;
+  padding: 10px 15px;
+  text-align: center;
+  flex: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.stat-card h3 {
+  margin: 0;
+  color: #2c3e50;
+}
     /* Toast Notification */
     #toast {
         position: fixed;
@@ -472,6 +509,11 @@
             display: none;
         }
     }
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 </style>
 </head>
 
@@ -533,20 +575,82 @@
             <small id="userCount">Loading...</small>
         </div>
 
-        <div class="card" id="payments-card" role="button" tabindex="0">
+        <!--<div class="card" id="payments-card" role="button" tabindex="0">
             <i class="fas fa-wallet icon" style="color: #27ae60;"></i>
             <p>Payments</p>
             <small>User Payments</small>
-        </div>
+        </div>-->
 
         <div class="card" id="accidentReportsBtn" role="button" tabindex="0">
             <i class="fas fa-car-crash icon" style="color: #e74c3c;"></i>
             <p>Accident Reports</p>
             <small>User Reports</small>
         </div>
-    </div>
+       <div class="card" id="open-traffic-modal" role="button" tabindex="0">
+            <i class="fas fa-route icon" style="color: green;"></i>
+            <p>Traffic Status</p>
+            <small>Real-Time Traffic Status</small>
+        </div>
+        <div class="card" id="open-traffic-analytics" role="button" tabindex="0">
+            <i class="fas fa-chart-line icon" style="color: dodgerblue;"></i>
+            <p>Traffic Analytics</p>
+            <small>View Trends & Patterns</small>
+            </div>
+        </div>
 </section>
     </main>
+</div>
+<div id="traffic-analytics-modal" class="modal">
+  <div class="modal-content" style="max-width:800px;">
+    <span id="close-traffic-analytics" class="close">&times;</span>
+    <h2>Traffic Analytics Dashboard</h2>
+
+    <div class="stats">
+      <div class="stat-card">
+        <h3 id="totalReports">0</h3>
+        <p>Total Reports</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="heavyPercent">0%</h3>
+        <p>Heavy Traffic</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="avgSpeed">-- km/h</h3>
+        <p>Average Speed</p>
+      </div>
+    </div>
+
+    <div class="chart-container" style="margin: 20px auto; max-width: 350px;">
+        <canvas id="trafficChart"></canvas>
+    </div>
+
+
+    <div class="chart-container" style="margin-top:30px;">
+      <canvas id="trendChart" height="150"></canvas>
+    </div>
+  </div>
+</div>
+<div id="traffic-status-modal" class="modal">
+  <div class="modal-content">
+    <span class="close" data-close="traffic-status-modal">&times;</span>
+    <h2>Real-Time Traffic Status</h2>
+    <p>Displays live traffic data and congestion levels.</p>
+  </div>
+  <div id="traffic-map" style="height:400px;width:100%;border-radius:8px;"></div>
+</div>
+
+<div id="traffic-modal" class="modal">
+    <div class="modal-content">
+        <button id="close-traffic-modal" class="close-btn" aria-label="Close">&times;</button>
+        <h2>Traffic Status</h2>
+        <div id="loading">Loading traffic data...</div>
+        <div id="traffic-results" style="display:none;">
+            <div class="route-status" id="routeA">Route A: <span></span></div>
+            <div class="route-status" id="routeB">Route B: <span></span></div>
+            <div class="route-status" id="routeC">Route C: <span></span></div>
+            <div class="route-status" id="routeD">Route D: <span></span></div>
+        </div>
+    </div>
 </div>
 
 <div id="payments-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="payments-modal-title">
@@ -628,8 +732,23 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
+const firebaseConfig = {
+    apiKey: "AIzaSyC2A2rUd1SjeEmm7qyMHFz8y1afLmQpJ_0",
+    authDomain: "management-6d07b.firebaseapp.com",
+    databaseURL: "https://management-6d07b-default-rtdb.firebaseio.com/", // ← NO SPACES
+    projectId: "management-6d07b",
+    storageBucket: "management-6d07b.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 document.addEventListener('DOMContentLoaded', () => {
     const totalUsersCard = document.getElementById('totalUsersCard');
     const paymentsCard = document.getElementById('payments-card');
@@ -649,7 +768,170 @@ document.addEventListener('DOMContentLoaded', () => {
     const usersTableBody = document.querySelector('#usersTable tbody');
     const searchInput = document.getElementById('incident-search');
 
+    const trafficModal = document.getElementById('traffic-modal');
+    const openTrafficBtn = document.getElementById('open-traffic-modal');
+    const closeTrafficBtn = document.getElementById('close-traffic-modal');
+    const loadingEl = document.getElementById('loading');
+    const resultsEl = document.getElementById('traffic-results');
+    const openAnalytics = document.getElementById("open-traffic-analytics");
+    const modal = document.getElementById("traffic-analytics-modal");
+    const closeAnalytics = document.getElementById("close-traffic-analytics");
+    let doughnutChart, trendChart;
+
+  openAnalytics?.addEventListener("click", () => {
+    modal.style.display = "block";
+    loadTrafficAnalytics();
+  });
+
+  closeAnalytics?.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  window.onclick = (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  };
+
+  function loadTrafficAnalytics() {
+    const refTraffic = db.ref("traffic_logs");
+
+    refTraffic.on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      const counts = { heavy: 0, moderate: 0, normal: 0 };
+      const hourly = {};
+      let totalSpeed = 0, speedCount = 0;
+
+      Object.values(data).forEach((entry) => {
+        const status = entry.status || "normal";
+        if (counts[status] !== undefined) counts[status]++;
+
+        if (entry.speed) {
+          totalSpeed += Number(entry.speed);
+          speedCount++;
+        }
+
+        if (entry.timestamp) {
+          const hour = new Date(entry.timestamp).getHours();
+          hourly[hour] = (hourly[hour] || 0) + 1;
+        }
+      });
+
+      const total = counts.heavy + counts.moderate + counts.normal;
+      document.getElementById("totalReports").textContent = total;
+      document.getElementById("heavyPercent").textContent =
+        total ? Math.round((counts.heavy / total) * 100) + "%" : "0%";
+      document.getElementById("avgSpeed").textContent = speedCount
+        ? (totalSpeed / speedCount).toFixed(1) + " km/h"
+        : "-- km/h";
+
+      const ctx = document.getElementById("trafficChart").getContext("2d");
+      if (doughnutChart) doughnutChart.destroy();
+
+      doughnutChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Heavy", "Moderate", "Normal"],
+          datasets: [
+            {
+              label: "Traffic Distribution",
+              data: [counts.heavy, counts.moderate, counts.normal],
+              backgroundColor: ["#e74c3c", "#f39c12", "#2ecc71"],
+            },
+          ],
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: "65%", 
+            plugins: {
+            legend: { position: "bottom" },
+            title: { display: true, text: "Current Traffic Distribution" },
+            },
+        },
+      });
+
+
+      const hours = Object.keys(hourly).sort((a, b) => a - b);
+      const values = hours.map((h) => hourly[h]);
+
+      const ctx2 = document.getElementById("trendChart").getContext("2d");
+      if (trendChart) trendChart.destroy();
+
+      trendChart = new Chart(ctx2, {
+        type: "bar",
+        data: {
+          labels: hours.map((h) => h + ":00"),
+          datasets: [
+            {
+              label: "Reports per Hour",
+              data: values,
+              backgroundColor: "#3498db",
+            },
+          ],
+        },
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: "Traffic Reports by Hour",
+            },
+          },
+          scales: { y: { beginAtZero: true } },
+        },
+      });
+    });
+  }
+
     let allIncidentData = [];
+  
+    openTrafficBtn?.addEventListener('click', () => {
+        trafficModal.style.display = 'flex';
+        fetchTrafficData();
+    });
+
+    closeTrafficBtn?.addEventListener('click', () => {
+        trafficModal.style.display = 'none';
+    });
+
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    };
+
+    async function fetchTrafficData() {
+        loadingEl.style.display = 'block';
+        resultsEl.style.display = 'none';
+        try {
+            const snapshot = await db.ref('traffic_logs').limitToLast(1).once('value');
+            let data = null;
+            snapshot.forEach(child => { data = child.val(); });
+            if (data) {
+                updateTrafficStatus(data);
+            } else {
+                loadingEl.textContent = 'No traffic data available.';
+            }
+        } catch (err) {
+            console.error("Firebase error:", err);
+            loadingEl.textContent = 'Failed to load traffic data.';
+        }
+    }
+
+    function updateTrafficStatus(data) {
+        loadingEl.style.display = 'none';
+        resultsEl.style.display = 'block';
+
+        const routes = ['A', 'B', 'C', 'D'];
+        routes.forEach(r => {
+            const sensorKey = `sensor${r}`;
+            const hasTraffic = data?.[sensorKey]?.traffic === true;
+            const el = document.querySelector(`#route${r} span`);
+            if (el) {
+                el.textContent = hasTraffic ? 'Traffic' : 'No Traffic';
+                el.className = hasTraffic ? 'traffic-yes' : 'traffic-no';
+            }
+        });
+    }
 
     fetch('{{ route("admin.users.count") }}')
         .then(res => res.json())
@@ -700,18 +982,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadPayments() {
-        paymentsContent.innerHTML = '<p>Loading payments...</p>';
-
         fetch('{{ route('admin.payments.data') }}', {
-            method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
+            },
         })
-        .then(r => r.json())
+        .then(response => response.json())
         .then(data => {
-            if (!data || !Array.isArray(data) || data.length === 0) {
+            if (!data.length) {
                 paymentsContent.innerHTML = '<p>No payments found.</p>';
                 return;
             }
@@ -731,17 +1010,16 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             data.forEach(payment => {
-                const statusClass = payment.status === 'confirmed' ? 'style="color:green;font-weight:bold;"' : '';
                 tableHtml += `
                     <tr data-id="${payment.id}">
                         <td>${payment.id}</td>
                         <td>${payment.user_name}</td>
-                        <td>$${parseFloat(payment.amount).toFixed(2)}</td>
-                        <td ${statusClass}>${payment.status}</td>
+                        <td>${payment.amount}</td>
+                        <td class="status">${payment.status}</td>
                         <td>
                             ${payment.status === 'pending' 
                                 ? `<button class="confirm-btn">Confirm</button>` 
-                                : '<small>Completed</small>'}
+                                : ''}
                         </td>
                     </tr>
                 `;
@@ -750,8 +1028,9 @@ document.addEventListener('DOMContentLoaded', () => {
             tableHtml += `</tbody></table>`;
             paymentsContent.innerHTML = tableHtml;
 
+            // Attach confirm button listeners
             document.querySelectorAll('.confirm-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', () => {
                     const row = btn.closest('tr');
                     const paymentId = row.dataset.id;
                     btn.disabled = true;
@@ -761,38 +1040,33 @@ document.addEventListener('DOMContentLoaded', () => {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json'
-                        }
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
                     })
-                    .then(r => r.json())
-                    .then(res => {
-                        if (res.success) {
-                            row.querySelector('td:nth-child(4)').textContent = 'confirmed';
-                            row.querySelector('td:nth-child(4)').style.color = 'green';
-                            row.querySelector('td:nth-child(4)').style.fontWeight = 'bold';
+                    .then(res => res.json())
+                    .then(resData => {
+                        if (resData.success) {
+                            row.querySelector('.status').textContent = 'confirmed';
                             btn.remove();
-                            showToast('Payment confirmed!');
                         } else {
                             alert('Failed to confirm payment.');
                             btn.disabled = false;
                             btn.textContent = 'Confirm';
                         }
                     })
-                    .catch(err => {
-                        console.error('Error:', err);
-                        alert('Network error. Try again.');
+                    .catch(() => {
+                        alert('Error confirming payment.');
                         btn.disabled = false;
                         btn.textContent = 'Confirm';
                     });
                 });
             });
         })
-        .catch(err => {
-            console.error('Fetch error:', err);
-            paymentsContent.innerHTML = '<p>Failed to load payments. Please try again.</p>';
+        .catch(() => {
+            paymentsContent.innerHTML = '<p>Failed to load payments.</p>';
         });
     }
-
     accidentReportsBtn?.addEventListener('click', loadIncidents);
 
     function loadIncidents() {
