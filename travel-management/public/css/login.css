@@ -157,6 +157,19 @@ h2 {
 .forgot-password:hover {
     color: #0056b3;
 }
+.eye-icon {
+    position:absolute;
+    right: 39px;
+    top: 52%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.3s ease;
+}
+
+.eye-icon:hover {
+    color: #333;
+}
 
 
 .btn {

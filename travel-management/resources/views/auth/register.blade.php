@@ -4,19 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    
-</head>
 <body>
     <div class="background-image"></div>
 
     <div class="form-container">
-        <h2>Create Account</h2>
+        <h2>Register</h2>
         <form method="POST" action="{{ route('register') }}">
             @csrf
 
             <div class="form-group">
-                <label for="firstname">First Name:</label>
+                <label for="firstname">First Name</label>
                 <input type="text" id="firstname" name="firstname" value="{{ old('firstname') }}" required>
                 @error('firstname')
                     <div class="error" style="color:red;">{{ $message }}</div>
@@ -24,7 +23,7 @@
             </div>
 
             <div class="form-group">
-                <label for="lastname">Last Name:</label>
+                <label for="lastname">Last Name</label>
                 <input type="text" id="lastname" name="lastname" value="{{ old('lastname') }}" required>
                 @error('lastname')
                     <div class="error" style="color:red;">{{ $message }}</div>
@@ -32,7 +31,7 @@
             </div>
 
             <div class="form-group">
-                <label for="username">Email:</label>
+                <label for="username">Email</label>
                 <input type="email" id="username" name="username" value="{{ old('username') }}" required>
                 @error('username')
                     <div class="error" style="color:red;">{{ $message }}</div>
@@ -40,7 +39,7 @@
             </div>
 
             <div class="form-group">
-                <label for="password">Password:</label>
+                <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
                 <i class="eye-icon fas fa-eye-slash"></i>
                 @error('password')
@@ -50,7 +49,7 @@
             </div>
 
             <div class="form-group">
-                <label for="password_confirmation">Confirm Password:</label>
+                <label for="password_confirmation">Confirm Password</label>
                 <input type="password" id="password_confirmation" name="password_confirmation" required>
                 <i class="eye-icon fas fa-eye-slash"></i>
                 @error('password_confirmation')

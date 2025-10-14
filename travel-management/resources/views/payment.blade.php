@@ -170,8 +170,16 @@
         </div>
 
         @if(session('success'))
-            <div class="alert-success">{{ session('success') }}</div>
-        @endif
+    <div class="alert-success" id="success-alert">
+        {{ session('success') }}
+    </div>
+
+    <script>
+        setTimeout(() => {
+            window.location.href = "{{ route('map') }}";
+        }, 8000); 
+    </script>
+    @endif
 
         @if($errors->any())
             <div class="alert-error">
