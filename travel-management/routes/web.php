@@ -106,6 +106,7 @@ Route::get('/admin/incident', [IncidentController::class, 'index'])->name('admin
 Route::get('/admin/incident/{id}', [IncidentController::class, 'show'])->name('admin.incident.show');
 Route::get('/admin/incidents', [AdminIncidentController::class, 'index'])->name('admin.incident');
 Route::get('/admin/incidents/fetch', [AdminIncidentController::class, 'fetchIncidents'])->name('admin.incidents.fetch');
+Route::post('/incident', [IncidentController::class, 'store'])->name('incident.store');
 
 Route::post('/incidents/{id}/resolve', [App\Http\Controllers\IncidentController::class, 'resolve'])->name('incident.resolve')->middleware('auth');
 Route::post('/incidents/{id}/update-status', [IncidentController::class, 'updateStatus']);

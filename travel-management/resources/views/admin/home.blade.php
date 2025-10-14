@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin Dashboard</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+   
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
     * {
         margin: 0;
@@ -198,7 +203,132 @@
         margin-top: 6px;
         line-height: 1.4;
     }
+#reportIncidentModal .modal-content {
+    max-width: 500px;
+    padding: 25px;
+    position: relative;
+}
 
+#reportIncidentModal .close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #555;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+#reportIncidentModal .close:hover {
+    color: #e74c3c;
+}
+
+#reportIncidentModal h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #2c3e50;
+    font-size: 22px;
+    text-align: center;
+}
+
+#location-status {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+#reportIncidentForm label {
+    display: block;
+    margin: 14px 0 6px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+#reportIncidentForm select,
+#reportIncidentForm textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: border-color 0.3s;
+}
+
+#reportIncidentForm select:focus,
+#reportIncidentForm textarea:focus {
+    outline: none;
+    border-color: #86A8CF;
+    box-shadow: 0 0 0 3px rgba(134, 168, 207, 0.2);
+}
+
+#reportIncidentForm textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+#incident-map {
+    width: 100%;
+    height: 220px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin: 12px 0;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+#reportIncidentForm .btn {
+    background: #86A8CF;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#reportIncidentForm .btn:hover {
+    background: #6a8cb3;
+}
+
+#success-message {
+    text-align: center;
+    padding: 25px 10px !important;
+}
+
+#success-message i {
+    color: #28a745;
+    margin-bottom: 12px;
+}
+
+#success-message h3 {
+    margin: 10px 0;
+    color: #28a745;
+}
+
+#success-message button {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 15px;
+    transition: background 0.3s;
+}
+
+#success-message button:hover {
+    background: #218838;
+}
     /* Modal Base Style */
     .modal {
         display: none;
@@ -287,6 +417,7 @@
     table tbody tr:hover {
         background-color: #f1f7ff;
     }
+
 
     .status-toggle-btn {
         background: #28a745;
@@ -575,17 +706,23 @@
             <small id="userCount">Loading...</small>
         </div>
 
-        <div class="card" id="payments-card" role="button" tabindex="0">
+        <!--<div class="card" id="payments-card" role="button" tabindex="0">
             <i class="fas fa-wallet icon" style="color: #27ae60;"></i>
             <p>Payments</p>
             <small>User Payments</small>
-        </div>
+        </div>-->
 
         <div class="card" id="accidentReportsBtn" role="button" tabindex="0">
             <i class="fas fa-car-crash icon" style="color: #e74c3c;"></i>
             <p>Accident Reports</p>
             <small>User Reports</small>
         </div>
+        <div class="card" id="reportIncidentBtn" role="button" tabindex="0">
+            <i class="fas fa-plus-circle icon" style="color: #f39c12;"></i>
+            <p>Report Incident</p>
+            <small>Log a new incident</small>
+        </div>
+
        <div class="card" id="open-traffic-modal" role="button" tabindex="0">
             <i class="fas fa-route icon" style="color: green;"></i>
             <p>Traffic Status</p>
@@ -713,6 +850,33 @@
 </thead>
             <tbody id="incidentTableBody"></tbody>
         </table>
+    </div>
+</div>
+<div id="reportIncidentModal" class="modal">
+    <div class="modal-content">
+        <button id="closeReportIncidentModal" class="close">&times;</button>
+        <h2>Report an Incident</h2>
+        <p id="location-status">📍 Getting your location...</p>
+        <form id="reportIncidentForm">
+            <label for="incident-type">Incident Type:</label>
+            <select id="incident-type" required>
+                <option value="">-- Select Type --</option>
+                <option value="accident">Accident</option>
+                <option value="traffic_jam">Traffic Jam</option>
+                <option value="road_closure">Road Closure</option>
+                <option value="hazard">Hazard</option>
+            </select>
+
+            <label for="incident-description">Description:</label>
+            <textarea id="incident-description" rows="3" placeholder="Describe details..." required></textarea>
+
+            <input type="hidden" id="form-lat">
+            <input type="hidden" id="form-lng">
+
+            <div id="incident-map"></div>
+
+            <button type="submit" class="btn">Submit Report</button>
+        </form>
     </div>
 </div>
 
@@ -1369,6 +1533,116 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.style.opacity = 1;
         setTimeout(() => { toast.style.opacity = 0; }, 3000);
     }
+const reportIncidentBtn = document.getElementById('reportIncidentBtn');
+const reportIncidentModal = document.getElementById('reportIncidentModal');
+const closeReportIncidentModal = document.getElementById('closeReportIncidentModal');
+const reportIncidentForm = document.getElementById('reportIncidentForm');
+let incidentMap = null;
+
+reportIncidentBtn.addEventListener('click', () => {
+  reportIncidentModal.style.display = 'flex';
+
+  setTimeout(getUserLocationForIncident, 300);
+});
+
+closeReportIncidentModal.addEventListener('click', closeModal);
+window.addEventListener('click', e => { if (e.target === reportIncidentModal) closeModal(); });
+window.addEventListener('keydown', e => { if (e.key === "Escape") closeModal(); });
+
+function closeModal() {
+  reportIncidentModal.style.display = 'none';
+  if (incidentMap) incidentMap.remove();
+}
+
+function initIncidentMap(lat, lng) {
+  if (incidentMap) { incidentMap.off(); incidentMap.remove(); }
+  
+  incidentMap = L.map('incident-map').setView([lat, lng], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(incidentMap);
+  
+  const marker = L.marker([lat, lng], { draggable: true }).addTo(incidentMap);
+  marker.bindPopup("Drag to adjust location").openPopup();
+  
+  marker.on('dragend', e => {
+    const { lat, lng } = e.target.getLatLng();
+    setLatLng(lat, lng);
+  });
+  
+  setLatLng(lat, lng);
+
+  setTimeout(() => {
+    incidentMap.invalidateSize();
+  }, 400);
+}
+
+function setLatLng(lat, lng) {
+  document.getElementById('form-lat').value = lat;
+  document.getElementById('form-lng').value = lng;
+  document.getElementById('location-status').innerHTML =
+    `<strong>📍 Pinned:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+}
+
+function getUserLocationForIncident() {
+  const status = document.getElementById('location-status');
+  status.textContent = "📡 Getting your location...";
+  
+  if (!navigator.geolocation) {
+    status.innerHTML = "<span style='color:red'>❌ Geolocation not supported</span>";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => initIncidentMap(pos.coords.latitude, pos.coords.longitude),
+    err => {
+      console.error(err);
+      status.innerHTML = "<span style='color:red'>❌ Unable to get location</span>";
+    }
+  );
+}
+
+reportIncidentForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  
+  const type = document.getElementById('incident-type').value;
+  const description = document.getElementById('incident-description').value.trim();
+  const lat = parseFloat(document.getElementById('form-lat').value);
+  const lng = parseFloat(document.getElementById('form-lng').value);
+  
+  if (!type) return alert('Please select a type.');
+  if (isNaN(lat) || isNaN(lng)) return alert('Invalid location.');
+
+  try {
+    const res = await fetch("{{ route('incident.store') }}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-TOKEN": document.querySelector('meta[name=\"csrf-token\"]').content
+      },
+      body: JSON.stringify({ type, description, lat, lng })
+    });
+    const data = await res.json();
+
+    reportIncidentForm.style.display = 'none';
+    const box = reportIncidentModal.querySelector('.modal-content');
+    box.insertAdjacentHTML('beforeend', `
+      <div id="success-message" style="text-align:center;padding:20px;color:#28a745;">
+        <i class="fas fa-check-circle" style="font-size:48px;margin-bottom:10px;"></i>
+        <h3>Report Submitted!</h3>
+        <p>${data.message || 'Thank you for reporting the incident.'}</p>
+        <button id="closeSuccessBtn" class="btn" style="margin-top:10px;">Close</button>
+      </div>`);
+      
+    document.getElementById('closeSuccessBtn').addEventListener('click', () => {
+      document.getElementById('success-message').remove();
+      reportIncidentForm.reset();
+      reportIncidentForm.style.display = 'block';
+      closeModal();
+    });
+  } catch (err) {
+    console.error(err);
+    alert('Failed to submit report.');
+  }
+});
 });
 </script>
 
