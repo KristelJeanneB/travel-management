@@ -408,7 +408,7 @@
 
 <div class="header">
     <nav class="nav">
-        <a href="{{ route('home') }}" class="back-button" title="Back to Home">
+        <a href="{{ route('dashboard') }}" class="back-button" title="Back to Home">
             <i class="fas fa-arrow-left"></i> Back
         </a>
 

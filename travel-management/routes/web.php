@@ -131,6 +131,11 @@ Route::delete('/incidents/{id}', [App\Http\Controllers\IncidentController::class
 // Map View
 Route::get('/map', [MapController::class, 'show'])->name('map');
 
+//dashboard user
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
+
 // ✅ Premium Page (Static)
 Route::get('/premium', function () {
     return view('premium');
