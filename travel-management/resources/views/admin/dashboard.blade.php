@@ -706,11 +706,11 @@
             <small id="userCount">Loading...</small>
         </div>
 
-        <!--<div class="card" id="payments-card" role="button" tabindex="0">
+        <div class="card" id="payments-card" role="button" tabindex="0">
             <i class="fas fa-wallet icon" style="color: #27ae60;"></i>
             <p>Payments</p>
             <small>User Payments</small>
-        </div>-->
+        </div>
 
         <div class="card" id="accidentReportsBtn" role="button" tabindex="0">
             <i class="fas fa-car-crash icon" style="color: #e74c3c;"></i>

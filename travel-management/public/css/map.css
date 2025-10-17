@@ -391,6 +391,7 @@ html, body {
     left: 300px; /* smaller guidance width + margins */
     width: calc(100% - 320px);
     bottom: 20px;
+    height: 100vh;
   }
 
   .zoom-controls {

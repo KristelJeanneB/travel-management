@@ -11,9 +11,71 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <audio id="new-report-beep" preload="auto">
+  <source src="https://cdn.pixabay.com/download/audio/2022/10/31/audio_report-sound-124454.mp3?filename=report-sound-124454.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
+
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
+.route-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.search-row {
+    width: 100%;
+}
+
+.input-with-icon {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-with-icon:focus-within {
+    border-color: #5D7EA3;
+    box-shadow: 0 2px 8px rgba(93, 126, 163, 0.2);
+}
+
+.input-with-icon i {
+    color: #5D7EA3;
+    font-size: 18px;
+    margin-right: 12px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.input-with-icon input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    color: #333;
+    font-family: 'Quicksand', sans-serif;
+    padding: 4px 0;
+}
+
+.input-with-icon input::placeholder {
+    color: #999;
+    font-family: 'Quicksand', sans-serif;
+}
+
+
+.route-guidance > button {
+    width: 100%;
+    margin-top: 8px;
+}
 
 
 .btn-route {
@@ -23,7 +85,7 @@
     gap: 8px;
     width: 100%;
     padding: 12px;
-    background: #5D7EA3 !important; /* Force color */
+    background: #5D7EA3 !important; 
     color: white !important;
     border: none;
     border-radius: 6px;
@@ -237,12 +299,11 @@
     height: 100vh;
     position: relative;
 }
-
 }
 
 #map {
     width: 100%;
-    height: 100%;
+    height: 100vh;
     margin: 0;
     padding: 0;
 }
@@ -401,7 +462,13 @@
         padding: 6px 10px;
     }
 }
+.badge { display: inline-block; }
 }
+.address-cell {
+    font-style: ${item.address ? 'normal' : 'italic'};
+    color: ${item.address ? '#333' : '#888'};
+}
+
     </style>
 </head>
 <body>
@@ -426,55 +493,45 @@
 
 <div class="route-guidance">
     <h3>Route Planner</h3>
-    <form id="route-form">
-        <div class="form-group">
-        <label for="start-from">
-            <i class="fas fa-location-dot"></i> Start from:
-        </label>
-    <input 
-        type="text" 
-        id="start-from" 
-        placeholder="Leave empty to use current location">
-    </div>
+    <form id="route-form" class="route-form">
+        <div class="search-row">
+            <div class="input-with-icon">
+                <i class="fas fa-location-dot"></i>
+                <input 
+                    type="text" 
+                    id="start-from" 
+                    placeholder="Start location (leave empty for current location)">
+            </div>
+        </div>
+        <div class="search-row">
+            <div class="input-with-icon">
+                <i class="fas fa-flag-checkered"></i>
+                <input 
+                    type="text" 
+                    id="destination" 
+                    placeholder="Enter destination city or place"
+                    required>
+            </div>
+        </div>
+        <button type="submit" class="btn-route">
+            <i class="fas fa-directions"></i> Get Directions
+        </button>
+    </form>
 
-    <div class="form-group">
-        <label for="destination">
-            <i class="fas fa-flag-checkered"></i> Destination:
-        </label>
-    <input 
-        type="text" 
-        id="destination" 
-        placeholder="Enter city/place name">
-    </div>
-
-    <button type="submit" class="btn-route">
-    <i class="fas fa-directions"></i> Get Directions
-</button>
-
-<div class="report-incident-trigger">
     <button id="open-incident-modal" type="button" class="btn-report">
         <i class="fas fa-exclamation-circle"></i> Report Incident
     </button>
-</div>
 
-<div class="report-incident-trigger">
-    <button id="open-user-incident-modal" class="btn-view-reports">
+    <button id="open-user-incident-modal" type="button" class="btn-view-reports">
         <i class="fas fa-list-alt"></i> View All Incident Reports
+        <span id="new-reports-badge" class="badge" style="display:none; background:#ff4757; color:white; border-radius:10px; padding:2px 6px; font-size:12px; margin-left:6px;"></span>
     </button>
-</div>
-        <!--<div class="premium-section" style="margin-top: 20px; text-align: center;">
-            <h3 style="margin-bottom: 10px;">Want More Features?</h3>
-            <a href="{{ route('premium') }}" class="btn" style="padding: 10px 20px; background-color: #ffc107; color: #000; border-radius: 5px; text-decoration: none; font-weight: bold;">
-                🌟 Go Premium
-            </a>
-        </div>-->
-    </form>
 
     <button id="open-traffic-modal" class="btn" style="margin-top: 15px;">
         <i class="fas fa-car-side"></i> Show Traffic Status
     </button>
 
-    <div id="" style="margin-top: 30px;">
+    <div style="margin-top: 30px;">
         <strong>Alternate Routes</strong><br>
         <span style="color:red;">●</span> Route A<br>
         <span style="color:blue;">●</span> Route B<br>
@@ -523,7 +580,7 @@
                 <tr>
                     <th>Type</th>
                     <th>Description</th>
-                    <th>Location</th>
+                    <th>Coords</th>
                     <th>Full Address</th>
                     <th>Reported On</th>
                     <th>Status</th>
@@ -566,6 +623,56 @@
                 <p style="font-size:14px; color:#555;">Allow access to pin your current location.</p>
                 <div id="incident-map" style="height: 200px; border: 1px solid #ddd; border-radius: 8px;"></div>
                 <p id="location-status" style="color: #d97706; font-size: 14px; text-align: center; margin-top: 8px;">Getting your location...</p>
+                <div style="margin-top: 16px; text-align: center; font-size: 13px; color: #555;">
+                <small>Or enter coordinates manually:</small>
+                <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px; flex-wrap: wrap;">
+                    <input 
+                        type="text" 
+                        id="manual-lat" 
+                        placeholder="Latitude" 
+                        style="
+                            width: 120px; 
+                            padding: 8px 10px; 
+                            font-size: 13px; 
+                            border: 1px solid #ccc; 
+                            border-radius: 6px; 
+                            text-align: center;
+                            font-family: 'Quicksand', sans-serif;
+                        ">
+                    <input 
+                        type="text" 
+                        id="manual-lng" 
+                        placeholder="Longitude" 
+                        style="
+                            width: 120px; 
+                            padding: 8px 10px; 
+                            font-size: 13px; 
+                            border: 1px solid #ccc; 
+                            border-radius: 6px; 
+                            text-align: center;
+                            font-family: 'Quicksand', sans-serif;
+                        ">
+                </div>
+                <button 
+                    onclick="useManualLocation()" 
+                    style="
+                        margin-top: 30px; 
+                        margin-bottom: 15px;
+                        padding: 8px 16px; 
+                        font-size: 13px; 
+                        background: #5D7EA3; 
+                        color: white; 
+                        border: none; 
+                        border-radius: 6px; 
+                        cursor: pointer;
+                        font-family: 'Quicksand', sans-serif;
+                        transition: background 0.2s;
+                    "
+                    onmouseover="this.style.background='#4a6482'"
+                    onmouseout="this.style.background='#5D7EA3'">
+                    Use These Coordinates
+                </button>
+            </div>
             </div>
 
             <button type="submit" class="btn" style="width:100%; padding:12px;">Submit Report</button>
@@ -588,182 +695,87 @@ const firebaseConfig = {
     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
     appId: "YOUR_APP_ID"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+let allIncidentData = [];
+let userMarker = null;
+let accuracyCircle = null;
+let incidentMarkers = [];
+const LINGAYEN_COORDS = [16.0212, 120.2315];
+let userCoords = LINGAYEN_COORDS;
+let mainMap;
+
+let lastCheckedTime = localStorage.getItem('last_incident_view') || new Date(0).toISOString();
+let newReportCount = 0;
+let hasCheckedOnce = false;
+
+function updateBadge() {
+    const badge = document.getElementById('new-reports-badge');
+    if (newReportCount > 0) {
+        badge.textContent = newReportCount;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+async function checkForNewIncidents() {
+    try {
+        const res = await fetch('{{ route("incidents.fetch") }}', {
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        });
+        const incidents = await res.json();
+        if (!Array.isArray(incidents)) return;
+
+        const newReports = incidents.filter(inc => 
+            new Date(inc.created_at) > new Date(lastCheckedTime)
+        );
+
+        if (newReports.length > newReportCount && hasCheckedOnce) {
+            newReportCount = newReports.length;
+            const beep = document.getElementById('new-report-beep');
+            if (beep) {
+                beep.currentTime = 0;
+                beep.play().catch(e => console.warn("Beep blocked:", e));
+            }
+        } else if (!hasCheckedOnce) {
+            newReportCount = newReports.length;
+            hasCheckedOnce = true;
+        }
+        updateBadge();
+    } catch (err) {
+        console.warn("Failed to check for new incidents:", err);
+    }
+}
+
+setInterval(checkForNewIncidents, 15000);
+checkForNewIncidents();
+
+document.getElementById('open-user-incident-modal')?.addEventListener('click', () => {
+    lastCheckedTime = new Date().toISOString();
+    localStorage.setItem('last_incident_view', lastCheckedTime);
+    newReportCount = 0;
+    updateBadge();
+    loadIncidents();
+    document.getElementById('userIncidentModal').style.display = 'block';
+});
+
 document.addEventListener('DOMContentLoaded', function () {
-    let userMarker = null;
-    let accuracyCircle = null;
-    let incidentMarkers = [];
-
-
     if (typeof L === 'undefined') {
         console.error("❌ Leaflet failed to load!");
         alert("Map library failed to load.");
         return;
     }
 
-   
-const incidentsRef = db.ref('incidents').on('value', (snapshot) => {
-    clearAllMarkers();
+    mainMap = L.map('map').setView(userCoords, 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mainMap);
 
-    snapshot.forEach(child => {
-        const data = child.val();
-        createMarkerOnMap(data); 
-        
-    });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('userIncidentModal');
-    const openBtn = document.getElementById('open-user-incident-modal');
-    const closeBtn = document.getElementById('closeUserIncidentModal');
-    const tableBody = document.getElementById('userIncidentTableBody');
-
-    openBtn?.addEventListener('click', () => {
-        loadIncidents();
-        modal.style.display = 'block';
-    });
-
-
-    closeBtn?.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    window.onclick = (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-    };
-
-    function loadIncidents() {
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
-
-        fetch('{{ route("incidents.fetch") }}', {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            tableBody.innerHTML = '';
-
-            if (!data || !Array.isArray(data) || data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No incidents reported yet.</td></tr>';
-                return;
-            }
-
-            data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-            data.forEach(item => {
-                const lat = parseFloat(item.lat);
-                const lng = parseFloat(item.lng);
-                const coords = !isNaN(lat) && !isNaN(lng)
-                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-                    : 'Not available';
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.title || 'N/A'}</td>
-                    <td>${item.description || 'No details'}</td>
-                    <td><code>${coords}</code></td>
-                    <td style="font-size:13px; color:#555;">Loading address...</td>
-                    <td>${new Date(item.created_at).toLocaleString()}</td>
-                `;
-                tableBody.appendChild(tr);
-
-                // Reverse geocode
-                if (lat && lng) {
-                    reverseGeocode(lat, lng).then(addr => {
-                        tr.cells[3].textContent = addr.length > 100 
-                            ? addr.substring(0, 100) + '...' 
-                            : addr;
-                    }).catch(() => {
-                        tr.cells[3].textContent = "Address unavailable";
-                    });
-                } else {
-                    tr.cells[3].textContent = "No location";
-                }
-            });
-        })
-        .catch(err => {
-            console.error("Failed to load incidents:", err);
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error loading data.</td></tr>';
-        });
-    }
-
-    
-});
-
-function formatDate(dateStr) {
-    try {
-        return new Date(dateStr).toLocaleString();
-    } catch {
-        return 'Invalid Date';
-    }
-}
-
-function loadAndDisplayIncidents() {
-    incidentsRef.on('value', (snapshot) => {
-
-        incidentMarkers.forEach(marker => mainMap.removeLayer(marker));
-        incidentMarkers = [];
-
-        snapshot.forEach(child => {
-            const data = child.val();
-            const id = child.key;
-
-            if (data.lat && data.lng) {
-                let iconColor;
-                switch(data.type) {
-                    case 'accident':
-                        iconColor = 'red';
-                        break;
-                    case 'traffic_jam':
-                        iconColor = 'orange';
-                        break;
-                    case 'road_closure':
-                        iconColor = 'purple';
-                        break;
-                    case 'hazard':
-                        iconColor = 'yellow';
-                        break;
-                    default:
-                        iconColor = 'blue';
-                }
-
-                const marker = L.marker([data.lat, data.lng], {
-                    icon: L.divIcon({
-                        className: 'incident-marker',
-                        html: `<div style="
-                            background: ${iconColor};
-                            width: 14px;
-                            height: 14px;
-                            border-radius: 50%;
-                            border: 2px solid white;
-                            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-                        "></div>`,
-                        iconSize: [18, 18],
-                        iconAnchor: [9, 9]
-                    })
-                }).addTo(mainMap).bindPopup(`
-                    <b>${data.title}</b><br>
-                    ${data.description || 'No details'}<br>
-                    <small>Status: ${data.status}</small>
-                `);
-
-                incidentMarkers.push(marker);
-            }
-        });
-    }, (error) => {
-        console.error("Failed to load incidents from Firebase:", error);
-    });
-loadAndDisplayIncidents();
-}
-
-    const LINGAYEN_COORDS = [16.0212, 120.2315];
-    let userCoords = LINGAYEN_COORDS;
+    window.addEventListener('resize', () => mainMap.invalidateSize());
+    updateUserLocation();
+    loadAndDisplayIncidents(); 
 
     const dropdownBtn = document.getElementById('dropdown-btn');
     const dropdownMenu = document.getElementById('dropdown-menu');
@@ -776,32 +788,61 @@ loadAndDisplayIncidents();
         }
     });
 
-const mainMap = L.map('map').setView(userCoords, 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-}).addTo(mainMap);
+    document.getElementById('route-form')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const startInput = document.getElementById('start-from').value.trim();
+        const destInput = document.getElementById('destination').value.trim();
+        if (!destInput) return alert("Please enter a destination.");
+        try {
+            let startCoords = userCoords;
+            if (startInput) startCoords = await geocode(startInput);
+            const endCoords = await geocode(destInput);
+            clearRoutes();
+            await drawAlternateRoutes(startCoords, endCoords);
+        } catch (err) {
+            alert("Error: " + (err.message || "Location not found"));
+        }
+    });
+    document.getElementById("open-incident-modal")?.addEventListener('click', () => {
+        document.getElementById("incident-modal").style.display = "block";
+        setTimeout(getUserLocationForIncident, 300);
+    });
+    document.getElementById("close-incident-modal")?.addEventListener('click', () => {
+        document.getElementById("incident-modal").style.display = "none";
+        if (window.incidentMap) window.incidentMap.remove();
+    });
+    window.onclick = (e) => {
+        if (e.target.id === "incident-modal") {
+            e.target.style.display = "none";
+            if (window.incidentMap) window.incidentMap.remove();
+        }
+    };
 
-window.addEventListener('resize', function() {
-    mainMap.invalidateSize();
+    document.getElementById('open-traffic-modal')?.addEventListener('click', () => {
+        document.getElementById('traffic-modal').style.display = 'block';
+        fetchTrafficData();
+    });
+    document.getElementById('close-traffic-modal')?.addEventListener('click', () => {
+        document.getElementById('traffic-modal').style.display = 'none';
+    });
 });
 
-updateUserLocation();
-    function updateUserLocation() {
-    if (!navigator.geolocation) {
-        console.warn("Geolocation not supported");
-        return;
-    }
+async function geocode(place) {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`);
+    const data = await res.json();
+    if (!data.length) throw new Error('Location not found');
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+}
 
+function updateUserLocation() {
+    if (!navigator.geolocation) return console.warn("Geolocation not supported");
     navigator.geolocation.watchPosition(
         (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
-
             userCoords = [lat, lng];
-
             if (userMarker) mainMap.removeLayer(userMarker);
             if (accuracyCircle) mainMap.removeLayer(accuracyCircle);
-
             userMarker = L.marker([lat, lng], {
                 icon: L.divIcon({
                     className: 'user-location-dot',
@@ -810,80 +851,71 @@ updateUserLocation();
                     iconAnchor: [10, 10]
                 })
             }).addTo(mainMap).bindPopup("Your Location").openPopup();
-
             accuracyCircle = L.circle([lat, lng], {
                 radius: pos.coords.accuracy,
                 weight: 1,
                 fillColor: '#3388ff',
                 fillOpacity: 0.1
             }).addTo(mainMap);
-
             mainMap.setView([lat, lng], 15);
         },
         (error) => {
-            console.error("Location error:", error);
             let msg = "";
             switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    msg = "Location access denied.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    msg = "Location unavailable.";
-                    break;
-                case error.TIMEOUT:
-                    msg = "Location request timed out.";
-                    break;
-                default:
-                    msg = "Unknown location error.";
+                case error.PERMISSION_DENIED: msg = "Location access denied."; break;
+                case error.POSITION_UNAVAILABLE: msg = "Location unavailable."; break;
+                case error.TIMEOUT: msg = "Location request timed out."; break;
+                default: msg = "Unknown location error.";
             }
             console.warn(msg);
         },
-        {
-            enableHighAccuracy: true,
-            maximumAge: 10000,
-            timeout: 10000
-        }
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
     );
 }
-    const routeForm = document.getElementById('route-form');
-    const summaryBox = document.getElementById('route-summary');
-    let currentRouteLayers = [];
 
-    function clearRoutes() {
-        currentRouteLayers.forEach(layer => mainMap.removeLayer(layer));
-        currentRouteLayers = [];
-        summaryBox.classList.add('hidden');
-    }
+function loadAndDisplayIncidents() {
+    db.ref('incidents').on('value', (snapshot) => {
+        incidentMarkers.forEach(marker => mainMap.removeLayer(marker));
+        incidentMarkers = [];
+        snapshot.forEach(child => {
+            const data = child.val();
+            if (data.lat && data.lng) {
+                const color = data.status === 'resolved' ? 'gray' : 
+                             { accident: 'red', traffic_jam: 'orange', road_closure: 'purple', hazard: 'yellow' }[data.type] || 'blue';
+                const marker = L.marker([data.lat, data.lng], {
+                    icon: L.divIcon({
+                        html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>`,
+                        className: 'incident-marker',
+                        iconSize: [18, 18],
+                        iconAnchor: [9, 9]
+                    })
+                }).bindPopup(`<b>${data.type}</b><br>${data.description || 'No details'}<br><small>Status: ${data.status === 'resolved' ? '✅ Resolved' : '🔴 Active'}</small>`).addTo(mainMap);
+                incidentMarkers.push(marker);
+            }
+        });
+    });
+}
 
-    async function geocode(place) {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`);
-        const data = await res.json();
-        if (!data.length) throw new Error('Location not found');
-        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-    }
+let currentRouteLayers = [];
+function clearRoutes() {
+    currentRouteLayers.forEach(layer => mainMap.removeLayer(layer));
+    currentRouteLayers = [];
+    document.getElementById('route-summary')?.classList.add('hidden');
+}
 
 async function drawAlternateRoutes(start, end) {
-    clearRoutes(); 
-
+    clearRoutes();
     const names = ['Route A', 'Route B', 'Route C', 'Route D'];
     const colors = ['red', 'blue', 'green', 'purple'];
-    
     const url = `https://router.project-osrm.org/route/v1/car/${start[1]},${start[0]};${end[1]},${end[0]}?alternatives=true&geometries=geojson&overview=full`;
-
     try {
         const res = await fetch(url);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
-
         if (data.routes && data.routes.length > 1) {
             const routesToShow = data.routes.slice(0, 4);
-
             routesToShow.forEach((route, i) => {
-                const coords = route.geometry.coordinates.map(coord => [
-                    coord[1], 
-                    coord[0]  
-                ]);
-
+                const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
                 const polyline = L.polyline(coords, {
                     color: colors[i],
                     weight: 5,
@@ -893,69 +925,43 @@ async function drawAlternateRoutes(start, end) {
                     Distance: ${(route.distance / 1000).toFixed(2)} km<br>
                     Time: ${Math.round(route.duration / 60)} mins
                 `).addTo(mainMap);
-
                 currentRouteLayers.push(polyline);
-
                 if (i === 0) {
                     document.getElementById('route-summary').innerHTML = `
-                        Best Option: ${(route.distance / 1000).toFixed(2)} km • 
-                        ${Math.round(route.duration / 60)} mins
+                        🏆 <strong>Best Option: ${names[i]}</strong><br>
+                        ${(route.distance / 1000).toFixed(2)} km • ${Math.round(route.duration / 60)} mins
                     `;
                     document.getElementById('route-summary').classList.remove('hidden');
                 }
             });
-
-            //L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
+            L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
             return;
         }
     } catch (err) {
-        console.warn("OSRM alternatives failed, using manual detours", err);
+        console.warn("OSRM alternatives failed", err);
     }
-
     for (let i = 0; i < 4; i++) {
         try {
-            let midLat, midLng;
-
-            const offsets = [
-                { lat: +0.007, lng: -0.003 }, // NE
-                { lat: -0.007, lng: -0.003 }, // SE
-                { lat: -0.007, lng: +0.003 }, // SW
-                { lat: +0.007, lng: +0.003 }  // NW
-            ];
-
+            const offsets = [{lat:+0.007,lng:-0.003},{lat:-0.007,lng:-0.003},{lat:-0.007,lng:+0.003},{lat:+0.007,lng:+0.003}];
             const offset = offsets[i] || offsets[0];
-            midLat = (start[0] + end[0]) / 2 + offset.lat;
-            midLng = (start[1] + end[1]) / 2 + offset.lng;
-
-            const isDirect = i === 0; 
-            const viaPointUrl = isDirect
-                ? `${start[1]},${start[0]};${end[1]},${end[0]}`
-                : `${start[1]},${start[0]};${midLng},${midLat};${end[1]},${end[0]}`;
-
-            const fallbackUrl = `https://router.project-osrm.org/route/v1/car/${viaPointUrl}?geometries=geojson`;
-
-            const res = await fetch(fallbackUrl);
+            const midLat = (start[0] + end[0]) / 2 + offset.lat;
+            const midLng = (start[1] + end[1]) / 2 + offset.lng;
+            const via = i === 0 ? `${start[1]},${start[0]};${end[1]},${end[0]}` : `${start[1]},${start[0]};${midLng},${midLat};${end[1]},${end[0]}`;
+            const res = await fetch(`https://router.project-osrm.org/route/v1/car/${via}?geometries=geojson`);
             const data = await res.json();
-
-            if (!data.routes || data.routes.length === 0) continue;
-
+            if (!data.routes?.length) continue;
             const route = data.routes[0];
             const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-
             const polyline = L.polyline(coords, {
                 color: colors[i],
                 weight: 5,
                 opacity: 0.8
-            }).bindPopup(`<b>${names[i]}</b><br>Distance: ${(route.distance / 1000).toFixed(2)} km`)
-              .addTo(mainMap);
-
+            }).bindPopup(`<b>${names[i]}</b><br>Distance: ${(route.distance / 1000).toFixed(2)} km`).addTo(mainMap);
             currentRouteLayers.push(polyline);
-
             if (i === 0) {
                 document.getElementById('route-summary').innerHTML = `
                     🏆 <strong>Best Option: ${names[i]}</strong><br>
-                            ${(route.distance / 1000).toFixed(2)} km • 
-                            ${Math.round(route.duration / 60)} mins
+                    ${(route.distance / 1000).toFixed(2)} km • ${Math.round(route.duration / 60)} mins
                 `;
                 document.getElementById('route-summary').classList.remove('hidden');
             }
@@ -963,276 +969,90 @@ async function drawAlternateRoutes(start, end) {
             console.warn(`Fallback route ${names[i]} failed`, err);
         }
     }
-
     L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
 }
 
-
-    async function createDetourRoutes(start, end) {
-        const names = ['Route A', 'Route B', 'Route C'];
-        const colors = ['red', 'blue', 'green'];
-
-        for (let i = 0; i < 3; i++) {
-            let url;
-
-            if (i === 0) {
-        
-                url = `https://router.project-osrm.org/route/v1/car/${start[1]},${start[0]};${end[1]},${end[0]}?geometries=geojson`;
-            } else {
-                const offset = (i - 1) * 0.007;
-                const midLat = (start[0] + end[0]) / 2 + offset;
-                const midLng = (start[1] + end[1]) / 2 - offset;
-
-                url = `https://router.project-osrm.org/route/v1/car/${start[1]},${start[0]};${midLng},${midLat};${end[1]},${end[0]}?geometries=geojson`;
-            }
-
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if (!data.routes || data.routes.length === 0) continue;
-
-                const route = data.routes[0];
-                const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-
-                const polyline = L.polyline(coords, {
-                    color: colors[i],
-                    weight: 5,
-                    opacity: 0.8
-                }).bindPopup(`<b>${names[i]}</b><br>Distance: ${(route.distance / 1000).toFixed(2)} km`)
-                  .addTo(mainMap);
-
-                currentRouteLayers.push(polyline);
-            } catch (err) {
-                console.warn(`Fallback route ${i} failed`, err);
-            }
-        }
-    }
-
-    routeForm?.addEventListener('submit', async function(e) {
+// Incident Report Form
+document.getElementById('incident-form')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-
-    const startInput = document.getElementById('start-from').value.trim();
-    const destInput = document.getElementById('destination').value.trim();
-    if (!destInput) return alert("Please enter a destination.");
-
+    const type = document.getElementById('incident-type').value;
+    const description = document.getElementById('incident-description').value.trim();
+    const lat = parseFloat(document.getElementById('form-lat').value);
+    const lng = parseFloat(document.getElementById('form-lng').value);
+    if (!type) return alert('Please select an incident type.');
+    if (isNaN(lat) || isNaN(lng)) return alert('Invalid location.');
     try {
-        let startCoords;
-
-        if (startInput) {
-            startCoords = await geocode(startInput);
-        } else {
-            if (userCoords[0] && userCoords[1]) {
-                startCoords = userCoords;
-            } else {
-                startCoords = [16.0212, 120.2315]; 
-            }
+        const res = await fetch("{{ route('incident.store') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ type, description, lat, lng })
+        });
+        const data = await res.json();
+        document.getElementById('incident-form').style.display = 'none';
+        const modalContent = document.querySelector('#incident-modal .modal-content');
+        modalContent.insertAdjacentHTML('beforeend', `
+            <div id="success-message" style="text-align:center;padding:30px;font-family:'Quicksand',sans-serif;color:#28a745;">
+                <i class="fas fa-check-circle" style="font-size:48px;margin-bottom:10px;"></i>
+                <h3>Report Submitted!</h3>
+                <p>${data.message || 'Thank you for reporting the incident.'}</p>
+                <button onclick="closeSuccess()" class="btn" style="margin-top:10px;">Close</button>
+            </div>
+        `);
+        function closeSuccess() {
+            document.getElementById('success-message')?.remove();
+            document.getElementById('incident-form').style.display = 'block';
+            document.getElementById('incident-form').reset();
+            document.getElementById('incident-modal').style.display = 'none';
         }
-
-        const endCoords = await geocode(destInput);
-
-        clearRoutes();
-        await drawAlternateRoutes(startCoords, endCoords);
-
     } catch (err) {
-        alert("Error: " + (err.message || "Location not found"));
+        alert('Failed to submit report.');
+        console.error(err);
     }
 });
 
-    const incidentModal = document.getElementById("incident-modal");
-    const openIncidentBtn = document.getElementById("open-incident-modal");
-    const closeIncidentBtn = document.getElementById("close-incident-modal");
-    const incidentForm = document.getElementById('incident-form');
-    let incidentMap = null;
-
-    function initIncidentMap(lat, lng) {
-        if (incidentMap) {
-            incidentMap.off();
-            incidentMap.remove();
-        }
-        incidentMap = L.map('incident-map').setView([lat, lng], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(incidentMap);
-        L.marker([lat, lng]).addTo(incidentMap).bindPopup("Your reported location").openPopup();
-        document.getElementById('form-lat').value = lat;
-        document.getElementById('form-lng').value = lng;
-        document.getElementById('location-status').innerHTML = `<strong>📍 Pinned:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-    }
-
-    function getUserLocationForIncident() {
-        const statusEl = document.getElementById('location-status');
-        statusEl.textContent = "Getting your location...";
-        if (!navigator.geolocation) {
-            statusEl.innerHTML = `<span style="color: red;">❌ Geolocation not supported</span>`;
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (pos) => initIncidentMap(pos.coords.latitude, pos.coords.longitude),
-            (error) => {
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        statusEl.innerHTML = `<span style="color: red;">❌ Permission denied</span>`;
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        statusEl.innerHTML = `<span style="color: red;">❌ Location unavailable</span>`;
-                        break;
-                    case error.TIMEOUT:
-                        statusEl.innerHTML = `<span style="color: red;">❌ Request timeout</span>`;
-                        break;
-                    default:
-                        statusEl.innerHTML = `<span style="color: red;">❌ Failed to get location</span>`;
-                }
-            }
-        );
-    }
-
-    openIncidentBtn?.addEventListener('click', () => {
-        incidentModal.style.display = "block";
-        setTimeout(getUserLocationForIncident, 300);
-    });
-
-    closeIncidentBtn?.addEventListener('click', () => {
-        incidentModal.style.display = "none";
-        if (incidentMap) incidentMap.remove();
-    });
-
-    window.onclick = (e) => {
-        if (e.target === incidentModal) {
-            incidentModal.style.display = "none";
-            if (incidentMap) incidentMap.remove();
-        }
-    };
-
-    incidentForm?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const type = document.getElementById('incident-type').value;
-        const description = document.getElementById('incident-description').value.trim();
-        const lat = parseFloat(document.getElementById('form-lat').value);
-        const lng = parseFloat(document.getElementById('form-lng').value);
-
-        if (!type) return alert('Please select an incident type.');
-        if (isNaN(lat) || isNaN(lng)) return alert('Invalid location.');
-
-        try {
-            const res = await fetch("{{ route('incident.store') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({ type, description, lat, lng })
-            });
-            const data = await res.json();
-
-document.getElementById('incident-form').style.display = 'none';
-
-const modalContent = document.querySelector('#incident-modal .modal-content');
-modalContent.insertAdjacentHTML('beforeend', `
-    <div id="success-message" style="
-        text-align: center;
-        padding: 30px;
-        font-family: 'Quicksand', sans-serif;
-        color: #28a745;
-    ">
-        <i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
-        <h3>Report Submitted!</h3>
-        <p>${data.message || 'Thank you for reporting the incident.'}</p>
-        <button onclick="closeSuccess()" class="btn" style="margin-top: 10px;">Close</button>
-    </div>
-`);
-
-
-function closeSuccess() {
-    const successMsg = document.getElementById('success-message');
-    if (successMsg) successMsg.remove();
-    document.getElementById('incident-form').style.display = 'block';
-    incidentForm.reset();
-    incidentModal.style.display = 'none';
-}
-        } catch (err) {
-            alert('Failed to submit report.');
-            console.error(err);
-        }
-    });
-
-    // --- Traffic Modal ---
-    const trafficModal = document.getElementById('traffic-modal');
-    const openTrafficBtn = document.getElementById('open-traffic-modal');
-    const closeTrafficBtn = document.getElementById('close-traffic-modal');
+// Traffic Modal
+async function fetchTrafficData() {
     const loadingEl = document.getElementById('loading');
     const resultsEl = document.getElementById('traffic-results');
-
-    openTrafficBtn?.addEventListener('click', () => {
-        trafficModal.style.display = 'block';
-        fetchTrafficData();
-    });
-
-    closeTrafficBtn?.addEventListener('click', () => {
-        trafficModal.style.display = 'none';
-    });
-
-    window.onclick = (e) => {
-        if (e.target === trafficModal) trafficModal.style.display = 'none';
-    };
-
-    async function fetchTrafficData() {
-        loadingEl.style.display = 'block';
-        resultsEl.style.display = 'none';
-        try {
-            const snapshot = await db.ref('traffic_logs').limitToLast(1).once('value');
-            let data = null;
-            snapshot.forEach(child => { data = child.val(); });
-            if (data) updateTrafficStatus(data);
-            else loadingEl.textContent = 'No traffic data.';
-        } catch (err) {
-            loadingEl.textContent = 'Error loading data.';
-            console.error(err);
-        }
+    loadingEl.style.display = 'block';
+    resultsEl.style.display = 'none';
+    try {
+        const snapshot = await db.ref('traffic_logs').limitToLast(1).once('value');
+        let data = null;
+        snapshot.forEach(child => { data = child.val(); });
+        if (data) updateTrafficStatus(data);
+        else loadingEl.textContent = 'No traffic data.';
+    } catch (err) {
+        loadingEl.textContent = 'Error loading data.';
+        console.error(err);
     }
+}
 
-    function updateTrafficStatus(data) {
-        loadingEl.style.display = 'none';
-        resultsEl.style.display = 'block';
-
-        trafficData = {
-            A: data?.sensorA?.traffic === true,
-            B: data?.sensorB?.traffic === true,
-            C: data?.sensorC?.traffic === true,
-            D: data?.sensorD?.traffic === true
-        };
-
-        ['A', 'B', 'C', 'D'].forEach(r => {
-            const el = document.getElementById(`route${r}`).querySelector('span');
+function updateTrafficStatus(data) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('traffic-results').style.display = 'block';
+    const trafficData = {
+        A: data?.sensorA?.traffic === true,
+        B: data?.sensorB?.traffic === true,
+        C: data?.sensorC?.traffic === true,
+        D: data?.sensorD?.traffic === true
+    };
+    ['A', 'B', 'C', 'D'].forEach(r => {
+        const el = document.getElementById(`route${r}`)?.querySelector('span');
+        if (el) {
             const hasTraffic = trafficData[r];
             el.textContent = hasTraffic ? 'Traffic' : 'No Traffic';
             el.className = hasTraffic ? 'traffic-yes' : 'traffic-no';
-        });
-
-        const start = userCoords;
-        const end = window.lastEndCoords;
-        if (start && end) {
-            drawAlternateRoutes(start, end);
         }
-    }
-   document.querySelector('#userIncidentModal thead tr').innerHTML = `
-    <th>Type</th>
-    <th>Description</th>
-    <th>Location (Coords)</th>
-    <th>Full Address</th>
-    <th>Reported</th>
-    <th>Status</th>
-`;
-
-const modal = document.getElementById('userIncidentModal');
-const openBtn = document.getElementById('open-user-incident-modal');
-const closeBtn = document.getElementById('closeUserIncidentModal');
-const tableBody = document.getElementById('userIncidentTableBody');
-
+    });
+}
 
 async function reverseGeocode(lat, lng) {
     try {
-        const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-            { mode: 'cors' }
-        );
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, { mode: 'cors' });
         if (!res.ok) throw new Error();
         const data = await res.json();
         return data.display_name || 'Unknown location';
@@ -1241,131 +1061,54 @@ async function reverseGeocode(lat, lng) {
     }
 }
 
-// === LOAD & SEARCH INCIDENTS ===
-let allIncidentData = [];
-
-function loadIncidents() {
-    const tableBody = document.getElementById('userIncidentTableBody');
-    const searchInput = document.getElementById('user-incident-search');
-    
-    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>';
-    
-    fetch('{{ route("incidents.fetch") }}', {
-        method: 'GET',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Network error');
-        return res.json();
-    })
-    .then(data => {
-        tableBody.innerHTML = '';
-        if (!data || !Array.isArray(data) || data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No incidents reported yet.</td></tr>';
-            allIncidentData = [];
-            return;
-        }
-
-        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        allIncidentData = data;
-        renderIncidents(data);
-    })
-    .catch(err => {
-        console.error("Failed to load incident reports:", err);
-        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load reports. Please try again.</td></tr>';
-    });
-
-    let searchTimeout;
-    searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const query = searchInput.value.toLowerCase().trim();
-            if (!query) {
-                renderIncidents(allIncidentData);
-                return;
-            }
-
-            const filtered = allIncidentData.filter(item => {
-                const lat = parseFloat(item.lat);
-                const lng = parseFloat(item.lng);
-                const coords = !isNaN(lat) && !isNaN(lng)
-                    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-                    : '';
-
-                const address = item.address || '';
-                const dateStr = new Date(item.created_at).toLocaleString().toLowerCase();
-
-                return (
-                    (item.title && item.title.toLowerCase().includes(query)) ||
-                    (item.description && item.description.toLowerCase().includes(query)) ||
-                    coords.toLowerCase().includes(query) ||
-                    address.toLowerCase().includes(query) ||
-                    dateStr.includes(query)
-                );
-            });
-
-            renderIncidents(filtered);
-        }, 300);
-    });
+function formatDate(dateStr) {
+    try {
+        return new Date(dateStr).toLocaleString();
+    } catch {
+        return 'Invalid Date';
+    }
 }
 
 function renderIncidents(data) {
     const tableBody = document.getElementById('userIncidentTableBody');
     tableBody.innerHTML = '';
-
-    if (!data.length) {
+    if (!data?.length) {
         tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No matching reports</td></tr>';
         return;
     }
-
     const typeLabels = {
         accident: '🚗 Accident',
         traffic_jam: '🚦 Traffic Jam',
         road_closure: '🚧 Road Closure',
         hazard: '⚠️ Hazard',
         other: 'ℹ️ Other',
-        fire: '🔥 Fire',        
+        fire: '🔥 Fire',
         flooding: '🌊 Flooding'
     };
-
     data.forEach(item => {
         const lat = parseFloat(item.lat);
         const lng = parseFloat(item.lng);
-        const coords = !isNaN(lat) && !isNaN(lng)
-            ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-            : 'Not available';
-
-        const displayType = typeLabels[item.title] || 
-            (item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1).replace('_', ' ') : 'Unknown');
-        
+        const coords = !isNaN(lat) && !isNaN(lng) ? `${lat.toFixed(6)}, ${lng.toFixed(6)}` : 'Not available';
+        const displayType = typeLabels[item.title] || (item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1).replace('_', ' ') : 'Unknown');
         const statusBadge = item.status === 'resolved'
             ? '<span style="color:#17a2b8; font-weight:bold;">✅ Resolved</span>'
             : '<span style="color:#d9534f; font-weight:bold;">🔴 Active</span>';
-
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${displayType}</strong></td>
             <td>${item.description ? item.description : '<em>No details provided</em>'}</td>
             <td><code>${coords}</code></td>
-            <td style="font-size:13px; color:#555;">${item.address || 'Loading address...'}</td>
+            <td class="address-cell" style="font-size:13px; color:#555;">${item.address || 'Loading address...'}</td>
             <td style="white-space:nowrap;">${formatDate(item.created_at)}</td>
             <td>${statusBadge}</td>
         `;
         tableBody.appendChild(tr);
-
         if (lat && lng && !item.address) {
             reverseGeocode(lat, lng).then(addr => {
                 if (tr.cells[3]) {
-                    tr.cells[3].textContent = addr.length > 100 
-                        ? addr.substring(0, 100) + '...' 
-                        : addr;
+                    tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
                     const index = allIncidentData.findIndex(i => i.id == item.id);
-                    if (index !== -1) {
-                        allIncidentData[index].address = addr;
-                    }
+                    if (index !== -1) allIncidentData[index].address = addr;
                 }
             }).catch(() => {
                 if (tr.cells[3]) tr.cells[3].textContent = "Address unavailable";
@@ -1376,48 +1119,136 @@ function renderIncidents(data) {
     });
 }
 
-openBtn?.addEventListener('click', () => {
-    loadIncidents();
-    modal.style.display = 'block';
-});
+function loadIncidents() {
+    const tableBody = document.getElementById('userIncidentTableBody');
+    const searchInput = document.getElementById('user-incident-search');
+    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading reports...</td></tr>';
+    fetch('{{ route("incidents.fetch") }}', {
+        method: 'GET',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject('Network error'))
+    .then(data => {
+        tableBody.innerHTML = '';
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No incidents reported yet.</td></tr>';
+            allIncidentData = [];
+            return;
+        }
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        allIncidentData = data;
+        renderIncidents(data);
 
-closeBtn?.addEventListener('click', () => {
-    modal.style.display = 'none';
-});
+        if (!searchInput.dataset.listenerAttached) {
+            let searchTimeout;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const query = searchInput.value.toLowerCase().trim();
+                    if (!query) return renderIncidents(allIncidentData);
+                    const filtered = allIncidentData.filter(item => {
+                        const lat = parseFloat(item.lat);
+                        const lng = parseFloat(item.lng);
+                        const coords = !isNaN(lat) && !isNaN(lng) ? `${lat.toFixed(6)}, ${lng.toFixed(6)}` : '';
+                        const address = item.address || '';
+                        const dateStr = new Date(item.created_at).toLocaleString().toLowerCase();
+                        return (
+                            (item.title && item.title.toLowerCase().includes(query)) ||
+                            (item.description && item.description.toLowerCase().includes(query)) ||
+                            coords.toLowerCase().includes(query) ||
+                            address.toLowerCase().includes(query) ||
+                            dateStr.includes(query)
+                        );
+                    });
+                    renderIncidents(filtered);
+                }, 300);
+            });
+            searchInput.dataset.listenerAttached = true;
+        }
+    })
+    .catch(err => {
+        console.error("Failed to load incident reports:", err);
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load reports. Please try again.</td></tr>';
+    });
+}
 
+document.getElementById('closeUserIncidentModal')?.addEventListener('click', () => {
+    document.getElementById('userIncidentModal').style.display = 'none';
+});
 window.onclick = (e) => {
-    if (e.target === modal) modal.style.display = 'none';
+    if (e.target.id === 'userIncidentModal') {
+        e.target.style.display = 'none';
+    }
 };
+async function getUserLocationForIncident() {
+    const statusEl = document.getElementById('location-status');
+    const latInput = document.getElementById('form-lat');
+    const lngInput = document.getElementById('form-lng');
+    const mapDiv = document.getElementById('incident-map');
+    
+    // Initialize mini map instantly with last known location
+    if (window.incidentMap) window.incidentMap.remove();
+    window.incidentMap = L.map(mapDiv).setView(userCoords, 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(window.incidentMap);
+    
+    // Add marker for cached coords immediately
+    let marker = L.marker(userCoords).addTo(window.incidentMap)
+        .bindPopup("Using last known location").openPopup();
+    latInput.value = userCoords[0];
+    lngInput.value = userCoords[1];
+    statusEl.textContent = "Using last known location...";
 
-db.ref('incidents').on('value', (snapshot) => {
-    window.incidentMarkers = window.incidentMarkers || [];
-    window.incidentMarkers.forEach(marker => {
-        if (mainMap.hasLayer(marker)) mainMap.removeLayer(marker);
-    });
-    window.incidentMarkers = [];
+    // Try to get accurate location (5s timeout)
+    if (!navigator.geolocation) {
+        statusEl.textContent = "Geolocation not supported.";
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const [lat, lng] = [pos.coords.latitude, pos.coords.longitude];
+            userCoords = [lat, lng];
+            latInput.value = lat;
+            lngInput.value = lng;
+            marker.setLatLng([lat, lng])
+                .setPopupContent("✅ Accurate location found!")
+                .openPopup();
+            window.incidentMap.setView([lat, lng], 17);
+            statusEl.textContent = "✅ Accurate location found!";
+        },
+        (error) => {
+            let msg = "📍 Using last known location.";
+            if (error.code === error.PERMISSION_DENIED) {
+                msg = "⚠️ Permission denied. Using last known location.";
+            } else if (error.code === error.TIMEOUT) {
+                msg = "⏱️ Location request timed out. Using last known location.";
+            }
+            statusEl.innerHTML = `<span style="color: #d97706;">${msg}</span>`;
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 15000 }
+    );
+}
+function useManualLocation() {
+    const lat = parseFloat(document.getElementById('manual-lat').value);
+    const lng = parseFloat(document.getElementById('manual-lng').value);
+    if (isNaN(lat) || isNaN(lng)) {
+        alert('Please enter valid coordinates.');
+        return;
+    }
+ 
+    document.getElementById('form-lat').value = lat;
+    document.getElementById('form-lng').value = lng;
 
-    snapshot.forEach(child => {
-        const data = child.val();
-        if (!data.lat || !data.lng) return;
-
-        const color = data.status === 'resolved' ? 'gray' : 
-                     { accident: 'red', traffic_jam: 'orange', road_closure: 'purple', hazard: 'yellow' }[data.type] || 'blue';
-
-        const statusText = data.status === 'resolved' ? '✅ Resolved' : '🔴 Active';
-
-        const marker = L.marker([data.lat, data.lng], {
-            icon: L.divIcon({
-                html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>`,
-                className: 'incident-marker',
-                iconSize: [18, 18],
-                iconAnchor: [9, 9]
-            })
-        }).bindPopup(`<b>${data.type}</b><br>${data.description || 'No details'}<br><small>Status: ${statusText}</small>`).addTo(mainMap);
-
-        window.incidentMarkers.push(marker);
-    });
-});
-});
+    if (window.incidentMap) {
+        window.incidentMap.setView([lat, lng], 17);
+        window.incidentMap.eachLayer(layer => {
+            if (layer instanceof L.Marker) window.incidentMap.removeLayer(layer);
+        });
+        L.marker([lat, lng]).addTo(window.incidentMap).bindPopup("Manual location").openPopup();
+    }
+    document.getElementById('location-status').textContent = "📍 Manual location set";
+}
 </script>
 
 </body>

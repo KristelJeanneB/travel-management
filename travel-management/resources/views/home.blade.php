@@ -50,7 +50,7 @@ HOME
       <div class="hero-text fade-in-right">
         <h2>Navigate Smarter, Drive Safer</h2>
         <p>Real-time traffic updates and intelligent navigation for your daily commute.</p>
-        <a href="{{ route('premium') }}" class="start-button">Go to Live Map</a>
+        <a href="{{ route('map') }}" class="start-button">Go to Live Map</a>
       </div>
     </section>
 
