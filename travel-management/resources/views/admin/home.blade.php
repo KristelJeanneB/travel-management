@@ -644,6 +644,11 @@
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
 }
+.badge {
+    display: inline-block;
+    font-weight: bold;
+    z-index: 10;
+}
 
 </style>
 </head>
@@ -716,6 +721,7 @@
             <i class="fas fa-car-crash icon" style="color: #e74c3c;"></i>
             <p>Accident Reports</p>
             <small>User Reports</small>
+            <span id="admin-new-reports-badge" class="badge" style="display:none; background:#ff4757; color:white; border-radius:10px; padding:2px 6px; font-size:12px; margin-left:6px;"></span>
         </div>
         <div class="card" id="reportIncidentBtn" role="button" tabindex="0">
             <i class="fas fa-plus-circle icon" style="color: #f39c12;"></i>
@@ -826,7 +832,9 @@
 <div id="incidentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="incident-modal-title">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="incident-modal-title">Incident Reports</h3>
+            <h3 id="incident-modal-title">
+                Incident Reports
+            </h3>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <input 
                     type="text" 
@@ -838,16 +846,16 @@
         </div>
         <table>
             <thead>
-    <tr>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Coords</th>
-        <th>Address</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Actions</th> 
-    </tr>
-</thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Coords</th>
+                    <th>Address</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th> 
+                </tr>
+            </thead>
             <tbody id="incidentTableBody"></tbody>
         </table>
     </div>
@@ -1642,6 +1650,49 @@ reportIncidentForm.addEventListener('submit', async e => {
     console.error(err);
     alert('Failed to submit report.');
   }
+});
+let adminLastViewedTime = localStorage.getItem('admin_last_incident_view') || new Date(0).toISOString();
+let adminNewReportCount = 0;
+
+function updateAdminBadge() {
+    const badge = document.getElementById('admin-new-reports-badge');
+    if (adminNewReportCount > 0) {
+        badge.textContent = adminNewReportCount;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+async function checkForNewIncidentsAdmin() {
+    try {
+        const res = await fetch('{{ route("incidents.fetch") }}', {
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        });
+        const incidents = await res.json();
+        if (!Array.isArray(incidents)) return;
+
+        const newReports = incidents.filter(inc => 
+            new Date(inc.created_at) > new Date(adminLastViewedTime)
+        );
+
+        adminNewReportCount = newReports.length;
+        updateAdminBadge();
+    } catch (err) {
+        console.warn("Failed to check for new incidents (admin):", err);
+    }
+}
+
+setInterval(checkForNewIncidentsAdmin, 15000);
+checkForNewIncidentsAdmin(); 
+
+document.getElementById('openIncidentModal')?.addEventListener('click', () => {
+    adminLastViewedTime = new Date().toISOString();
+    localStorage.setItem('admin_last_incident_view', adminLastViewedTime);
+    adminNewReportCount = 0;
+    updateAdminBadge();
+    loadIncidentReports();
+    document.getElementById('incidentModal').style.display = 'block';
 });
 });
 </script>
