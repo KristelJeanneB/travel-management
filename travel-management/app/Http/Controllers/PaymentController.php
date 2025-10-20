@@ -69,4 +69,17 @@ class PaymentController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function destroy($id)
+{
+    $payment = Payment::find($id);
+
+    if (!$payment) {
+        return response()->json(['success' => false]);
+    }
+
+    $payment->delete();
+
+    return response()->json(['success' => true]);
+}
 }

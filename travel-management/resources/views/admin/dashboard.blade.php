@@ -134,24 +134,6 @@
         box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
     }
 
-    .profile-btn {
-        background: #86A8CF;
-        border: none;
-        color: white;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.3s ease;
-    }
-
-    .profile-btn:hover {
-        background: #6a8cb3;
-    }
-
     .overview h2 {
         text-align: center;
         margin-bottom: 30px;
@@ -634,6 +616,7 @@
         }
     }
 
+
     @media (max-width: 480px) {
         #incidentModal th:nth-child(4),
         #incidentModal td:nth-child(4) {
@@ -648,6 +631,58 @@
     display: inline-block;
     font-weight: bold;
     z-index: 10;
+}
+    #payments-content table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#payments-content th,
+#payments-content td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle; /* Align content vertically */
+}
+
+#payments-content thead {
+    background-color: #007bff; /* Blue header */
+    color: white;
+}
+
+#payments-content tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#payments-content tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.confirm-btn,
+.delete-btn {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.confirm-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+td .btn-group {
+    display: flex;
+    gap: 6px;  /* space between buttons */
+    align-items: center;
 }
 
 </style>
@@ -681,11 +716,11 @@
                     ">0</span>
                 </a>
             </li>
-            <li>
+            <!--<li>
                 <a href="{{ route('admin.settings') }}">
                     <i class="fas fa-cog"></i> Settings
                 </a>
-            </li>
+            </li>-->
             <li>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt"></i> Log Out
@@ -696,9 +731,9 @@
 
     <main class="main-content" role="main">
         <header>
-            <button class="profile-btn" aria-label="User Profile">
+            <!--<button class="profile-btn" aria-label="User Profile">
                 <i class="fas fa-user"></i>
-            </button>
+            </button>-->
         </header>
 
         <section class="overview" aria-labelledby="overview-heading">
@@ -1182,20 +1217,25 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             data.forEach(payment => {
-                tableHtml += `
-                    <tr data-id="${payment.id}">
-                        <td>${payment.id}</td>
-                        <td>${payment.user_name}</td>
-                        <td>${payment.amount}</td>
-                        <td class="status">${payment.status}</td>
-                        <td>
-                            ${payment.status === 'pending' 
-                                ? `<button class="confirm-btn">Confirm</button>` 
-                                : ''}
-                        </td>
-                    </tr>
-                `;
-            });
+    tableHtml += `
+        <tr data-id="${payment.id}">
+            <td>${payment.id}</td>
+            <td>${payment.user_name}</td>
+            <td>${payment.amount}</td>
+            <td class="status">${payment.status}</td>
+            <td style="padding:8px;">
+                <div class="btn-group">
+                    <button class="delete-btn">Delete</button>
+                    ${payment.status === 'pending' 
+                        ? `<button class="confirm-btn">Confirm</button>` 
+                        : ''}
+                </div>
+            </td>
+
+        </tr>
+    `;
+});
+
 
             tableHtml += `</tbody></table>`;
             paymentsContent.innerHTML = tableHtml;
@@ -1234,6 +1274,42 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 });
             });
+            // Delete buttons
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!confirm('Are you sure you want to delete this payment?')) return;
+
+                const row = btn.closest('tr');
+                const paymentId = row.dataset.id;
+                btn.disabled = true;
+                btn.textContent = 'Deleting...';
+
+                fetch(`{{ url('admin/payments/delete') }}/${paymentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(res => res.json())
+                .then(resData => {
+                    if (resData.success) {
+                        row.remove();
+                        showToast('Payment deleted successfully!');
+                    } else {
+                        alert('Failed to delete payment.');
+                        btn.disabled = false;
+                        btn.textContent = 'Delete';
+                    }
+                })
+                .catch(() => {
+                    alert('Error deleting payment.');
+                    btn.disabled = false;
+                    btn.textContent = 'Delete';
+                });
+            });
+        });
         })
         .catch(() => {
             paymentsContent.innerHTML = '<p>Failed to load payments.</p>';
@@ -1693,6 +1769,10 @@ document.getElementById('openIncidentModal')?.addEventListener('click', () => {
     updateAdminBadge();
     loadIncidentReports();
     document.getElementById('incidentModal').style.display = 'block';
+});
+document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+    });
 });
 });
 </script>

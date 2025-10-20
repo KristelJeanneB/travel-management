@@ -300,12 +300,37 @@
     position: relative;
 }
 }
+#map {
+    touch-action: auto !important;
+    pointer-events: auto !important;
+}
+
+@media (max-width: 768px) {
+    .route-guidance:not(.active) {
+        display: none !important;
+    }
+}
+.map-container {
+    position: relative;
+    z-index: 1; 
+}
 
 #map {
     width: 100%;
     height: 100vh;
     margin: 0;
     padding: 0;
+    touch-action: auto;
+    pointer-events: auto;
+}
+
+.route-guidance:not(.active) {
+    pointer-events: none;
+    opacity: 0;
+}
+.route-guidance.active {
+    pointer-events: auto;
+    opacity: 1;
 }
     .header {
         position: fixed;
@@ -475,7 +500,7 @@
 
 <div class="header">
     <nav class="nav">
-        <a href="{{ route('home') }}" class="back-button" title="Back to Home">
+        <a href="{{ route('dashboard') }}" class="back-button" title="Back to Home">
             <i class="fas fa-arrow-left"></i> Back
         </a>
 
@@ -768,7 +793,14 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    mainMap = L.map('map').setView(userCoords, 14);
+    mainMap = L.map('map', {
+    dragging: true,
+    touchZoom: true,
+    scrollWheelZoom: true,
+    doubleClickZoom: true,
+    boxZoom: true,
+    zoomControl: true
+}).setView(userCoords, 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mainMap);

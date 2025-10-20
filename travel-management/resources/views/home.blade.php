@@ -50,7 +50,7 @@ HOME
       <div class="hero-text fade-in-right">
         <h2>Navigate Smarter, Drive Safer</h2>
         <p>Real-time traffic updates and intelligent navigation for your daily commute.</p>
-        <a href="{{ route('map') }}" class="start-button">Go to Live Map</a>
+        <a href="{{ route('premium') }}" class="start-button">Go to Live Map</a>
       </div>
     </section>
 
@@ -126,7 +126,7 @@ HOME
     <section class="cta">
       <h2>Ready to Get Moving?</h2>
       <p>Launch the live map and experience hassle-free travel.</p>
-      <a href="{{ route('map') }}" class="start-button">Launch Map</a>
+      <a href="{{ route('premium') }}" class="start-button">Launch Map</a>
     </section>
 
     <!-- Our Team Section -->

@@ -518,9 +518,9 @@
                     ">0</span>
                 </a>
             </li>
-            <li>
+            <!--<li>
                 <a href="{{ route('admin.settings') }}"><i class="fas fa-cog"></i> Settings</a>
-            </li>
+            </li>-->
             <li>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt"></i> Log Out

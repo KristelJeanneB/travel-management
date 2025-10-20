@@ -130,10 +130,10 @@
             <li><i class="fas fa-check-circle"></i> Priority support</li>
         </ul>
 
-        <div class="price">Subscribe Now for ₱150/month</div>
+        <div class="price">Subscribe Now for ₱300/month</div>
 
         <button type="button" onclick="window.location='{{ route('payment')}}'" class="btn-subscribe">Get Premium</button>
-        <button type="button" onclick="window.location='{{ route('map')}}'" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Map</button>
+        <button type="button" onclick="window.location='{{ route('home')}}'" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Map</button>
     </div>
 
 </body>

@@ -31,6 +31,9 @@ Route::get('/test-firebase', function () {
     }
 });
 
+//delete payment
+Route::delete('admin/payments/delete/{id}', [PaymentController::class, 'destroy'])->name('admin.payments.delete');
+
 // Home / Registration
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');

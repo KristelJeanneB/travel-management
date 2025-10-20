@@ -210,11 +210,12 @@
 
             <div class="form-group">
                 <label for="amount">Amount Paid (₱)</label>
-                <input type="number" id="amount" name="amount" placeholder="Enter amount paid" min="150" step="0.01" value="{{ old('amount') }}" required class="form-control" />
+                <input type="number" id="amount" name="amount" placeholder="Enter amount paid" min="300" step="0.01" value="{{ old('amount') }}" required class="form-control" />
             </div>
 
             <button type="submit" class="btn-pay">Confirm Payment</button>
             <button type="button" onclick="window.location='{{ route('premium') }}'" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button>
+            <button type="button" onclick="window.location='{{ route('map') }}'" class=""><i class="fas fa-arrow-left"></i> Proceed</button>
         </form>
     </div>
 
