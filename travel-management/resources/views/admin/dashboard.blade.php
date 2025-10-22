@@ -573,7 +573,6 @@
         background: white;
     }
 
-    /* Search in Incident Modal */
     #incident-search {
         padding: 8px 12px;
         border: 1px solid #ccc;
@@ -643,11 +642,11 @@
 #payments-content td {
     padding: 10px 12px;
     border-bottom: 1px solid #ddd;
-    vertical-align: middle; /* Align content vertically */
+    vertical-align: middle; 
 }
 
 #payments-content thead {
-    background-color: #007bff; /* Blue header */
+    background-color: #007bff;
     color: white;
 }
 
@@ -681,7 +680,7 @@
 
 td .btn-group {
     display: flex;
-    gap: 6px;  /* space between buttons */
+    gap: 6px; 
     align-items: center;
 }
 
@@ -746,11 +745,11 @@ td .btn-group {
             <small id="userCount">Loading...</small>
         </div>
 
-        <div class="card" id="payments-card" role="button" tabindex="0">
+        <!--<div class="card" id="payments-card" role="button" tabindex="0">
             <i class="fas fa-wallet icon" style="color: #27ae60;"></i>
             <p>Payments</p>
             <small>User Payments</small>
-        </div>
+        </div>-->
 
         <div class="card" id="accidentReportsBtn" role="button" tabindex="0">
             <i class="fas fa-car-crash icon" style="color: #e74c3c;"></i>
@@ -900,7 +899,8 @@ td .btn-group {
         <button id="closeReportIncidentModal" class="close">&times;</button>
         <h2>Report an Incident</h2>
         <p id="location-status">📍 Getting your location...</p>
-        <form id="reportIncidentForm">
+        <div id="incident-map" style="width:100%; height:220px; border-radius:8px; margin:12px 0; border:1px solid #ddd;"></div>
+        <form id="reportIncidentForm" style="margin-top: 20px;">
             <label for="incident-type">Incident Type:</label>
             <select id="incident-type" required>
                 <option value="">-- Select Type --</option>
@@ -909,15 +909,59 @@ td .btn-group {
                 <option value="road_closure">Road Closure</option>
                 <option value="hazard">Hazard</option>
             </select>
-
             <label for="incident-description">Description:</label>
             <textarea id="incident-description" rows="3" placeholder="Describe details..." required></textarea>
-
             <input type="hidden" id="form-lat">
             <input type="hidden" id="form-lng">
-
-            <div id="incident-map"></div>
-
+            <div style="margin-top: 16px; text-align: center; font-size: 13px; color: #555;">
+            <small>Or enter coordinates manually:</small>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px; flex-wrap: wrap;">
+                <input 
+                    type="text" 
+                    id="manual-lat" 
+                    placeholder="Latitude" 
+                    style="
+                        width: 120px; 
+                        padding: 8px 10px; 
+                        font-size: 13px; 
+                        border: 1px solid #ccc; 
+                        border-radius: 6px; 
+                        text-align: center;
+                        font-family: 'Segoe UI', sans-serif;
+                    ">
+                <input 
+                    type="text" 
+                    id="manual-lng" 
+                    placeholder="Longitude" 
+                    style="
+                        width: 120px; 
+                        padding: 8px 10px; 
+                        font-size: 13px; 
+                        border: 1px solid #ccc; 
+                        border-radius: 6px; 
+                        text-align: center;
+                        font-family: 'Segoe UI', sans-serif;
+                    ">
+            </div>
+            <button 
+                id="use-manual-coords-btn"
+                style="
+                    margin-top: 12px; 
+                    padding: 8px 16px; 
+                    font-size: 13px; 
+                    background: #86A8CF; 
+                    color: white; 
+                    border: none; 
+                    border-radius: 6px; 
+                    cursor: pointer;
+                    font-family: 'Segoe UI', sans-serif;
+                    transition: background 0.2s;
+                "
+                onmouseover="this.style.background='#6a8cb3'"
+                onmouseout="this.style.background='#86A8CF'">
+                Use These Coordinates
+            </button>
+        </div>
             <button type="submit" class="btn">Submit Report</button>
         </form>
     </div>
@@ -946,7 +990,7 @@ td .btn-group {
 const firebaseConfig = {
     apiKey: "AIzaSyC2A2rUd1SjeEmm7qyMHFz8y1afLmQpJ_0",
     authDomain: "management-6d07b.firebaseapp.com",
-    databaseURL: "https://management-6d07b-default-rtdb.firebaseio.com/", // ← NO SPACES
+    databaseURL: "https://management-6d07b-default-rtdb.firebaseio.com/", 
     projectId: "management-6d07b",
     storageBucket: "management-6d07b.appspot.com",
     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
@@ -1240,7 +1284,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tableHtml += `</tbody></table>`;
             paymentsContent.innerHTML = tableHtml;
 
-            // Attach confirm button listeners
             document.querySelectorAll('.confirm-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const row = btn.closest('tr');
@@ -1545,6 +1588,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     });
 
+    document.getElementById('use-manual-coords-btn')?.addEventListener('click', useManualCoordinates);
+    function useManualCoordinates() {
+    const latInput = document.getElementById('manual-lat').value.trim();
+    const lngInput = document.getElementById('manual-lng').value.trim();
+    const lat = parseFloat(latInput);
+    const lng = parseFloat(lngInput);
+
+    if (isNaN(lat) || isNaN(lng)) {
+        alert('Please enter valid numeric coordinates.');
+        return;
+    }
+
+    document.getElementById('form-lat').value = lat;
+    document.getElementById('form-lng').value = lng;
+    if (incidentMap) {
+        incidentMap.setView([lat, lng], 17);
+
+        incidentMap.eachLayer(layer => {
+            if (layer instanceof L.Marker) incidentMap.removeLayer(layer);
+        });
+
+        L.marker([lat, lng]).addTo(incidentMap).bindPopup("Manual location").openPopup();
+    }
+
+    document.getElementById('location-status').innerHTML =
+        `<strong>📍 Manual location set:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+}
     async function reverseGeocode(lat, lng) {
         try {
             const res = await fetch(

@@ -50,7 +50,7 @@ HOME
       <div class="hero-text fade-in-right">
         <h2>Navigate Smarter, Drive Safer</h2>
         <p>Real-time traffic updates and intelligent navigation for your daily commute.</p>
-        <a href="{{ route('premium') }}" class="start-button">Go to Live Map</a>
+        <a href="{{ route('map') }}" class="start-button">Go to Live Map</a>
       </div>
     </section>
 
@@ -150,7 +150,7 @@ HOME
         </div>
         <div class="member">
           <img src="{{ asset('images/bea.jpg') }}" alt="Team Member 5">
-          <h4>BABY BEA</h4>
+          <h4>BEATRIZ</h4>
           <p>UI/UX Designer</p>
         </div>
         <div class="member">

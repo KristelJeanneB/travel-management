@@ -500,7 +500,7 @@
 
 <div class="header">
     <nav class="nav">
-        <a href="{{ route('dashboard') }}" class="back-button" title="Back to Home">
+        <a href="{{ route('home') }}" class="back-button" title="Back to Home">
             <i class="fas fa-arrow-left"></i> Back
         </a>
 
@@ -583,8 +583,7 @@
 <div class="map-container">
     <div id="map"></div>
     <div id="route-summary" class="route-summary hidden"></div>
-
-    
+    <div id="direction-arrow"></div>
 </div>
 
 <div id="userIncidentModal" class="modal">
@@ -829,6 +828,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let startCoords = userCoords;
             if (startInput) startCoords = await geocode(startInput);
             const endCoords = await geocode(destInput);
+            window.endCoords = endCoords;
             clearRoutes();
             await drawAlternateRoutes(startCoords, endCoords);
         } catch (err) {
@@ -929,6 +929,8 @@ function loadAndDisplayIncidents() {
 }
 
 let currentRouteLayers = [];
+let trafficStatus = { A: false, B: false, C: false, D: false }; 
+let bestRouteIndex = null; 
 function clearRoutes() {
     currentRouteLayers.forEach(layer => mainMap.removeLayer(layer));
     currentRouteLayers = [];
@@ -937,71 +939,146 @@ function clearRoutes() {
 
 async function drawAlternateRoutes(start, end) {
     clearRoutes();
-    const names = ['Route A', 'Route B', 'Route C', 'Route D'];
     const colors = ['red', 'blue', 'green', 'purple'];
     const url = `https://router.project-osrm.org/route/v1/car/${start[1]},${start[0]};${end[1]},${end[0]}?alternatives=true&geometries=geojson&overview=full`;
+    let routesDrawn = false;
+
     try {
         const res = await fetch(url);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
         if (data.routes && data.routes.length > 1) {
             const routesToShow = data.routes.slice(0, 4);
-            routesToShow.forEach((route, i) => {
+            const routePromises = routesToShow.map(async (route, i) => {
                 const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                const streetName = await getStreetNamesFromRoute(coords);
+                return { ...route, coords, streetName, index: i };
+            });
+            const enrichedRoutes = await Promise.all(routePromises);
+            enrichedRoutes.forEach(({ coords, streetName, distance, duration }, i) => {
                 const polyline = L.polyline(coords, {
                     color: colors[i],
                     weight: 5,
                     opacity: 0.8
-                }).bindPopup(`
-                    <b>${names[i]}</b><br>
-                    Distance: ${(route.distance / 1000).toFixed(2)} km<br>
-                    Time: ${Math.round(route.duration / 60)} mins
-                `).addTo(mainMap);
+                }).addTo(mainMap);
                 currentRouteLayers.push(polyline);
-                if (i === 0) {
-                    document.getElementById('route-summary').innerHTML = `
-                        🏆 <strong>Best Option: ${names[i]}</strong><br>
-                        ${(route.distance / 1000).toFixed(2)} km • ${Math.round(route.duration / 60)} mins
-                    `;
-                    document.getElementById('route-summary').classList.remove('hidden');
-                }
+                if (!window.lastRouteData) window.lastRouteData = [];
+                window.lastRouteData[i] = { distance, duration, name: streetName };
             });
-            L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
-            return;
+            routesDrawn = true;
         }
     } catch (err) {
         console.warn("OSRM alternatives failed", err);
     }
-    for (let i = 0; i < 4; i++) {
-        try {
-            const offsets = [{lat:+0.007,lng:-0.003},{lat:-0.007,lng:-0.003},{lat:-0.007,lng:+0.003},{lat:+0.007,lng:+0.003}];
-            const offset = offsets[i] || offsets[0];
-            const midLat = (start[0] + end[0]) / 2 + offset.lat;
-            const midLng = (start[1] + end[1]) / 2 + offset.lng;
-            const via = i === 0 ? `${start[1]},${start[0]};${end[1]},${end[0]}` : `${start[1]},${start[0]};${midLng},${midLat};${end[1]},${end[0]}`;
-            const res = await fetch(`https://router.project-osrm.org/route/v1/car/${via}?geometries=geojson`);
-            const data = await res.json();
-            if (!data.routes?.length) continue;
-            const route = data.routes[0];
-            const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-            const polyline = L.polyline(coords, {
-                color: colors[i],
-                weight: 5,
-                opacity: 0.8
-            }).bindPopup(`<b>${names[i]}</b><br>Distance: ${(route.distance / 1000).toFixed(2)} km`).addTo(mainMap);
-            currentRouteLayers.push(polyline);
-            if (i === 0) {
-                document.getElementById('route-summary').innerHTML = `
-                    🏆 <strong>Best Option: ${names[i]}</strong><br>
-                    ${(route.distance / 1000).toFixed(2)} km • ${Math.round(route.duration / 60)} mins
-                `;
-                document.getElementById('route-summary').classList.remove('hidden');
+
+    if (!routesDrawn) {
+        const offsets = [
+            {lat: +0.007, lng: -0.003},
+            {lat: -0.007, lng: -0.003},
+            {lat: -0.007, lng: +0.003},
+            {lat: +0.007, lng: +0.003}
+        ];
+        for (let i = 0; i < 4; i++) {
+            try {
+                const offset = offsets[i] || offsets[0];
+                const midLat = (start[0] + end[0]) / 2 + offset.lat;
+                const midLng = (start[1] + end[1]) / 2 + offset.lng;
+                const via = `${start[1]},${start[0]};${midLng},${midLat};${end[1]},${end[0]}`;
+                const res = await fetch(`https://router.project-osrm.org/route/v1/car/${via}?geometries=geojson`);
+                const data = await res.json();
+                if (!data.routes?.length) continue;
+                const route = data.routes[0];
+                const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                const streetName = await getStreetNamesFromRoute(coords);
+                const polyline = L.polyline(coords, {
+                    color: colors[i],
+                    weight: 5,
+                    opacity: 0.8
+                }).addTo(mainMap);
+                currentRouteLayers.push(polyline);
+                if (!window.lastRouteData) window.lastRouteData = [];
+                window.lastRouteData[i] = {
+                    distance: route.distance,
+                    duration: route.duration,
+                    name: streetName
+                };
+            } catch (err) {
+                console.warn(`Fallback route ${i} failed`, err);
+                if (!window.lastRouteData) window.lastRouteData = [];
+                window.lastRouteData[i] = null;
             }
-        } catch (err) {
-            console.warn(`Fallback route ${names[i]} failed`, err);
         }
     }
+
     L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
+    await fetchTrafficData();
+
+    currentRouteLayers.forEach((polyline, i) => {
+        const r = window.lastRouteData?.[i];
+        if (!r) return;
+        const hasTraffic = trafficStatus[String.fromCharCode(65 + i)];
+        const trafficNote = hasTraffic ? '⚠️ Traffic reported' : '✅ Clear';
+        polyline.bindPopup(`
+            <b>${r.name}</b><br>
+            Distance: ${(r.distance / 1000).toFixed(2)} km<br>
+            Time: ${Math.round(r.duration / 60)} mins<br>
+            ${trafficNote}
+        `);
+    });
+
+    suggestBestRoute(); 
+}
+async function getAddressFromCoords(lat, lng) {
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+            headers: { 'User-Agent': 'TrafficMonitorApp' }
+        });
+        const data = await res.json();
+        return data.display_name || 'Unknown location';
+    } catch (err) {
+        return 'Address unavailable';
+    }
+}
+
+function updateRouteSummary(routeLetter, routeName, distanceKm, timeMins, hasTraffic) {
+    const summaryEl = document.getElementById('route-summary');
+    const trafficNote = hasTraffic ? '⚠️ Traffic' : '✅ No Traffic';
+    summaryEl.innerHTML = `
+        🏆 <strong>Best Option: Route ${routeLetter}</strong><br>
+        ${routeName}<br>
+        ${distanceKm} km • ${timeMins} mins<br>
+        <small>${trafficNote}</small>
+    `;
+    summaryEl.classList.remove('hidden');
+}
+
+let arrow = document.getElementById('direction-arrow');
+let headingActive = false;
+
+if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    document.addEventListener('click', function requestPermission() {
+        DeviceOrientationEvent.requestPermission()
+            .then(permission => {
+                if (permission === 'granted') {
+                    window.addEventListener('deviceorientationabsolute', handleOrientation);
+                    arrow.style.display = 'block';
+                }
+            })
+            .catch(console.error);
+        document.removeEventListener('click', requestPermission); 
+    }, { once: true });
+} else {
+    window.addEventListener('deviceorientation', handleOrientation);
+    arrow.style.display = 'block';
+}
+
+function handleOrientation(event) {
+    let alpha = event.alpha; 
+    if (alpha === null || alpha === undefined) return;
+
+    alpha = (alpha + 360) % 360;
+    
+    arrow.style.transform = `translateX(-50%) rotate(${alpha}deg)`;
 }
 
 // Incident Report Form
@@ -1044,7 +1121,6 @@ document.getElementById('incident-form')?.addEventListener('submit', async funct
         console.error(err);
     }
 });
-
 // Traffic Modal
 async function fetchTrafficData() {
     const loadingEl = document.getElementById('loading');
@@ -1055,8 +1131,17 @@ async function fetchTrafficData() {
         const snapshot = await db.ref('traffic_logs').limitToLast(1).once('value');
         let data = null;
         snapshot.forEach(child => { data = child.val(); });
-        if (data) updateTrafficStatus(data);
-        else loadingEl.textContent = 'No traffic data.';
+        if (data) {
+            trafficStatus = {
+                A: data?.sensorA?.traffic === true,
+                B: data?.sensorB?.traffic === true,
+                C: data?.sensorC?.traffic === true,
+                D: data?.sensorD?.traffic === true
+            };
+            updateTrafficStatus(data); 
+        } else {
+            loadingEl.textContent = 'No traffic data.';
+        }
     } catch (err) {
         loadingEl.textContent = 'Error loading data.';
         console.error(err);
@@ -1081,7 +1166,114 @@ function updateTrafficStatus(data) {
         }
     });
 }
+function suggestBestRoute() {
+    const routeNames = ['A', 'B', 'C', 'D'];
+    let bestRoute = null;
+    let bestDuration = Infinity;
 
+    for (let i = 0; i < routeNames.length; i++) {
+        const name = routeNames[i];
+        const hasTraffic = trafficStatus[name];
+        const routeData = window.lastRouteData?.[i];
+        if (!routeData || hasTraffic) continue;
+        if (routeData.duration < bestDuration) {
+            bestDuration = routeData.duration;
+            bestRoute = name;
+            bestRouteIndex = i;
+        }
+    }
+
+    if (bestRoute === null) {
+        bestDuration = Infinity;
+        for (let i = 0; i < routeNames.length; i++) {
+            const routeData = window.lastRouteData?.[i];
+            if (!routeData) continue;
+            if (routeData.duration < bestDuration) {
+                bestDuration = routeData.duration;
+                bestRoute = routeNames[i];
+                bestRouteIndex = i;
+            }
+        }
+    }
+
+    currentRouteLayers.forEach(polyline => {
+        if (polyline) {
+            polyline.setStyle({ weight: 5, opacity: 0.6 });
+        }
+    });
+
+if (window.bestRouteGlow) {
+    mainMap.removeLayer(window.bestRouteGlow);
+    window.bestRouteGlow = null;
+}
+
+currentRouteLayers.forEach(polyline => {
+    if (polyline) {
+        polyline.setStyle({ weight: 5, opacity: 0.6 });
+    }
+});
+
+if (bestRouteIndex !== null && currentRouteLayers[bestRouteIndex]) {
+    const bestPolyline = currentRouteLayers[bestRouteIndex];
+    
+    const coords = bestPolyline.getLatLngs();
+    const color = bestPolyline.options.color;
+
+    window.bestRouteGlow = L.polyline(coords, {
+        color: color,
+        weight: 16,       
+        opacity: 0.3,     
+        className: 'best-route-glow'
+    }).addTo(mainMap);
+
+    bestPolyline.setStyle({
+        weight: 8,
+        opacity: 1.0
+    });
+
+    bestPolyline.bringToFront();
+}
+
+    let message = '';
+    if (bestRoute !== null) {
+        const routeData = window.lastRouteData[bestRouteIndex];
+        const mins = Math.round(bestDuration / 60);
+        const km = (routeData.distance / 1000).toFixed(2);
+        const routeName = routeData.name || `Route ${bestRoute}`;
+        const hasTraffic = trafficStatus[bestRoute];
+
+        message = hasTraffic
+            ? `⚠️ All routes have traffic. Best: Route ${bestRoute} — ${routeName} (${mins} mins).`
+            : `🟢 Recommended: Route ${bestRoute} — ${routeName} (no traffic, ${mins} mins).`;
+
+        updateRouteSummary(bestRoute, routeName, km, mins, hasTraffic);
+    } else {
+        message = 'ℹ️ Unable to determine best route.';
+        document.getElementById('route-summary').classList.add('hidden');
+    }
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 15px;
+        z-index: 1060;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        max-width: 90%;
+        text-align: center;
+    `;
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => {
+        if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
+    }, 6000);
+}
 async function reverseGeocode(lat, lng) {
     try {
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, { mode: 'cors' });
@@ -1091,6 +1283,39 @@ async function reverseGeocode(lat, lng) {
     } catch (err) {
         return 'Address unavailable';
     }
+}
+async function getStreetNamesFromRoute(coords, maxSamples = 6) {
+    const total = coords.length;
+    if (total === 0);
+    const indices = new Set();
+    indices.add(0); 
+    indices.add(total - 1); 
+    if (total > 2) {
+        const step = Math.max(1, Math.floor(total / (maxSamples - 2)));
+        for (let i = step; i < total - 1 && indices.size < maxSamples; i += step) {
+            indices.add(i);
+        }
+    }
+    const sampledCoords = Array.from(indices).map(i => coords[i]);
+    const streetNames = [];
+    for (const [lat, lng] of sampledCoords) {
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`, {
+                headers: { 'User-Agent': 'TrafficMonitorApp' }
+            });
+            const data = await res.json();
+            const road = data.address?.road || data.address?.pedestrian || data.address?.path;
+            if (!streetNames.includes(road)) {
+                streetNames.push(road);
+                if (streetNames.length >= 3) break;
+            }
+        } catch (err) {
+            console.warn("Reverse geocode failed", err);
+        }
+    }
+    //if (streetNames.length === 0) return 'Unnamed Street';
+    if (streetNames.length === 1) return streetNames[0];
+    return streetNames.slice(0, 3).join(' → ');
 }
 
 function formatDate(dateStr) {

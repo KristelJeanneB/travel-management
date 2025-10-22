@@ -195,25 +195,6 @@
     }
 }
 
-
-        .profile-btn {
-            background: #86A8CF;
-            border: none;
-            color: white;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s ease;
-        }
-
-        .profile-btn:hover {
-            background: #6a8cb3;
-        }
-
         .overview h2 {
             text-align: center;
             margin-bottom: 30px;
@@ -532,9 +513,6 @@
     <main class="main-content">
         <header>
              <!--<input type="search" placeholder="Search..." class="search-bar" aria-label="Search" />-->
-            <button class="profile-btn" aria-label="User Profile">
-                <i class="fas fa-user"></i>
-            </button>
         </header>
 
         <section class="overview">
