@@ -1043,95 +1043,116 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function loadTrafficAnalytics() {
-    const refTraffic = db.ref("traffic_logs");
+  const refTraffic = db.ref("traffic_logs");
+  refTraffic.once("value", (snapshot) => {
+    const rawData = snapshot.val();
+    if (!rawData) {
+      resetAnalyticsUI();
+      return;
+    }
+    let logs = [];
 
-    refTraffic.on("value", (snapshot) => {
-      const data = snapshot.val();
-      if (!data) return;
-
-      const counts = { heavy: 0, moderate: 0, normal: 0 };
-      const hourly = {};
-      let totalSpeed = 0, speedCount = 0;
-
-      Object.values(data).forEach((entry) => {
-        const status = entry.status || "normal";
-        if (counts[status] !== undefined) counts[status]++;
-
-        if (entry.speed) {
-          totalSpeed += Number(entry.speed);
-          speedCount++;
-        }
-
-        if (entry.timestamp) {
-          const hour = new Date(entry.timestamp).getHours();
-          hourly[hour] = (hourly[hour] || 0) + 1;
+    if (Object.values(rawData)[0]?.routes || Object.values(rawData)[0]?.sensorA) {
+      logs = Object.values(rawData).map(entry => {
+        if (entry.routes) {
+          return { timestamp: entry.timestamp || Date.now(), routes: entry.routes };
+        } else {
+          const routes = {};
+          ['A','B','C','D'].forEach(r => {
+            routes[r] = { traffic: entry[`sensor${r}`]?.traffic === true };
+          });
+          return { timestamp: entry.timestamp || Date.now(), routes };
         }
       });
-
-      const total = counts.heavy + counts.moderate + counts.normal;
-      document.getElementById("totalReports").textContent = total;
-      document.getElementById("heavyPercent").textContent =
-        total ? Math.round((counts.heavy / total) * 100) + "%" : "0%";
-      document.getElementById("avgSpeed").textContent = speedCount
-        ? (totalSpeed / speedCount).toFixed(1) + " km/h"
-        : "-- km/h";
-
-      const ctx = document.getElementById("trafficChart").getContext("2d");
-      if (doughnutChart) doughnutChart.destroy();
-
-      doughnutChart = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: ["Heavy", "Moderate", "Normal"],
-          datasets: [
-            {
-              label: "Traffic Distribution",
-              data: [counts.heavy, counts.moderate, counts.normal],
-              backgroundColor: ["#e74c3c", "#f39c12", "#2ecc71"],
-            },
-          ],
-        },
-        options: {
-            maintainAspectRatio: false,
-            cutout: "65%", 
-            plugins: {
-            legend: { position: "bottom" },
-            title: { display: true, text: "Current Traffic Distribution" },
-            },
-        },
+    } else {
+      const routes = {};
+      ['A','B','C','D'].forEach(r => {
+        routes[r] = { traffic: rawData[`sensor${r}`]?.traffic === true };
       });
+      logs = [{ timestamp: Date.now(), routes }];
+    }
 
+    const counts = { heavy: 0, moderate: 0, normal: 0 };
+    const hourly = {};
+    let totalSpeed = 0;
+    let totalEntries = 0;
 
-      const hours = Object.keys(hourly).sort((a, b) => a - b);
-      const values = hours.map((h) => hourly[h]);
+    logs.forEach(log => {
+      const hour = new Date(log.timestamp).getHours();
+      hourly[hour] = (hourly[hour] || 0) + 1;
 
-      const ctx2 = document.getElementById("trendChart").getContext("2d");
-      if (trendChart) trendChart.destroy();
-
-      trendChart = new Chart(ctx2, {
-        type: "bar",
-        data: {
-          labels: hours.map((h) => h + ":00"),
-          datasets: [
-            {
-              label: "Reports per Hour",
-              data: values,
-              backgroundColor: "#3498db",
-            },
-          ],
-        },
-        options: {
-          plugins: {
-            title: {
-              display: true,
-              text: "Traffic Reports by Hour",
-            },
-          },
-          scales: { y: { beginAtZero: true } },
-        },
+      Object.values(log.routes).forEach(route => {
+        totalEntries++;
+        if (route.traffic) {
+          counts.heavy++;
+          totalSpeed += 15; 
+        } else {
+          counts.normal++;
+          totalSpeed += 50; 
+        }
       });
     });
-  }
+
+    const total = counts.heavy + counts.moderate + counts.normal;
+    document.getElementById("totalReports").textContent = totalEntries;
+    document.getElementById("heavyPercent").textContent = total ? Math.round((counts.heavy / total) * 100) + "%" : "0%";
+    document.getElementById("avgSpeed").textContent = total ? (totalSpeed / total).toFixed(1) + " km/h" : "-- km/h";
+
+    const ctx1 = document.getElementById("trafficChart").getContext("2d");
+    if (window.doughnutChart) window.doughnutChart.destroy();
+    window.doughnutChart = new Chart(ctx1, {
+      type: "doughnut",
+      data: {
+        labels: ["Heavy", "Normal"],
+        datasets: [{
+          data: [counts.heavy, counts.normal],
+          backgroundColor: ["#e74c3c", "#2ecc71"]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom" },
+          tooltip: { callbacks: { label: (item) => `${item.label}: ${item.raw} routes` } }
+        }
+      }
+    });
+
+    const hours = Array.from({length: 24}, (_, i) => i);
+    const values = hours.map(h => hourly[h] || 0);
+    const ctx2 = document.getElementById("trendChart").getContext("2d");
+    if (window.trendChart) window.trendChart.destroy();
+    window.trendChart = new Chart(ctx2, {
+      type: "bar",
+      data: {
+        labels: hours.map(h => `${h}:00`),
+        datasets: [{
+          label: "Logs per Hour",
+          data: values,
+          backgroundColor: "#3498db"
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+      }
+    });
+  }).catch(err => {
+    console.error("Analytics load error:", err);
+    resetAnalyticsUI();
+  });
+}
+
+function resetAnalyticsUI() {
+  document.getElementById("totalReports").textContent = "0";
+  document.getElementById("heavyPercent").textContent = "0%";
+  document.getElementById("avgSpeed").textContent = "-- km/h";
+}
 
     let allIncidentData = [];
   
@@ -1844,6 +1865,18 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', () => {
     });
 });
+function logTrafficStatus(sensorData) {
+  const log = {
+    timestamp: Date.now(),
+    routes: {
+      A: { traffic: sensorData.A },
+      B: { traffic: sensorData.B },
+      C: { traffic: sensorData.C },
+      D: { traffic: sensorData.D }
+    }
+  };
+  db.ref('traffic_logs').push(log); 
+}
 });
 </script>
 
