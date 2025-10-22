@@ -493,7 +493,23 @@
     font-style: ${item.address ? 'normal' : 'italic'};
     color: ${item.address ? '#333' : '#888'};
 }
-
+#route-summary.visible {
+    display: block;
+}
+#route-summary .best-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #28a745;
+}
+#route-summary .route-details {
+    font-size: 14px;
+    color: #333;
+    margin-top: 5px;
+}
+#route-summary .traffic-note {
+    font-size: 13px;
+    margin-top: 5px;
+}
     </style>
 </head>
 <body>
@@ -556,8 +572,8 @@
         <i class="fas fa-car-side"></i> Show Traffic Status
     </button>
 
-    <div style="margin-top: 30px;">
-        <strong>Alternate Routes</strong><br>
+    <div id="alternate-routes-list" style="margin-top: 30px;">
+    <strong>Alternate Routes</strong><br>
         <span style="color:red;">●</span> Route A<br>
         <span style="color:blue;">●</span> Route B<br>
         <span style="color:green;">●</span> Route C<br>
@@ -931,6 +947,7 @@ function loadAndDisplayIncidents() {
 let currentRouteLayers = [];
 let trafficStatus = { A: false, B: false, C: false, D: false }; 
 let bestRouteIndex = null; 
+let hasShownInitialAlert = false;
 function clearRoutes() {
     currentRouteLayers.forEach(layer => mainMap.removeLayer(layer));
     currentRouteLayers = [];
@@ -942,6 +959,9 @@ async function drawAlternateRoutes(start, end) {
     const colors = ['red', 'blue', 'green', 'purple'];
     const url = `https://router.project-osrm.org/route/v1/car/${start[1]},${start[0]};${end[1]},${end[0]}?alternatives=true&geometries=geojson&overview=full`;
     let routesDrawn = false;
+    if (window.destinationMarker) {
+    mainMap.removeLayer(window.destinationMarker);
+}
 
     try {
         const res = await fetch(url);
@@ -1010,7 +1030,10 @@ async function drawAlternateRoutes(start, end) {
         }
     }
 
-    L.marker([end[0], end[1]]).addTo(mainMap).bindPopup("Destination").openPopup();
+    window.destinationMarker = L.marker([end[0], end[1]])
+    .bindPopup("Destination")
+    .addTo(mainMap)
+    .openPopup();
     await fetchTrafficData();
 
     currentRouteLayers.forEach((polyline, i) => {
@@ -1026,7 +1049,8 @@ async function drawAlternateRoutes(start, end) {
         `);
     });
 
-    suggestBestRoute(); 
+    suggestBestRoute(true); 
+    updateAlternateRoutesList();
 }
 async function getAddressFromCoords(lat, lng) {
     try {
@@ -1042,14 +1066,19 @@ async function getAddressFromCoords(lat, lng) {
 
 function updateRouteSummary(routeLetter, routeName, distanceKm, timeMins, hasTraffic) {
     const summaryEl = document.getElementById('route-summary');
+    if (!summaryEl) return;
+
     const trafficNote = hasTraffic ? '⚠️ Traffic' : '✅ No Traffic';
     summaryEl.innerHTML = `
-        🏆 <strong>Best Option: Route ${routeLetter}</strong><br>
-        ${routeName}<br>
-        ${distanceKm} km • ${timeMins} mins<br>
-        <small>${trafficNote}</small>
+        <div class="best-label">🏆 Best Option: Route ${routeLetter}</div>
+        <div class="route-details">${routeName}</div>
+        <div class="route-details">${distanceKm} km • ${timeMins} mins</div>
+        <div class="traffic-note" style="color: ${hasTraffic ? '#e74c3c' : '#27ae60'}; font-weight: 600;">
+            ${trafficNote}
+        </div>
     `;
     summaryEl.classList.remove('hidden');
+    summaryEl.classList.add('visible');
 }
 
 let arrow = document.getElementById('direction-arrow');
@@ -1147,7 +1176,36 @@ async function fetchTrafficData() {
         console.error(err);
     }
 }
-
+function startTrafficListener() {
+    db.ref('traffic_logs').limitToLast(1).on('value', (snapshot) => {
+        let data = null;
+        snapshot.forEach(child => { data = child.val(); });
+        if (data) {
+            trafficStatus = {
+                A: data?.sensorA?.traffic === true,
+                B: data?.sensorB?.traffic === true,
+                C: data?.sensorC?.traffic === true,
+                D: data?.sensorD?.traffic === true
+            };
+            updateTrafficStatus(data);
+            if (window.lastRouteData && window.lastRouteData.length > 0) {
+                currentRouteLayers.forEach((polyline, i) => {
+                    const r = window.lastRouteData?.[i];
+                    if (!r) return;
+                    const hasTraffic = trafficStatus[String.fromCharCode(65 + i)];
+                    const trafficNote = hasTraffic ? '⚠️ Traffic reported' : '✅ Clear';
+                    polyline.bindPopup(`
+                        <b>${r.name}</b><br>
+                        Distance: ${(r.distance / 1000).toFixed(2)} km<br>
+                        Time: ${Math.round(r.duration / 60)} mins<br>
+                        ${trafficNote}
+                    `);
+                });
+                suggestBestRoute(false); 
+            }
+        }
+    });
+}
 function updateTrafficStatus(data) {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('traffic-results').style.display = 'block';
@@ -1166,7 +1224,84 @@ function updateTrafficStatus(data) {
         }
     });
 }
-function suggestBestRoute() {
+function updateAlternateRoutesList() {
+    const routeList = document.getElementById('alternate-routes-list');
+    if (!routeList || !window.lastRouteData) return;
+
+    routeList.innerHTML = '';
+
+    const title = document.createElement('strong');
+    title.textContent = 'Alternate Routes';
+    routeList.appendChild(title);
+
+    const routeNames = ['A', 'B', 'C', 'D'];
+    const colors = ['red', 'blue', 'green', 'purple'];
+
+    for (let i = 0; i < 4; i++) {
+        const routeData = window.lastRouteData[i];
+        const routeItem = document.createElement('div');
+        routeItem.className = 'route-item';
+        routeItem.style.display = 'flex';
+        routeItem.style.alignItems = 'flex-start';
+        routeItem.style.gap = '10px';
+        routeItem.style.margin = '8px 0';
+        routeItem.style.padding = '10px';
+        routeItem.style.backgroundColor = '#f8f9fa';
+        routeItem.style.borderRadius = '8px';
+        routeItem.style.fontSize = '14px';
+
+        const dot = document.createElement('div');
+        dot.style.width = '12px';
+        dot.style.height = '12px';
+        dot.style.borderRadius = '50%';
+        dot.style.backgroundColor = colors[i];
+        dot.style.marginTop = '4px';
+        dot.style.flexShrink = '0';
+
+        const info = document.createElement('div');
+        info.style.flex = '1';
+        info.style.minWidth = '0';
+
+        if (!routeData) {
+            const name = document.createElement('div');
+            name.innerHTML = `<strong>Route ${routeNames[i]}</strong>: <em>Unavailable</em>`;
+            info.appendChild(name);
+        } else {
+            const routeName = routeData.name || `Route ${routeNames[i]}`;
+            const distanceKm = (routeData.distance / 1000).toFixed(1);
+            const timeMins = Math.round(routeData.duration / 60);
+            const hasTraffic = trafficStatus[routeNames[i]];
+            const statusText = hasTraffic ? '⚠️ Traffic' : '✅ Clear';
+            const statusColor = hasTraffic ? '#e74c3c' : '#27ae60';
+
+            const name = document.createElement('div');
+            name.innerHTML = `<strong>Route ${routeNames[i]}</strong>: ${routeName}`;
+            name.style.marginBottom = '4px';
+
+            const metrics = document.createElement('div');
+            metrics.innerHTML = `<small style="color:#555;">${distanceKm} km • ${timeMins} mins</small>`;
+            metrics.style.marginBottom = '4px';
+
+            const status = document.createElement('div');
+            status.innerHTML = `<small style="color:${statusColor}; font-weight:600;">${statusText}</small>`;
+
+            info.appendChild(name);
+            info.appendChild(metrics);
+            info.appendChild(status);
+        }
+
+        routeItem.appendChild(dot);
+        routeItem.appendChild(info);
+        routeList.appendChild(routeItem);
+    }
+
+    const footer = document.createElement('div');
+    footer.innerHTML = '<small style="color:#777; font-style:italic;">All share start & destination</small>';
+    footer.style.marginTop = '12px';
+    footer.style.textAlign = 'center';
+    routeList.appendChild(footer);
+}
+function suggestBestRoute(showAlert = true) {
     const routeNames = ['A', 'B', 'C', 'D'];
     let bestRoute = null;
     let bestDuration = Infinity;
@@ -1202,37 +1337,27 @@ function suggestBestRoute() {
         }
     });
 
-if (window.bestRouteGlow) {
-    mainMap.removeLayer(window.bestRouteGlow);
-    window.bestRouteGlow = null;
-}
-
-currentRouteLayers.forEach(polyline => {
-    if (polyline) {
-        polyline.setStyle({ weight: 5, opacity: 0.6 });
+    if (window.bestRouteGlow) {
+        mainMap.removeLayer(window.bestRouteGlow);
+        window.bestRouteGlow = null;
     }
-});
 
-if (bestRouteIndex !== null && currentRouteLayers[bestRouteIndex]) {
-    const bestPolyline = currentRouteLayers[bestRouteIndex];
-    
-    const coords = bestPolyline.getLatLngs();
-    const color = bestPolyline.options.color;
-
-    window.bestRouteGlow = L.polyline(coords, {
-        color: color,
-        weight: 16,       
-        opacity: 0.3,     
-        className: 'best-route-glow'
-    }).addTo(mainMap);
-
-    bestPolyline.setStyle({
-        weight: 8,
-        opacity: 1.0
-    });
-
-    bestPolyline.bringToFront();
-}
+    if (bestRouteIndex !== null && currentRouteLayers[bestRouteIndex]) {
+        const bestPolyline = currentRouteLayers[bestRouteIndex];
+        const coords = bestPolyline.getLatLngs();
+        const color = bestPolyline.options.color;
+        window.bestRouteGlow = L.polyline(coords, {
+            color: color,
+            weight: 16,
+            opacity: 0.3,
+            className: 'best-route-glow'
+        }).addTo(mainMap);
+        bestPolyline.setStyle({
+            weight: 8,
+            opacity: 1.0
+        });
+        bestPolyline.bringToFront();
+    }
 
     let message = '';
     if (bestRoute !== null) {
@@ -1241,38 +1366,39 @@ if (bestRouteIndex !== null && currentRouteLayers[bestRouteIndex]) {
         const km = (routeData.distance / 1000).toFixed(2);
         const routeName = routeData.name || `Route ${bestRoute}`;
         const hasTraffic = trafficStatus[bestRoute];
-
         message = hasTraffic
             ? `⚠️ All routes have traffic. Best: Route ${bestRoute} — ${routeName} (${mins} mins).`
             : `🟢 Recommended: Route ${bestRoute} — ${routeName} (no traffic, ${mins} mins).`;
-
         updateRouteSummary(bestRoute, routeName, km, mins, hasTraffic);
     } else {
         message = 'ℹ️ Unable to determine best route.';
         document.getElementById('route-summary').classList.add('hidden');
     }
-    const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #28a745;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-family: 'Quicksand', sans-serif;
-        font-size: 15px;
-        z-index: 1060;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        max-width: 90%;
-        text-align: center;
-    `;
-    alertDiv.textContent = message;
-    document.body.appendChild(alertDiv);
-    setTimeout(() => {
-        if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
-    }, 6000);
+
+    if (showAlert) {
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 15px;
+            z-index: 1060;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            max-width: 90%;
+            text-align: center;
+        `;
+        alertDiv.textContent = message;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => {
+            if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
+        }, 6000);
+    }
 }
 async function reverseGeocode(lat, lng) {
     try {
