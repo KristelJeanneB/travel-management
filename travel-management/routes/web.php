@@ -15,12 +15,12 @@ use App\Http\Controllers\AlertsController;
 use App\Http\Controllers\AdminIncidentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SuperAdminController;
 use App\Models\FailedLogin;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Factory;
-use App\Http\Controllers\UserController;
 
+// Test Firebase SSL
 Route::get('/test-firebase', function () {
     try {
         $client = new \GuzzleHttp\Client();
@@ -30,9 +30,6 @@ Route::get('/test-firebase', function () {
         return '❌ SSL Error: ' . $e->getMessage();
     }
 });
-
-//delete payment
-Route::delete('admin/payments/delete/{id}', [PaymentController::class, 'destroy'])->name('admin.payments.delete');
 
 // Home / Registration
 Route::get('/', [RegisterController::class, 'showRegistrationForm']);
@@ -44,111 +41,98 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Admin Dashboard (Static)
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard')->middleware('auth');
-
 // Password Reset
 Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 
-// Home (user)
-Route::get('/home', function () {
-    return view('home');
-})->name('home')->middleware('auth');
+// Authenticated User Routes
+Route::middleware('auth')->group(function () {
 
-// Admin: Get total user count
-Route::get('/admin/users/count', function () {
-    return response()->json(['count' => User::count()]);
-})->name('admin.users.count');
+    // Home / Dashboard
+    Route::get('/home', function () {
+        return view('home');
+    })->name('home');
 
-// Admin: Get all users
-Route::get('/admin/users/all', function () {
-    return response()->json(User::select('id', 'name', 'email', 'is_admin', 'created_at')->orderBy('created_at', 'desc')->get());
-})->name('admin.users.all');
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-Route::delete('/admin/users/{id}', [App\Http\Controllers\Admin\DashboardController::class, 'deleteUser'])
-    ->name('admin.users.delete')
-    ->middleware('auth');
+    // Profile / Settings
+    Route::get('/settings', [ProfileController::class, 'index'])->name('settings');
+    Route::post('/settings/update', [ProfileController::class, 'update'])->name('settings.update');
+    Route::post('/settings/toggle-theme', [ProfileController::class, 'toggleTheme'])->name('settings.toggleTheme');
 
-// Admin Routes (Authenticated)
-Route::middleware(['auth'])->group(function () {
+    // Incident Reporting (User)
+    Route::get('/incident', [IncidentController::class, 'index']);
+    Route::get('/incident/create', [IncidentController::class, 'create'])->name('incident.create');
+    Route::post('/incident', [IncidentController::class, 'store'])->name('incident.store');
+    Route::post('/incidents/{id}/resolve', [IncidentController::class, 'resolve'])->name('incidents.resolve');
+    Route::post('/incidents/{id}/update-status', [IncidentController::class, 'updateStatus']);
+    Route::delete('/incidents/{id}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
+    Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
+
+    // Payment Routes (User)
+    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment');
+    Route::post('/payment/confirm', [PaymentController::class, 'confirmPayment'])->name('payment.confirm');
+});
+
+// Admin Routes using .env credentials
+Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
+
     Route::get('/homeAdmin', [HomeAdminController::class, 'index'])->name('homeAdmin');
     Route::get('/view', [ViewAdminController::class, 'index'])->name('view');
-    Route::get('/admin/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
+    Route::get('/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
 
-    // Alerts: Last 5 failed login attempts and users
-    Route::get('/admin/alerts', function () {
+    // Alerts
+    Route::get('/alerts', function () {
         $failedAttempts = FailedLogin::latest()->take(5)->get();
         $newUsers = User::latest()->take(5)->get();
         return view('admin.alerts', compact('failedAttempts', 'newUsers'));
     })->name('alerts');
 
-    // Payment routes (for AJAX/modal)
-    Route::get('/admin/payments/data', [PaymentController::class, 'getPaymentsData'])->name('admin.payments.data');
-    Route::post('/admin/payments/confirm/{id}', [PaymentController::class, 'confirmPaymentById'])->name('admin.payments.confirm');
+    // Payments
+    Route::get('/payments/data', [PaymentController::class, 'getPaymentsData'])->name('admin.payments.data');
+    Route::post('/payments/confirm/{id}', [PaymentController::class, 'confirmPaymentById'])->name('admin.payments.confirm');
+    Route::delete('/payments/delete/{id}', [PaymentController::class, 'destroy'])->name('admin.payments.delete');
+
+    // Users
+    Route::get('/users/count', function () {
+        return response()->json(['count' => User::count()]);
+    })->name('admin.users.count');
+
+    Route::get('/users/all', function () {
+        return response()->json(User::select('id', 'name', 'email', 'is_admin', 'created_at')
+            ->orderBy('created_at', 'desc')->get());
+    })->name('admin.users.all');
+
+    Route::delete('/users/{id}', [DashboardController::class, 'deleteUser'])->name('admin.users.delete');
+
+    // Incidents (Admin)
+    Route::get('/incidents', [AdminIncidentController::class, 'index'])->name('admin.incidents');
+    Route::get('/incidents/fetch', [AdminIncidentController::class, 'fetchIncidents'])->name('admin.incidents.fetch');
+    Route::get('/incident/{id}', [IncidentController::class, 'show'])->name('admin.incident.show');
 });
 
-// ✅ Profile/Account Settings (Authenticated)
-Route::middleware('auth')->group(function () {
-    Route::get('/settings', [ProfileController::class, 'index'])->name('settings');
-    Route::post('/settings/update', [ProfileController::class, 'update'])->name('settings.update');
-    Route::post('/settings/toggle-theme', [ProfileController::class, 'toggleTheme'])->name('settings.toggleTheme');
+// Super Admin Routes
+Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->group(function () {
+    Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
 });
 
-// Incident Reporting (User)
-Route::get('/incident', [IncidentController::class, 'index']);
-Route::get('/incident/create', [IncidentController::class, 'create'])->name('incident.create');
-Route::post('/incident', [IncidentController::class, 'store'])->name('incident.store');
-
-// Incident Reporting (Admin)
-Route::get('/admin/incident', [IncidentController::class, 'index'])->name('admin.incident');
-Route::get('/admin/incident/{id}', [IncidentController::class, 'show'])->name('admin.incident.show');
-Route::get('/admin/incidents', [AdminIncidentController::class, 'index'])->name('admin.incident');
-Route::get('/admin/incidents/fetch', [AdminIncidentController::class, 'fetchIncidents'])->name('admin.incidents.fetch');
-Route::post('/incident', [IncidentController::class, 'store'])->name('incident.store');
-
-Route::post('/incidents/{id}/resolve', [App\Http\Controllers\IncidentController::class, 'resolve'])->name('incident.resolve')->middleware('auth');
-Route::post('/incidents/{id}/update-status', [IncidentController::class, 'updateStatus']);
-
-// Fetch incidents
-Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
-
-// Resolve incident
-Route::post('/incidents/{id}/resolve', [IncidentController::class, 'resolve'])->name('incidents.resolve');
-//delete incident
-Route::delete('/incidents/{id}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
-
-// API route to fetch incidents (used in dashboard JS) – includes location
-Route::get('/incidents/fetch', function () {
-    return \App\Models\Incident::select('title', 'description', 'lat', 'lng', 'created_at')->get();
-})->name('incidents.fetch');
-
-Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
-Route::delete('/incidents/{id}', [App\Http\Controllers\IncidentController::class, 'destroy'])
-    ->name('incident.destroy')
-    ->middleware('auth');
-
-// Map View
+// Map
 Route::get('/map', [MapController::class, 'show'])->name('map');
 
-//dashboard user
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
-
-// ✅ Premium Page (Static)
+// Premium Page
 Route::get('/premium', function () {
     return view('premium');
 })->name('premium');
 
-// Payment Routes (User payment submission form)
-Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment');
-Route::post('/payment/confirm', [PaymentController::class, 'confirmPayment'])->name('payment.confirm');
-
+// Migration (utility routes)
 Route::get('/migrate-users', [UserController::class, 'migrateUsers']);
-
 Route::get('/migrate-incidents', [IncidentController::class, 'migrateIncidents']);

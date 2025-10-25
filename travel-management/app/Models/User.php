@@ -23,6 +23,8 @@ class User extends Authenticatable
         'password',
         'avatar',
         'theme',
+        'is_admin',       // added for admin flag
+        'is_superadmin',  // added for super admin flag
     ];
 
     /**
@@ -43,6 +45,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean',       // cast to boolean
+        'is_superadmin' => 'boolean',  // cast to boolean
     ];
 
     /**
@@ -61,5 +65,21 @@ class User extends Authenticatable
         return $this->avatar
             ? asset('storage/' . $this->avatar)
             : asset('images/default-avatar.png');
+    }
+
+    /**
+     * Check if user is a super admin
+     */
+    public function isSuperAdmin()
+    {
+        return $this->is_superadmin;
+    }
+
+    /**
+     * Check if user is an admin (includes super admin)
+     */
+    public function isAdmin()
+    {
+        return $this->is_admin || $this->is_superadmin;
     }
 }

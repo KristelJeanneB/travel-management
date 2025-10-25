@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
-use App\Models\FailedLogin; // ✅ Import the FailedLogin model
+use App\Models\FailedLogin;
 
 class LoginController extends Controller
 {
@@ -25,25 +25,11 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
+        // Load admin and superadmin credentials from .env
         $adminEmail = env('ADMIN_EMAIL');
         $adminPassword = env('ADMIN_PASSWORD');
-
-        // Admin credentials check
-        if ($request->email === $adminEmail && $request->password === $adminPassword) {
-            $admin = User::firstOrCreate(
-                ['email' => $adminEmail],
-                [
-                    'name' => 'Admin User',
-                    'password' => Hash::make($adminPassword),
-                    'is_admin' => true,
-                ]
-            );
-
-            Auth::login($admin);
-            $request->session()->regenerate();
-
-            return redirect()->intended('/admin/dashboard');
-        }
+        $superAdminEmail = env('SUPERADMIN_EMAIL');
+        $superAdminPassword = env('SUPERADMIN_PASSWORD');
 
         $request->validate([
             'email' => 'required|string|email',
@@ -61,26 +47,60 @@ class LoginController extends Controller
             ])->withInput($request->except('captcha_answer'));
         }
 
-        $credentials = $request->only('email', 'password');
+        // Check Super Admin credentials
+        if ($request->email === $superAdminEmail && $request->password === $superAdminPassword) {
+            $superAdmin = User::firstOrCreate(
+                ['email' => $superAdminEmail],
+                [
+                    'name' => 'Super Admin',
+                    'password' => Hash::make($superAdminPassword),
+                    'is_admin' => true,
+                    'is_superadmin' => true,
+                ]
+            );
 
+            Auth::login($superAdmin);
+            $request->session()->regenerate();
+            return redirect()->route('superadmin.dashboard');
+        }
+
+        // Check Admin credentials
+        if ($request->email === $adminEmail && $request->password === $adminPassword) {
+            $admin = User::firstOrCreate(
+                ['email' => $adminEmail],
+                [
+                    'name' => 'Admin User',
+                    'password' => Hash::make($adminPassword),
+                    'is_admin' => true,
+                    'is_superadmin' => false,
+                ]
+            );
+
+            Auth::login($admin);
+            $request->session()->regenerate();
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Default login attempt for regular users
+        $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials, $request->has('remember'))) {
             $request->session()->regenerate();
-
             $user = Auth::user();
+
+            if ($user->is_superadmin) {
+                return redirect()->route('superadmin.dashboard');
+            }
+
             if ($user->is_admin) {
-                return redirect()->intended('/admin/dashboard');
+                return redirect()->route('admin.dashboard');
             }
 
             return redirect()->intended('/home');
         }
 
-        // ✅ Call the custom failed login handler
         return $this->sendFailedLoginResponse($request);
     }
 
-    /**
-     * Custom handler for failed login attempts.
-     */
     protected function sendFailedLoginResponse(Request $request)
     {
         FailedLogin::create([
@@ -93,22 +113,15 @@ class LoginController extends Controller
         ]);
     }
 
-    /**
-     * Log the user out.
-     */
     public function logout(Request $request)
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('register');
     }
 
-    /**
-     * Generate a random math question for CAPTCHA.
-     */
     private function generateMathQuestion(): array
     {
         $a = rand(1, 10);

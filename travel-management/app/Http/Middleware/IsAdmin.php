@@ -4,25 +4,31 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class IsAdmin
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return \Illuminate\Http\Response
      */
-    public function handle($request, $next)
-{
-    if (!auth()->check()) {
-        return redirect()->route('login');
-    }
+    public function handle(Request $request, Closure $next)
+    {
+        $user = auth()->user();
+        $envAdminEmail = env('ADMIN_EMAIL');
 
-    if (!auth()->user()->is_admin) {
-        abort(403, 'Unauthorized access.');
-    }
+        // If not logged in, redirect to login
+        if (!$user) {
+            return redirect()->route('login');
+        }
 
-    return $next($request);
-}
+        // Check if the user is admin in DB or matches the ENV admin
+        if (!$user->is_admin && $user->email !== $envAdminEmail) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        return $next($request);
+    }
 }
