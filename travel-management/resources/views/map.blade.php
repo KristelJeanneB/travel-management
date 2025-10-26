@@ -601,7 +601,13 @@
     <div id="route-summary" class="route-summary hidden"></div>
     <div id="direction-arrow"></div>
 </div>
-
+<!--<div id="sensor-legend" style="position: absolute; bottom: 20px; right: 20px; background: white; padding: 10px; border-radius: 8px; z-index: 1000;">
+    <div><strong>Sensors</strong></div>
+    <div><span style="color:red;">●</span> Route A</div>
+    <div><span style="color:blue;">●</span> Route B</div>
+    <div><span style="color:green;">●</span> Route C</div>
+    <div><span style="color:purple;">●</span> Route D</div>
+</div>-->
 <div id="userIncidentModal" class="modal">
     <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
@@ -719,7 +725,6 @@
         </form>
     </div>
 </div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -744,6 +749,7 @@ let accuracyCircle = null;
 let incidentMarkers = [];
 const LINGAYEN_COORDS = [16.0212, 120.2315];
 let userCoords = LINGAYEN_COORDS;
+let sensorMarkers = []; // To store the 4 sensor markers
 let mainMap;
 
 let lastCheckedTime = localStorage.getItem('last_incident_view') || new Date(0).toISOString();
@@ -873,6 +879,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('close-traffic-modal')?.addEventListener('click', () => {
         document.getElementById('traffic-modal').style.display = 'none';
     });
+    startTrafficListener(); // ✅ Start listening to Firebase
 });
 
 async function geocode(place) {
@@ -1188,6 +1195,7 @@ function startTrafficListener() {
                 D: data?.sensorD?.traffic === true
             };
             updateTrafficStatus(data);
+            updateSensorMarkers(); // ✅ ADD THIS LINE
             if (window.lastRouteData && window.lastRouteData.length > 0) {
                 currentRouteLayers.forEach((polyline, i) => {
                     const r = window.lastRouteData?.[i];
@@ -1631,6 +1639,47 @@ function useManualLocation() {
         L.marker([lat, lng]).addTo(window.incidentMap).bindPopup("Manual location").openPopup();
     }
     document.getElementById('location-status').textContent = "📍 Manual location set";
+}
+function updateSensorMarkers() {
+    sensorMarkers.forEach(marker => mainMap.removeLayer(marker));
+    sensorMarkers = [];
+
+    db.ref('traffic_logs').limitToLast(1).once('value')
+        .then(snapshot => {
+            let data = null;
+            snapshot.forEach(child => { data = child.val(); });
+
+            console.log("Firebase traffic data:", data); 
+
+            if (!data || !data.sensor_locations) {
+                console.warn("⚠️ sensor_locations missing in Firebase");
+                return;
+            }
+
+            const color = hasTraffic ? 'red' : ['red', 'blue', 'green', 'purple'][i];
+            const letters = ['A', 'B', 'C', 'D'];
+
+            const hasTraffic = trafficStatus[letter];
+            const statusText = hasTraffic ? '⚠️ Traffic' : '✅ Clear';
+            marker.bindPopup(`<strong>Sensor ${letter}</strong><br>Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}<br>${statusText}`);
+
+            letters.forEach((letter, i) => {
+                const loc = data.sensor_locations[letter];
+                if (!loc || isNaN(loc.lat) || isNaN(loc.lng)) return;
+
+                const marker = L.marker([loc.lat, loc.lng], {
+                    icon: L.divIcon({
+                        html: `<div style="background:${colors[i]}; width:16px; height:16px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">${letter}</div>`,
+                        className: 'sensor-marker',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    })
+                }).bindPopup(`<strong>Sensor ${letter}</strong><br>Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}`).addTo(mainMap);
+
+                sensorMarkers.push(marker);
+            });
+        })
+        .catch(err => console.error("Failed to load sensor locations:", err));
 }
 </script>
 

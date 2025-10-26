@@ -17,6 +17,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\SensorController;
 use App\Models\FailedLogin;
 use App\Models\User;
 
@@ -136,3 +137,8 @@ Route::get('/premium', function () {
 // Migration (utility routes)
 Route::get('/migrate-users', [UserController::class, 'migrateUsers']);
 Route::get('/migrate-incidents', [IncidentController::class, 'migrateIncidents']);
+
+//SUPERADMIN SENSOR
+Route::put('/admin/sensor-location/{id}', [SensorController::class, 'update'])->name('admin.update-sensor-location');
+Route::put('/admin/sensor-location/{id}', [SensorController::class, 'update'])
+     ->name('admin.update-sensor-location');
