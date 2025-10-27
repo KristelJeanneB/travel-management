@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up()
 {
-    Schema::table('users', function (Blueprint $table) {
-        $table->enum('role', ['superadmin', 'admin', 'user'])->default('user')->after('password');
+      Schema::table('users', function (Blueprint $table) {
+    $table->enum('role', ['superadmin','admin','user','poso'])->default('user')->change();
 
          // Remove old boolean columns (optional)
         $table->dropColumn(['is_admin', 'is_superadmin']);

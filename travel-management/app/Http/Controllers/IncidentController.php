@@ -37,25 +37,25 @@ class IncidentController extends Controller
      * Store a new incident
      */
     public function store(Request $request)
-{
-    $request->validate([
-        'type' => 'required|string',
-        'lat' => 'required|numeric',
-        'lng' => 'required|numeric',
-        'description' => 'nullable|string',
-        'reporter_role' => 'required|string|in:user,poso,admin,superadmin'
-    ]);
+    {
+        Log::info('📥 Incoming incident report', $request->all());
+
+        $validated = $request->validate([
+            'type' => 'required|string|in:accident,traffic_jam,road_closure,hazard',
+            'description' => 'nullable|string|max:1000',
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
+        ]);
 
         try {
-              $incident = Incident::create([
-        'user_id' => auth()->id(),
-        'type' => $request->type,
-        'lat' => $request->lat,
-        'lng' => $request->lng,
-        'description' => $request->description,
-        'reporter_role' => $request->reporter_role,
-        'status' => 'active'
-    ]);
+            $incident = Incident::create([
+                'title' => ucfirst(str_replace('_', ' ', $validated['type'])),
+                'description' => $validated['description'],
+                'lat' => $validated['lat'],
+                'lng' => $validated['lng'],
+                'status' => 'reported',
+                'role' => auth()->user()->role,
+            ]);
 
             Log::info('✅ Incident saved locally', ['id' => $incident->id]);
 
@@ -80,7 +80,7 @@ class IncidentController extends Controller
 
     public function fetch()
     {
-        $incidents = Incident::select('id', 'title', 'description', 'lat', 'lng', 'status', 'created_at')
+        $incidents = Incident::select('id', 'title', 'description', 'lat', 'lng', 'status', 'created_at','reporter_role')
             ->latest()
             ->get();
 
@@ -151,33 +151,33 @@ class IncidentController extends Controller
 
     // === PRIVATE: SYNC TO FIREBASE ===
     private function syncToFirebase($incident)
-    {
-        if (!$this->firebase) {
-            Log::warning("Firebase not initialized. Skipping sync.");
-            return;
-        }
-
-        try {
-            $reference = $this->firebase->getReference('incidents/' . $incident->id);
-            $reference->set([
-                'title' => $incident->title,
-                'description' => $incident->description ?? '',
-                'lat' => $incident->lat,
-                'lng' => $incident->lng,
-                'type' => $incident->type ?? 'unknown',
-                'status' => $incident->status,
-                'created_at' => $incident->created_at?->toISOString() ?? now()->toISOString(),
-            ]);
-            Log::info("🔥 Synced to Firebase", ['id' => $incident->id]);
-        } catch (\Exception $e) {
-            Log::error("❌ Firebase sync failed", [
-                'id' => $incident->id,
-                'error' => $e->getMessage()
-            ]);
-            throw $e; 
-        }
+{
+    if (!$this->firebase) {
+        Log::warning("Firebase not initialized. Skipping sync.");
+        return;
     }
 
+    try {
+        $reference = $this->firebase->getReference('incidents/' . $incident->id);
+        $reference->set([
+            'title' => $incident->title,
+            'description' => $incident->description ?? '',
+            'lat' => $incident->lat,
+            'lng' => $incident->lng,
+            'type' => $incident->type ?? 'unknown',
+            'status' => $incident->status,
+            'reporter_role' => $incident->reporter_role,
+            'created_at' => $incident->created_at?->toISOString() ?? now()->toISOString(),
+        ]);
+        Log::info("🔥 Synced to Firebase", ['id' => $incident->id]);
+    } catch (\Exception $e) {
+        Log::error("❌ Firebase sync failed", [
+            'id' => $incident->id,
+            'error' => $e->getMessage()
+        ]);
+        throw $e;
+    }
+}
     public function updateStatus(Request $request, $id)
 {
     $incident = Incident::findOrFail($id);
@@ -240,6 +240,6 @@ public function destroy($id)
     $incident = Incident::findOrFail($id);
     $incident->delete(); 
 
-        return response()->json(['message' => 'Incident reported successfully!']);
+    return response()->json(['success' => true]);
 }
 }

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+<title>RouteLink_SuperAdmin</title>
 @section('content')
 <div style="max-width: 1200px; margin: 2rem auto; padding: 0 1rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">

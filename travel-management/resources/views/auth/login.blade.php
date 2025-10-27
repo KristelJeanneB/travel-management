@@ -66,7 +66,7 @@
             <p style="text-align:center; margin-top:10px;">
                 Don't have an account? <a href="{{ route('register') }}">Register</a>
             </p>
-        </form>
+            <p>Are you a POSO Officer? <a href="{{ route('poso.register') }}">Register</a></p>
     </div>
 
     <script>

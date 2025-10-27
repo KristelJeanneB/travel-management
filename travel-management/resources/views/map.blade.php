@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Monitor</title>
+    <title>RouteLink</title>
 
     <link rel="stylesheet" href="{{ asset('css/map.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -944,9 +944,9 @@ function loadAndDisplayIncidents() {
         incidentMarkers = [];
         snapshot.forEach(child => {
             const data = child.val();
-            if (data.lat && data.lng) {
-                const color = data.status === 'resolved' ? 'gray' : 
-                             { accident: 'red', traffic_jam: 'orange', road_closure: 'purple', hazard: 'yellow' }[data.type] || 'blue';
+            // ✅ Only show approved incidents
+            if (data.lat && data.lng && data.status === 'approved') {
+                const color = { accident: 'red', traffic_jam: 'orange', road_closure: 'purple', hazard: 'yellow' }[data.type] || 'blue';
                 const marker = L.marker([data.lat, data.lng], {
                     icon: L.divIcon({
                         html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>`,
@@ -954,7 +954,7 @@ function loadAndDisplayIncidents() {
                         iconSize: [18, 18],
                         iconAnchor: [9, 9]
                     })
-                }).bindPopup(`<b>${data.type}</b><br>${data.description || 'No details'}<br><small>Status: ${data.status === 'resolved' ? '✅ Resolved' : '🔴 Active'}</small>`).addTo(mainMap);
+                }).bindPopup(`<b>${data.type}</b><br>${data.description || 'No details'}`).addTo(mainMap);
                 incidentMarkers.push(marker);
             }
         });
@@ -1543,9 +1543,14 @@ function renderIncidents(data) {
         const lng = parseFloat(item.lng);
         const coords = !isNaN(lat) && !isNaN(lng) ? `${lat.toFixed(6)}, ${lng.toFixed(6)}` : 'Not available';
         const displayType = typeLabels[item.title] || (item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1).replace('_', ' ') : 'Unknown');
-        const statusBadge = item.status === 'resolved'
-            ? '<span style="color:#17a2b8; font-weight:bold;">✅ Resolved</span>'
-            : '<span style="color:#d9534f; font-weight:bold;">🔴 Active</span>';
+       const statusBadge = (() => {
+    switch(item.status) {
+        case 'approved': return '<span style="color:#28a745; font-weight:bold;">✅ Approved</span>';
+        case 'pending': return '<span style="color:#ffc107; font-weight:bold;">⏳ Pending</span>';
+        case 'rejected': return '<span style="color:#dc3545; font-weight:bold;">❌ Rejected</span>';
+        default: return '<span style="color:#17a2b8; font-weight:bold;">ℹ️ ' + item.status + '</span>';
+    }
+})();
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${displayType}</strong></td>

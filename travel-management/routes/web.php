@@ -15,12 +15,13 @@ use App\Http\Controllers\AlertsController;
 use App\Http\Controllers\AdminIncidentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PosoAuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\SensorController;
 use App\Models\FailedLogin;
 use App\Models\User;
-
+use App\Http\Controllers\PosoController;
 // Test Firebase SSL
 Route::get('/test-firebase', function () {
     try {
@@ -142,3 +143,34 @@ Route::get('/migrate-incidents', [IncidentController::class, 'migrateIncidents']
 Route::put('/admin/sensor-location/{id}', [SensorController::class, 'update'])->name('admin.update-sensor-location');
 Route::put('/admin/sensor-location/{id}', [SensorController::class, 'update'])
      ->name('admin.update-sensor-location');
+
+// Public registration for Poso
+Route::get('/poso/register', [PosoAuthController::class, 'showRegistrationForm'])->name('poso.register');
+Route::post('/poso/register', [PosoAuthController::class, 'register']);
+
+// Protected Poso dashboard (after login)
+Route::middleware(['auth', 'role:poso,admin,superadmin'])->group(function () {
+    Route::get('/poso/dashboard', function () {
+        return view('poso.dashboard');
+    })->name('poso.dashboard');
+});
+
+// Poso report form (only for poso, admin, superadmin)
+Route::middleware(['auth', 'role:poso,admin,superadmin'])->group(function () {
+    Route::get('/poso/report', [IncidentController::class, 'createPosoReport'])->name('poso.report');
+    Route::post('/poso/report', [IncidentController::class, 'storePosoReport'])->name('poso.report.store');
+});
+Route::middleware(['auth', 'role:admin,superadmin'])->group(function () {
+    Route::get('/admin/incidents/pending', [IncidentController::class, 'pendingIncidents'])->name('admin.incidents.pending');
+    Route::post('/admin/incidents/{id}/approve', [IncidentController::class, 'approveIncident'])->name('admin.incidents.approve');
+    Route::post('/admin/incidents/{id}/reject', [IncidentController::class, 'rejectIncident'])->name('admin.incidents.reject');
+});
+Route::middleware(['auth', 'role:poso,admin,superadmin'])->group(function () {
+    Route::get('/poso/report', [PosoController::class, 'create'])->name('poso.report');
+    Route::post('/poso/report', [PosoController::class, 'store'])->name('poso.report.store');
+});
+Route::get('/poso/register', function () {
+    return view('auth.poso-register');
+})->name('poso.register');
+
+Route::post('/poso/register', [PosoAuthController::class, 'storePoso'])->name('poso.register.store');

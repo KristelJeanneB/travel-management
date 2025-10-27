@@ -35,4 +35,16 @@ class AuthenticatedSessionController extends Controller
 
         return response()->noContent();
     }
+
+    protected function authenticated(Request $request, $user)
+{
+    if ($user->role === 'poso') {
+        return redirect()->intended('/poso/dashboard');
+    } elseif ($user->role === 'superadmin') {
+        return redirect()->intended('/admin/sensor-locations');
+    } elseif ($user->role === 'admin') {
+        return redirect()->intended('/map');
+    }
+    return redirect()->intended('/home');
+}
 }

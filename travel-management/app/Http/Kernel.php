@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
 
         // Added Super Admin middleware
         'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
     ];
 }

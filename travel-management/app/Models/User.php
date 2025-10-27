@@ -25,6 +25,7 @@ class User extends Authenticatable
         'theme',
         'is_admin',       // added for admin flag
         'is_superadmin',  // added for super admin flag
+        'role',
     ];
 
     /**
@@ -81,4 +82,9 @@ public function isAdmin(): bool
 {
     return in_array($this->role, ['admin', 'superadmin']);
 }
+public function isPoso(): bool
+{
+    return $this->role === 'poso';
+}
+
 }

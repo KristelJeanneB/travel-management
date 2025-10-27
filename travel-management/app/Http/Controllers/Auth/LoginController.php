@@ -94,6 +94,9 @@ class LoginController extends Controller
             if ($user->is_admin) {
                 return redirect()->route('admin.dashboard');
             }
+             if ($user->role === 'poso') { // ✅ check POSO role
+                return redirect()->route('poso.dashboard');
+    }
 
             return redirect()->intended('/home');
         }
