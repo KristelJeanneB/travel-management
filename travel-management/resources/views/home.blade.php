@@ -1,11 +1,9 @@
-HOME
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Traffic Monitor - Home</title>
+  <title>RouteLink - Home</title>
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ asset('css/home.css') }}">
@@ -14,28 +12,28 @@ HOME
 
 <body>
 
-  <!-- Header -->
-  <header class="header">
-    <nav class="nav" aria-label="Main menu">
-      <div class="nav-left">
-        <h1 class="app-title">Traffic Monitor</h1>
+ <!-- Header -->
+<header class="header">
+  <nav class="nav" aria-label="Main menu">
+    <div class="nav-left">
+      <img src="{{ asset('images/Logo.png') }}" alt="RouteLink Logo" class="app-logo">
+      <h1 class="app-title">RouteLink</h1>
+    </div>
+    <div class="nav-right dropdown">
+      <button class="dropbtn" aria-label="Menu" aria-haspopup="true" aria-expanded="false">&#9776;</button>
+      <div class="dropdown-content" role="menu" aria-label="User menu" tabindex="-1">
+        <a href="{{ route('settings') }}" aria-label="Settings" role="menuitem" tabindex="0">
+          <i class="fas fa-cog"></i> Settings
+        </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+          @csrf
+        </form>
+        <!-- Add logout link if needed -->
+        <!-- <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a> -->
       </div>
-      <div class="nav-right dropdown">
-        <button class="dropbtn" aria-label="Menu" aria-haspopup="true" aria-expanded="false">&#9776;</button>
-        <div class="dropdown-content" role="menu" aria-label="User menu" tabindex="-1">
-          <a href="{{ route('settings') }}" aria-label="Settings" role="menuitem" tabindex="0">
-            <i class="fas fa-cog"></i> Settings
-          </a>
-          <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
-            @csrf
-          </form>
-          <!---<a href="#" aria-label="Log Out" role="menuitem" tabindex="0" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-            <i class="fas fa-sign-out-alt"></i> Log Out
-          </a> -->
-        </div>
-      </div>
-    </nav>
-  </header>
+    </div>
+  </nav>
+</header>
 
   <!-- Main Content -->
   <main class="main-content">

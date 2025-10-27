@@ -11,10 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <audio id="new-report-beep" preload="auto">
-  <source src="https://cdn.pixabay.com/download/audio/2022/10/31/audio_report-sound-124454.mp3?filename=report-sound-124454.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
-</audio>
 
 
 
@@ -510,16 +506,32 @@
     font-size: 13px;
     margin-top: 5px;
 }
+.app-logo {
+  height: 50px; 
+  width: auto;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+.app-title {
+  display: inline-block;
+  margin: 0;
+  font-size: 1.4rem;
+  color: #333;
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+}
     </style>
 </head>
 <body>
 
 <div class="header">
     <nav class="nav">
-        <a href="{{ route('home') }}" class="back-button" title="Back to Home">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
-
+         <div class="nav-left">
+      <img src="{{ asset('images/Logo.png') }}" alt="RouteLink Logo" class="app-logo">
+      <h1 class="app-title">RouteLink</h1>
+    </div>
         <div class="dropdown">
             <button class="dropbtn" id="dropdown-btn">☰</button>
             <div class="dropdown-content" id="dropdown-menu">
@@ -588,11 +600,17 @@
         <h2>Traffic Status</h2>
         <div id="loading">Loading traffic data...</div>
         <div id="traffic-results" style="display:none;">
-            <div class="route-status" id="routeA">Route A: <span></span></div>
-            <div class="route-status" id="routeB">Route B: <span></span></div>
-            <div class="route-status" id="routeC">Route C: <span></span></div>
-            <div class="route-status" id="routeD">Route D: <span></span></div>
+    <div class="route-status" id="routeA">Route A: <span></span></div>
+    <div class="route-status" id="routeB">Route B: <span></span></div>
+    <div class="route-status" id="routeC">Route C: <span></span></div>
+    <div class="route-status" id="routeD">Route D: <span></span></div>
+
+    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+        <h3 style="font-size: 16px; margin: 10px 0;">📍 Sensor Locations</h3>
+        <div id="sensor-info-list" style="font-size: 14px; line-height: 1.5;">
         </div>
+    </div>
+</div>
     </div>
 </div>
 
@@ -601,13 +619,6 @@
     <div id="route-summary" class="route-summary hidden"></div>
     <div id="direction-arrow"></div>
 </div>
-<!--<div id="sensor-legend" style="position: absolute; bottom: 20px; right: 20px; background: white; padding: 10px; border-radius: 8px; z-index: 1000;">
-    <div><strong>Sensors</strong></div>
-    <div><span style="color:red;">●</span> Route A</div>
-    <div><span style="color:blue;">●</span> Route B</div>
-    <div><span style="color:green;">●</span> Route C</div>
-    <div><span style="color:purple;">●</span> Route D</div>
-</div>-->
 <div id="userIncidentModal" class="modal">
     <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
@@ -749,7 +760,6 @@ let accuracyCircle = null;
 let incidentMarkers = [];
 const LINGAYEN_COORDS = [16.0212, 120.2315];
 let userCoords = LINGAYEN_COORDS;
-let sensorMarkers = []; // To store the 4 sensor markers
 let mainMap;
 
 let lastCheckedTime = localStorage.getItem('last_incident_view') || new Date(0).toISOString();
@@ -1195,7 +1205,6 @@ function startTrafficListener() {
                 D: data?.sensorD?.traffic === true
             };
             updateTrafficStatus(data);
-            updateSensorMarkers(); // ✅ ADD THIS LINE
             if (window.lastRouteData && window.lastRouteData.length > 0) {
                 currentRouteLayers.forEach((polyline, i) => {
                     const r = window.lastRouteData?.[i];
@@ -1210,6 +1219,33 @@ function startTrafficListener() {
                     `);
                 });
                 suggestBestRoute(false); 
+                // Show sensor names and coordinates
+const sensorInfoList = document.getElementById('sensor-info-list');
+if (sensorInfoList && data?.sensor_locations) {
+    const letters = ['A', 'B', 'C', 'D'];
+    const routeNames = {
+        A: 'Route A - West Approach',
+        B: 'Route B - South Approach',
+        C: 'Route C - North Approach',
+        D: 'Route D - East Approach'
+    };
+
+    let html = '';
+    letters.forEach(letter => {
+        const loc = data.sensor_locations[letter];
+        if (loc && !isNaN(loc.lat) && !isNaN(loc.lng)) {
+            const lat = parseFloat(loc.lat).toFixed(6);
+            const lng = parseFloat(loc.lng).toFixed(6);
+            // Optional: reverse geocode to get address (or just show coords)
+            html += `
+                <div><strong>Sensor ${letter}</strong>: ${routeNames[letter] || 'Unnamed'}<br>
+                <small>Lat: ${lat}, Lng: ${lng}</small></div>
+                <hr style="margin: 8px 0; border-color: #f0f0f0;">
+            `;
+        }
+    });
+    sensorInfoList.innerHTML = html || '<em>No sensor data available.</em>';
+}
             }
         }
     });
@@ -1231,6 +1267,32 @@ function updateTrafficStatus(data) {
             el.className = hasTraffic ? 'traffic-yes' : 'traffic-no';
         }
     });
+    // ✅ Show sensor names and coordinates
+const sensorInfoList = document.getElementById('sensor-info-list');
+if (sensorInfoList && data?.sensor_locations) {
+    const letters = ['A', 'B', 'C', 'D'];
+    const routeNames = {
+        A: 'Route A - West Approach',
+        B: 'Route B - South Approach',
+        C: 'Route C - North Approach',
+        D: 'Route D - East Approach'
+    };
+
+    let html = '';
+    letters.forEach(letter => {
+        const loc = data.sensor_locations[letter];
+        if (loc && !isNaN(loc.lat) && !isNaN(loc.lng)) {
+            const lat = parseFloat(loc.lat).toFixed(6);
+            const lng = parseFloat(loc.lng).toFixed(6);
+            html += `
+                <div><strong>Sensor ${letter}</strong>: ${routeNames[letter]}<br>
+                <small>Lat: ${lat}, Lng: ${lng}</small></div>
+                <hr style="margin: 8px 0; border-color: #f0f0f0;">
+            `;
+        }
+    });
+    sensorInfoList.innerHTML = html || '<em>No sensor data available.</em>';
+}
 }
 function updateAlternateRoutesList() {
     const routeList = document.getElementById('alternate-routes-list');
@@ -1649,37 +1711,71 @@ function updateSensorMarkers() {
             let data = null;
             snapshot.forEach(child => { data = child.val(); });
 
-            console.log("Firebase traffic data:", data); 
+            console.log("📡 Firebase traffic data:", data);
+
 
             if (!data || !data.sensor_locations) {
-                console.warn("⚠️ sensor_locations missing in Firebase");
+                console.warn("⚠️ sensor_locations missing in Firebase or not yet synced");
                 return;
             }
 
-            const color = hasTraffic ? 'red' : ['red', 'blue', 'green', 'purple'][i];
             const letters = ['A', 'B', 'C', 'D'];
+            const colors = ['red', 'blue', 'green', 'purple'];
 
-            const hasTraffic = trafficStatus[letter];
-            const statusText = hasTraffic ? '⚠️ Traffic' : '✅ Clear';
-            marker.bindPopup(`<strong>Sensor ${letter}</strong><br>Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}<br>${statusText}`);
+            const trafficStatus = {
+                A: data.sensorA?.traffic ?? false,
+                B: data.sensorB?.traffic ?? false,
+                C: data.sensorC?.traffic ?? false,
+                D: data.sensorD?.traffic ?? false
+            };
 
             letters.forEach((letter, i) => {
                 const loc = data.sensor_locations[letter];
-                if (!loc || isNaN(loc.lat) || isNaN(loc.lng)) return;
+                if (!loc || isNaN(loc.lat) || isNaN(loc.lng)) {
+                    console.warn(`⚠️ Missing or invalid coordinates for sensor ${letter}`);
+                    return;
+                }
+
+                const hasTraffic = trafficStatus[letter];
+                const statusText = hasTraffic ? '⚠️ Traffic detected' : '✅ Clear';
+                const color = hasTraffic ? 'red' : colors[i];
 
                 const marker = L.marker([loc.lat, loc.lng], {
                     icon: L.divIcon({
-                        html: `<div style="background:${colors[i]}; width:16px; height:16px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">${letter}</div>`,
+                        html: `
+                            <div style="
+                                background:${color};
+                                width:18px;
+                                height:18px;
+                                border-radius:50%;
+                                border:2px solid white;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                color:white;
+                                font-size:10px;
+                                font-weight:bold;
+                            ">
+                                ${letter}
+                            </div>
+                        `,
                         className: 'sensor-marker',
                         iconSize: [20, 20],
-                        iconAnchor: [10, 10]
+                        iconAnchor: [10, 10],
                     })
-                }).bindPopup(`<strong>Sensor ${letter}</strong><br>Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}`).addTo(mainMap);
+                }).bindPopup(`
+                    <strong>Sensor ${letter}</strong><br>
+                    Lat: ${loc.lat.toFixed(6)}<br>
+                    Lng: ${loc.lng.toFixed(6)}<br>
+                    ${statusText}
+                `).addTo(mainMap);
 
                 sensorMarkers.push(marker);
             });
+
+            console.log("✅ Sensor markers updated successfully.");
         })
-        .catch(err => console.error("Failed to load sensor locations:", err));
+        .catch(err => console.error("❌ Failed to load sensor locations:", err));
 }
 </script>
 

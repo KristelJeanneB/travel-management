@@ -37,24 +37,25 @@ class IncidentController extends Controller
      * Store a new incident
      */
     public function store(Request $request)
-    {
-        Log::info('📥 Incoming incident report', $request->all());
-
-        $validated = $request->validate([
-            'type' => 'required|string|in:accident,traffic_jam,road_closure,hazard',
-            'description' => 'nullable|string|max:1000',
-            'lat' => 'required|numeric|between:-90,90',
-            'lng' => 'required|numeric|between:-180,180',
-        ]);
+{
+    $request->validate([
+        'type' => 'required|string',
+        'lat' => 'required|numeric',
+        'lng' => 'required|numeric',
+        'description' => 'nullable|string',
+        'reporter_role' => 'required|string|in:user,poso,admin,superadmin'
+    ]);
 
         try {
-            $incident = Incident::create([
-                'title' => ucfirst(str_replace('_', ' ', $validated['type'])),
-                'description' => $validated['description'],
-                'lat' => $validated['lat'],
-                'lng' => $validated['lng'],
-                'status' => 'reported'
-            ]);
+              $incident = Incident::create([
+        'user_id' => auth()->id(),
+        'type' => $request->type,
+        'lat' => $request->lat,
+        'lng' => $request->lng,
+        'description' => $request->description,
+        'reporter_role' => $request->reporter_role,
+        'status' => 'active'
+    ]);
 
             Log::info('✅ Incident saved locally', ['id' => $incident->id]);
 
@@ -239,6 +240,6 @@ public function destroy($id)
     $incident = Incident::findOrFail($id);
     $incident->delete(); 
 
-    return response()->json(['success' => true]);
+        return response()->json(['message' => 'Incident reported successfully!']);
 }
 }

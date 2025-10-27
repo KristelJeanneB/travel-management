@@ -6,34 +6,6 @@
         <h1 style="color: #0d6efd; font-weight: bold; margin: 0;">📊 Super Admin Dashboard</h1>
         <span style="font-size: 0.9rem; color: #6c757d;">Welcome back, {{ auth()->user()->name }}</span>
     </div>
-
-    <!-- Stats Cards -->
-    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem;">
-        <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #dee2e6; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); padding: 1rem; text-align: center;">
-            <div style="font-size: 2rem; color: #0d6efd; margin-bottom: 0.5rem;">👥</div>
-            <h5 style="margin: 0; font-weight: 600;">Users</h5>
-            <p style="margin: 0.5rem 0 0; font-size: 1.25rem; font-weight: bold; color: #333;">120</p>
-        </div>
-
-        <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #dee2e6; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); padding: 1rem; text-align: center;">
-            <div style="font-size: 2rem; color: #28a745; margin-bottom: 0.5rem;">📄</div>
-            <h5 style="margin: 0; font-weight: 600;">Reports</h5>
-            <p style="margin: 0.5rem 0 0; font-size: 1.25rem; font-weight: bold; color: #333;">56</p>
-        </div>
-
-        <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #dee2e6; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); padding: 1rem; text-align: center;">
-            <div style="font-size: 2rem; color: #dc3545; margin-bottom: 0.5rem;">📍</div>
-            <h5 style="margin: 0; font-weight: 600;">Sensor Locations</h5>
-            <p style="margin: 0.5rem 0 0; font-size: 1.25rem; font-weight: bold; color: #333;">4</p>
-        </div>
-
-        <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #dee2e6; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); padding: 1rem; text-align: center;">
-            <div style="font-size: 2rem; color: #ffc107; margin-bottom: 0.5rem;">⚙️</div>
-            <h5 style="margin: 0; font-weight: 600;">Settings</h5>
-            <p style="margin: 0.5rem 0 0; font-size: 1.25rem; font-weight: bold; color: #333;">⚙️</p>
-        </div>
-    </div>
-
        <!-- Sensor Management Section -->
 <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 0.5rem; margin-top: 2rem; border: 1px solid #dee2e6;">
     <h2 style="font-size: 1.25rem; font-weight: 600; color: #333; margin-bottom: 1rem;">

@@ -67,19 +67,18 @@ class User extends Authenticatable
             : asset('images/default-avatar.png');
     }
 
-    /**
-     * Check if user is a super admin
-     */
-    public function isSuperAdmin()
-    {
-        return $this->is_superadmin;
-    }
+    public function isSuperAdmin(): bool
+{
+    return $this->role === 'superadmin';
+}
 
-    /**
-     * Check if user is an admin (includes super admin)
-     */
-    public function isAdmin()
-    {
-        return $this->is_admin || $this->is_superadmin;
-    }
+public function isUser(): bool
+{
+    return $this->role === 'user';
+}
+
+public function isAdmin(): bool
+{
+    return in_array($this->role, ['admin', 'superadmin']);
+}
 }

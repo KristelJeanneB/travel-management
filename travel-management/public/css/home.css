@@ -43,7 +43,22 @@ html, body {
   font-weight: 700;
 }
 
-
+.app-logo {
+  height: 50px; 
+  width: auto;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+.app-title {
+  display: inline-block;
+  margin: 0;
+  font-size: 1.4rem;
+  color: #333;
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+}
 .dropdown {
   position: relative;
 }
