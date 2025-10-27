@@ -22,11 +22,12 @@ use App\Http\Controllers\SensorController;
 use App\Models\FailedLogin;
 use App\Models\User;
 use App\Http\Controllers\PosoController;
+
 // Test Firebase SSL
 Route::get('/test-firebase', function () {
     try {
         $client = new \GuzzleHttp\Client();
-        $res = $client->get('https://firebase.google.com');
+        $client->get('https://firebase.google.com');
         return '✅ SSL connection works!';
     } catch (\Exception $e) {
         return '❌ SSL Error: ' . $e->getMessage();
@@ -53,13 +54,8 @@ Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name(
 Route::middleware('auth')->group(function () {
 
     // Home / Dashboard
-    Route::get('/home', function () {
-        return view('home');
-    })->name('home');
-
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/home', function () { return view('home'); })->name('home');
+    Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
 
     // Profile / Settings
     Route::get('/settings', [ProfileController::class, 'index'])->name('settings');
@@ -80,14 +76,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/payment/confirm', [PaymentController::class, 'confirmPayment'])->name('payment.confirm');
 });
 
-// Admin Routes using .env credentials
+// Admin Routes
 Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
 
-    // Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-
+    Route::get('/dashboard', function () { return view('admin.dashboard'); })->name('admin.dashboard');
     Route::get('/homeAdmin', [HomeAdminController::class, 'index'])->name('homeAdmin');
     Route::get('/view', [ViewAdminController::class, 'index'])->name('view');
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
@@ -105,21 +97,17 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::delete('/payments/delete/{id}', [PaymentController::class, 'destroy'])->name('admin.payments.delete');
 
     // Users
-    Route::get('/users/count', function () {
-        return response()->json(['count' => User::count()]);
-    })->name('admin.users.count');
-
-    Route::get('/users/all', function () {
-        return response()->json(User::select('id', 'name', 'email', 'is_admin', 'created_at')
-            ->orderBy('created_at', 'desc')->get());
-    })->name('admin.users.all');
-
+    Route::get('/users/count', fn() => response()->json(['count' => User::count()]))->name('admin.users.count');
+    Route::get('/users/all', fn() => response()->json(User::select('id', 'name', 'email', 'is_admin', 'created_at')->orderBy('created_at', 'desc')->get()))->name('admin.users.all');
     Route::delete('/users/{id}', [DashboardController::class, 'deleteUser'])->name('admin.users.delete');
 
-    // Incidents (Admin)
+    // Incidents
     Route::get('/incidents', [AdminIncidentController::class, 'index'])->name('admin.incidents');
     Route::get('/incidents/fetch', [AdminIncidentController::class, 'fetchIncidents'])->name('admin.incidents.fetch');
     Route::get('/incident/{id}', [IncidentController::class, 'show'])->name('admin.incident.show');
+
+    // Sensor location update
+    Route::put('/sensor-location/{id}', [SensorController::class, 'update'])->name('admin.update-sensor-location');
 });
 
 // Super Admin Routes
@@ -127,50 +115,30 @@ Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->group(function 
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
 });
 
-// Map
+// Map & Premium
 Route::get('/map', [MapController::class, 'show'])->name('map');
+Route::get('/premium', fn() => view('premium'))->name('premium');
 
-// Premium Page
-Route::get('/premium', function () {
-    return view('premium');
-})->name('premium');
-
-// Migration (utility routes)
+// Migration utilities
 Route::get('/migrate-users', [UserController::class, 'migrateUsers']);
 Route::get('/migrate-incidents', [IncidentController::class, 'migrateIncidents']);
 
-//SUPERADMIN SENSOR
-Route::put('/admin/sensor-location/{id}', [SensorController::class, 'update'])->name('admin.update-sensor-location');
-Route::put('/admin/sensor-location/{id}', [SensorController::class, 'update'])
-     ->name('admin.update-sensor-location');
+// Poso Routes
 
-// Public registration for Poso
+// Public registration
 Route::get('/poso/register', [PosoAuthController::class, 'showRegistrationForm'])->name('poso.register');
-Route::post('/poso/register', [PosoAuthController::class, 'register']);
+Route::post('/poso/register', [PosoAuthController::class, 'storePoso'])->name('poso.register.store');
 
-// Protected Poso dashboard (after login)
+// Protected Poso dashboard
 Route::middleware(['auth', 'role:poso,admin,superadmin'])->group(function () {
-    Route::get('/poso/dashboard', function () {
-        return view('poso.dashboard');
-    })->name('poso.dashboard');
+    Route::get('/poso/dashboard', fn() => view('poso.dashboard'))->name('poso.dashboard');
+    Route::get('/poso/report', [PosoController::class, 'create'])->name('poso.report');
+    Route::post('/poso/report', [PosoController::class, 'store'])->name('poso.report.store');
 });
 
-// Poso report form (only for poso, admin, superadmin)
-Route::middleware(['auth', 'role:poso,admin,superadmin'])->group(function () {
-    Route::get('/poso/report', [IncidentController::class, 'createPosoReport'])->name('poso.report');
-    Route::post('/poso/report', [IncidentController::class, 'storePosoReport'])->name('poso.report.store');
-});
+// Admin approval/rejection for incidents
 Route::middleware(['auth', 'role:admin,superadmin'])->group(function () {
     Route::get('/admin/incidents/pending', [IncidentController::class, 'pendingIncidents'])->name('admin.incidents.pending');
     Route::post('/admin/incidents/{id}/approve', [IncidentController::class, 'approveIncident'])->name('admin.incidents.approve');
     Route::post('/admin/incidents/{id}/reject', [IncidentController::class, 'rejectIncident'])->name('admin.incidents.reject');
 });
-Route::middleware(['auth', 'role:poso,admin,superadmin'])->group(function () {
-    Route::get('/poso/report', [PosoController::class, 'create'])->name('poso.report');
-    Route::post('/poso/report', [PosoController::class, 'store'])->name('poso.report.store');
-});
-Route::get('/poso/register', function () {
-    return view('auth.poso-register');
-})->name('poso.register');
-
-Route::post('/poso/register', [PosoAuthController::class, 'storePoso'])->name('poso.register.store');

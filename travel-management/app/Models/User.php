@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -23,9 +22,9 @@ class User extends Authenticatable
         'password',
         'avatar',
         'theme',
-        'is_admin',       // added for admin flag
-        'is_superadmin',  // added for super admin flag
-        'role',
+        'role',          // Ensure role is mass assignable
+        'is_admin',      // optional flag
+        'is_superadmin', // optional flag
     ];
 
     /**
@@ -46,8 +45,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'is_admin' => 'boolean',       // cast to boolean
-        'is_superadmin' => 'boolean',  // cast to boolean
+        'is_admin' => 'boolean',
+        'is_superadmin' => 'boolean',
     ];
 
     /**
@@ -61,30 +60,41 @@ class User extends Authenticatable
     /**
      * Accessor: Get full avatar URL or fallback to default
      */
-    public function getAvatarUrlAttribute()
+    public function getAvatarUrlAttribute(): string
     {
         return $this->avatar
             ? asset('storage/' . $this->avatar)
             : asset('images/default-avatar.png');
     }
 
+    /**
+     * Role check helpers
+     */
     public function isSuperAdmin(): bool
-{
-    return $this->role === 'superadmin';
-}
+    {
+        return $this->role === 'superadmin';
+    }
 
-public function isUser(): bool
-{
-    return $this->role === 'user';
-}
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
-public function isAdmin(): bool
-{
-    return in_array($this->role, ['admin', 'superadmin']);
-}
-public function isPoso(): bool
-{
-    return $this->role === 'poso';
-}
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
 
+    public function isPoso(): bool
+    {
+        return $this->role === 'poso';
+    }
+
+    /**
+     * Admin combined check (superadmin or admin)
+     */
+    public function isAnyAdmin(): bool
+    {
+        return in_array($this->role, ['admin', 'superadmin']);
+    }
 }

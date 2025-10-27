@@ -9,14 +9,28 @@ use Illuminate\Support\Facades\Validator;
 
 class PosoAuthController extends Controller
 {
-    public function showRegistrationForm()
+    /**
+     * Show the Poso registration form.
+     */
+    public function showRegistrationForm(): \Illuminate\View\View
     {
         return view('auth.poso-register');
     }
 
+    /**
+     * Handle Poso registration request.
+     */
     public function register(Request $request)
     {
-        // Validate: only official Poso emails allowed
+        return $this->storePoso($request);
+    }
+
+    /**
+     * Store a new Poso user with 'poso' role.
+     */
+    public function storePoso(Request $request)
+    {
+        // Validate input: only official @poso.gov.ph emails allowed
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email|regex:/@poso\.gov\.ph$/i',
@@ -27,22 +41,22 @@ class PosoAuthController extends Controller
 
         if ($validator->fails()) {
             return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+                             ->withErrors($validator)
+                             ->withInput();
         }
 
-        // Create user with 'poso' role
+        // Create the user with 'poso' role
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'poso', // 👮 Assign Poso role
+            'role' => 'poso', // Assign Poso role
         ]);
 
-        // Auto-login (optional)
+        // Auto-login the user
         auth()->login($user);
 
         return redirect()->route('poso.dashboard')
-            ->with('success', 'Welcome, Poso personnel! Your account is verified.');
+                         ->with('success', 'Welcome, Poso personnel! Your account is verified.');
     }
 }

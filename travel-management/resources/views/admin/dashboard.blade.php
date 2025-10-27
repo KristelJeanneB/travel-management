@@ -1232,16 +1232,21 @@ function resetAnalyticsUI() {
                     return;
                 }
                 users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.id}</td>
-                        <td>${user.name}</td>
-                        <td>${user.email}</td>
-                        <td>${user.is_admin ? 'Admin' : 'User'}</td>
-                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                    `;
-                    usersTableBody.appendChild(tr);
-                });
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${user.id}</td>
+        <td>${user.name}</td>
+        <td>${user.email}</td>
+        <td>${
+            user.is_admin 
+                ? 'Admin' 
+                : (user.email.toLowerCase().endsWith('@poso.gov.ph') ? 'Poso' : 'User')
+        }</td>
+        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+    `;
+    usersTableBody.appendChild(tr);
+});
+
             })
             .catch(() => {
                 usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load users</td></tr>';
