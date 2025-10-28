@@ -208,7 +208,7 @@
             display: block;
             width: 100%;
             padding: 14px;
-            background: linear-gradient(to right, rgba(52, 152, 219, 0.9), rgba(41, 128, 185, 0.9));
+            background: linear-gradient(to right, #6a8bb0, #c9b5c3);
             border: none;
             border-radius: 8px;
             color: white;
@@ -223,7 +223,7 @@
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(to right, rgba(52, 152, 219, 1), rgba(41, 128, 185, 1));
+            background: linear-gradient(to right, #6a8bb0, #c9b5c3);
         }
 
         /* Divider text */
