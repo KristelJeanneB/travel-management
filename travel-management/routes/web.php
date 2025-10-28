@@ -148,4 +148,15 @@ Route::get('/api/incidents/poso', [IncidentController::class, 'fetchPoso'])->nam
 Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
 Route::get('/incidents/fetch-poso', [IncidentController::class, 'fetchPoso'])->name('incidents.fetchPoso');
 
+Route::get('/poso/report', [PosoController::class, 'history'])->name('poso.report.history');
+
+Route::middleware(['auth'])->prefix('poso')->group(function () {
+    Route::get('/dashboard', [PosoController::class, 'dashboard'])->name('poso.dashboard');
+    Route::get('/report', [PosoController::class, 'report'])->name('poso.report');
+    Route::post('/report', [PosoController::class, 'store'])->name('poso.report.store');
+});
+
+Route::post('/poso/report', [PosoController::class, 'store'])->name('poso.report.store');
+
+
 
