@@ -2,11 +2,142 @@
 <title>RouteLink_Poso</title>
 
 @section('content')
-<div style="max-width: 720px; width: 100%; margin: 1.5rem auto; font-family: 'Poppins', sans-serif; background: #fff; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); overflow: hidden;">
+<style>
+    /* Apply background to body */
+    body {
+        background-image: url("{{ asset('images/background.png') }}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        margin: 0;
+        padding-top: 20px; /* Optional: space from top */
+        font-family: 'Poppins', sans-serif;
+    }
 
+    /* Optional: subtle overlay for better readability (remove if not needed) */
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2); /* Very light white overlay */
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    /* Keep your existing form container styles */
+    .report-container {
+        max-width: 720px;
+        width: 100%;
+        margin: 1.5rem auto;
+        font-family: 'Poppins', sans-serif;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        overflow: hidden;
+    }
+
+    /* Your other styles remain unchanged */
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.95rem;
+        background: #fff;
+        color: #334155;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #5D7EA3;
+        box-shadow: 0 0 0 3px rgba(93, 126, 163, 0.15);
+    }
+
+    .coord-input {
+        width: 110px;
+        padding: 8px;
+        text-align: center;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+    .coord-input:focus {
+        outline: none;
+        border-color: #5D7EA3;
+    }
+
+    .coord-btn {
+        margin-top: 6px;
+        padding: 6px 16px;
+        background: #5D7EA3;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    .coord-btn:hover {
+        background: #4b6784;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(to right, #5cb85c, #4cae4c);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 6px rgba(92, 184, 92, 0.3);
+    }
+    .submit-btn:hover {
+        background: linear-gradient(to right, #4cae4c, #449d44);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(92, 184, 92, 0.4);
+    }
+
+    @media (max-width: 600px) {
+        .form-control,
+        .coord-input {
+            font-size: 1rem;
+            padding: 12px;
+        }
+
+        #poso-map {
+            height: 240px;
+        }
+
+        .submit-btn {
+            padding: 14px;
+            font-size: 1.05rem;
+        }
+
+        div[style*="flex"] {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        div[style*="flex"] > div {
+            min-width: 100% !important;
+        }
+    }
+</style>
+
+<!-- Form Container -->
+<div class="report-container">
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #5D7EA3, #87A8C7); color: white; text-align: center; padding: 1.25rem;">
-        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600;">👮 Poso Personnel Report</h1>
+        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600;">Poso Personnel Report</h1>
         <p style="margin-top: 0.3rem; font-size: 0.9rem; opacity: 0.95;">
             Reporting as: <strong>{{ auth()->user()->name }}</strong> ({{ ucfirst(auth()->user()->role) }})
         </p>
@@ -67,103 +198,10 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">🚨 Submit Report</button>
+            <button type="submit" class="submit-btn">Submit Report</button>
         </form>
     </div>
 </div>
-
-<style>
-.form-control {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    font-size: 0.95rem;
-    background: #fff;
-    color: #334155;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-.form-control:focus {
-    outline: none;
-    border-color: #5D7EA3;
-    box-shadow: 0 0 0 3px rgba(93, 126, 163, 0.15);
-}
-
-.coord-input {
-    width: 110px;
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 0.9rem;
-}
-.coord-input:focus {
-    outline: none;
-    border-color: #5D7EA3;
-}
-
-.coord-btn {
-    margin-top: 6px;
-    padding: 6px 16px;
-    background: #5D7EA3;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: background 0.2s;
-}
-.coord-btn:hover {
-    background: #4b6784;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(to right, #5cb85c, #4cae4c);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(92, 184, 92, 0.3);
-}
-.submit-btn:hover {
-    background: linear-gradient(to right, #4cae4c, #449d44);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(92, 184, 92, 0.4);
-}
-
-/* ✅ Mobile Responsiveness */
-@media (max-width: 600px) {
-    .form-control,
-    .coord-input {
-        font-size: 1rem; /* Better touch readability */
-        padding: 12px;
-    }
-
-    #poso-map {
-        height: 240px;
-    }
-
-    .submit-btn {
-        padding: 14px;
-        font-size: 1.05rem;
-    }
-
-    div[style*="flex"] {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    div[style*="flex"] > div {
-        min-width: 100% !important;
-    }
-}
-</style>
 
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -173,13 +211,11 @@
 let posoMap, currentMarker;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize map
     posoMap = L.map('poso-map').setView([16.0212, 120.2315], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(posoMap);
 
-    // Get user location
     getUserLocationForPoso();
 });
 
@@ -231,6 +267,5 @@ function useManualLocation() {
     posoMap.setView([lat, lng], 17);
     document.getElementById('poso-location-status').innerHTML = '<span style="color:#10b981;">✅ Manual location set</span>';
 }
-</script>
 </script>
 @endsection
