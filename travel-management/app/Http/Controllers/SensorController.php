@@ -14,8 +14,6 @@ class SensorController extends Controller
     {
         $defaultCoords = [
             1 => ['name' => 'Route A', 'lat' => 16.029969002086467, 'lng' => 120.22734646082192],
-            2 => ['name' => 'Route B', 'lat' => 16.030020362249363, 'lng' => 120.22773928488766],
-            3 => ['name' => 'Route C', 'lat' => 16.030323444510252, 'lng' => 120.22774256414759],
             4 => ['name' => 'Route D', 'lat' => 16.030192476120416, 'lng' => 120.22811757860168],
         ];
 
@@ -35,56 +33,72 @@ class SensorController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'latitude' => 'required|numeric|min:-90|max:90',
-            'longitude' => 'required|numeric|min:-180|max:180',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'latitude' => 'required|numeric|min:-90|max:90',
+        'longitude' => 'required|numeric|min:-180|max:180',
+        'start_lat' => 'required|numeric|min:-90|max:90',
+        'start_lng' => 'required|numeric|min:-180|max:180',
+        'end_lat' => 'required|numeric|min:-90|max:90',
+        'end_lng' => 'required|numeric|min:-180|max:180',
+    ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
 
-        $sensor = Sensor::findOrFail($id);
-        $sensor->update([
+    $sensor = Sensor::updateOrCreate(
+        ['id' => $id],
+        [
             'name' => $request->name,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-        ]);
-
-        $allSensors = Sensor::orderBy('id')->take(4)->get();
-        $routeLetters = ['A', 'B', 'C', 'D'];
-        $sensorLocations = [];
-
-        foreach ($allSensors as $index => $s) {
-            $letter = $routeLetters[$index];
-            $sensorLocations[$letter] = [
-                'lat' => (float) $s->latitude,
-                'lng' => (float) $s->longitude
-            ];
-        }
-
-        $firebaseData = [
-            'created_at' => now()->toDateTimeString(),
-            'sensorA' => ['traffic' => false],
-            'sensorB' => ['traffic' => false],
-            'sensorC' => ['traffic' => false],
-            'sensorD' => ['traffic' => false],
-            'sensor_locations' => $sensorLocations
-        ];
-
-       try {
-    $client = new Client();
-    // Update the CONFIG node (persistent)
-    $client->put(
-        "https://management-6d07b-default-rtdb.firebaseio.com/traffic_config/sensor_locations.json",
-        ['json' => $sensorLocations]
+            'start_lat' => $request->start_lat,
+            'start_lng' => $request->start_lng,
+            'end_lat' => $request->end_lat,
+            'end_lng' => $request->end_lng,
+        ]
     );
-} catch (\Exception $e) {
-    Log::error('Firebase sync failed: ' . $e->getMessage());
-}
 
-        return redirect()->back()->with('success', 'Sensor ' . $id . ' updated!');
+    // Sync ALL sensors to Firebase config
+    $allSensors = Sensor::orderBy('id')->get();
+    $sensorConfig = [];
+
+    foreach ($allSensors as $s) {
+        $sensorConfig[$s->sensor_id] = [
+            // Main marker location
+            'lat' => (float) $s->latitude,
+            'lng' => (float) $s->longitude,
+            // Detection zone
+            'start' => [
+                'lat' => (float) $s->start_lat,
+                'lng' => (float) $s->start_lng,
+            ],
+            'end' => [
+                'lat' => (float) $s->end_lat,
+                'lng' => (float) $s->end_lng,
+            ],
+            // Optional: radius (if still used)
+            'radius' => 100
+        ];
     }
+
+    try {
+        $client = new Client();
+        $client->put(
+            "https://management-6d07b-default-rtdb.firebaseio.com/traffic_config/sensors.json",
+            ['json' => $sensorConfig]
+        );
+    } catch (\Exception $e) {
+        Log::error('Firebase sync failed: ' . $e->getMessage());
+    }
+
+    return redirect()->back()->with('success', "Sensor {$id} updated!");
+}
+public function show($id)
+{
+    $sensor = Sensor::findOrFail($id);
+    return response()->json($sensor);
+}
 }
