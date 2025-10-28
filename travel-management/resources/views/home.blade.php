@@ -5,7 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>RouteLink - Home</title>
 
-  <!-- Styles -->
+  <!-- Inline Styles (including new Route Visualization section styling) -->
+  <style>
+    /* Existing styles are assumed to be in home.css; these complement them */
+    .route-visualization {
+      padding: 60px 20px;
+      text-align: center;
+      background-color: #f9f9f9;
+    }
+
+    .route-visualization h2 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .route-visualization p {
+      max-width: 700px;
+      margin: 0 auto;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #555;
+    }
+  </style>
+
+  <!-- External Styles -->
   <link rel="stylesheet" href="{{ asset('css/home.css') }}">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
@@ -72,6 +96,12 @@
           <p>Follow smart navigation to avoid delays.</p>
         </div>
       </div>
+    </section>
+
+    <!-- Route Visualization Section -->
+    <section class="route-visualization">
+      <h2>Route Visualization</h2>
+      <p>All four monitored routes are distinctly color-coded on the map, enabling commuters and drivers to quickly and clearly identify their selected path at a glance.</p>
     </section>
 
     <!-- Features Section with Images -->

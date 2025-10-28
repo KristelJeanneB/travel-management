@@ -25,8 +25,9 @@ class SuperAdminController extends Controller
                 ['id' => $index + 1],
                 [
                     'name' => $name,
-                    'latitude' => null,
-                    'longitude' => null
+                    // ✅ Use default 0.0 instead of null
+                    'latitude' => 0.0,
+                    'longitude' => 0.0
                 ]
             );
         }
@@ -41,57 +42,56 @@ class SuperAdminController extends Controller
         return response()->json(Sensor::all());
     }
 
-    // SuperAdminController.php
+    public function updateSensor(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            // ✅ Fix validation syntax (use ":" not "=")
+            'latitude' => 'required|numeric|min:-90|max:90',
+            'longitude' => 'required|numeric|min:-180|max:180',
+        ]);
 
-public function updateSensor(Request $request, $id)
-{
-    $request->validate([
-        'name' => 'required|string',
-        'latitude' => 'required|numeric|min:-90|max=90',
-        'longitude' => 'required|numeric|min=-180|max=180',
-    ]);
+        $sensor = Sensor::findOrFail($id);
+        $sensor->update($request->only('name', 'latitude', 'longitude'));
 
-    $sensor = Sensor::findOrFail($id);
-    $sensor->update($request->only('name', 'latitude', 'longitude'));
+        // ✅ Sync to Firebase
+        $this->syncSensorToFirebase($sensor);
 
-    // ✅ Sync to Firebase
-    $this->syncSensorToFirebase($sensor);
+        return back()->with('success', 'Sensor location updated!');
+    }
 
-    return back()->with('success', 'Sensor location updated!');
-}
-
-private function syncSensorToFirebase($sensor)
-{
-    try {
-        $database = app('firebase.database');
-        
-        // Map sensor ID to letter (1→A, 2→B, etc.)
-        $letter = chr(64 + $sensor->id); // A, B, C, D
-        
-        // Update sensor_locations in traffic_logs
-        $database->getReference('traffic_logs/sensor_locations/' . $letter)
-            ->set([
-                'lat' => $sensor->latitude,
-                'lng' => $sensor->longitude,
-                'name' => $sensor->name
-            ]);
-
-        // Optional: Also update latest traffic_logs entry
-        $latestKey = $database->getReference('traffic_logs')
-            ->orderByKey()
-            ->limitToLast(1)
-            ->getValue();
-
-        if ($latestKey) {
-            $key = array_key_first($latestKey);
-            $database->getReference("traffic_logs/$key/sensor_locations/$letter")
+    private function syncSensorToFirebase($sensor)
+    {
+        try {
+            $database = app('firebase.database');
+            
+            // Map sensor ID to letter (1→A, 2→B, etc.)
+            $letter = chr(64 + $sensor->id); // A, B, C, D
+            
+            // Update sensor_locations in traffic_logs
+            $database->getReference('traffic_logs/sensor_locations/' . $letter)
                 ->set([
                     'lat' => $sensor->latitude,
-                    'lng' => $sensor->longitude
+                    'lng' => $sensor->longitude,
+                    'name' => $sensor->name
                 ]);
+
+            // Optional: Also update latest traffic_logs entry
+            $latestKey = $database->getReference('traffic_logs')
+                ->orderByKey()
+                ->limitToLast(1)
+                ->getValue();
+
+            if ($latestKey) {
+                $key = array_key_first($latestKey);
+                $database->getReference("traffic_logs/$key/sensor_locations/$letter")
+                    ->set([
+                        'lat' => $sensor->latitude,
+                        'lng' => $sensor->longitude
+                    ]);
+            }
+        } catch (\Exception $e) {
+            Log::error("Firebase sync failed: " . $e->getMessage());
         }
-    } catch (\Exception $e) {
-        Log::error("Firebase sync failed: " . $e->getMessage());
     }
-}
 }

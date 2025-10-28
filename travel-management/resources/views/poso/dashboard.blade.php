@@ -16,7 +16,7 @@
         font-family: 'Poppins', sans-serif;
     }
 
-    /* Optional: subtle overlay for better readability (remove if not needed) */
+    /* Optional: subtle overlay for better readability */
     body::before {
         content: "";
         position: fixed;
@@ -24,12 +24,11 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(255, 255, 255, 0.2); /* Very light white overlay */
+        background: rgba(255, 255, 255, 0.2);
         z-index: -1;
         pointer-events: none;
     }
 
-    /* Keep your existing form container styles */
     .report-container {
         max-width: 720px;
         width: 100%;
@@ -41,7 +40,6 @@
         overflow: hidden;
     }
 
-    /* Your other styles remain unchanged */
     .form-control {
         width: 100%;
         padding: 10px 12px;
@@ -106,6 +104,22 @@
         box-shadow: 0 4px 10px rgba(92, 184, 92, 0.4);
     }
 
+    /* Logout button style */
+    .logout-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
     @media (max-width: 600px) {
         .form-control,
         .coord-input {
@@ -130,17 +144,28 @@
         div[style*="flex"] > div {
             min-width: 100% !important;
         }
+
+        /* Adjust logout button on small screens */
+        .header-container {
+            padding-right: 70px !important;
+        }
     }
 </style>
 
 <!-- Form Container -->
 <div class="report-container">
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #5D7EA3, #87A8C7); color: white; text-align: center; padding: 1.25rem;">
+    <div style="background: linear-gradient(135deg, #5D7EA3, #87A8C7); color: white; text-align: center; padding: 1.25rem; position: relative;">
         <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600;">Poso Personnel Report</h1>
         <p style="margin-top: 0.3rem; font-size: 0.9rem; opacity: 0.95;">
             Reporting as: <strong>{{ auth()->user()->name }}</strong> ({{ ucfirst(auth()->user()->role) }})
         </p>
+
+        <!-- Logout Form -->
+        <form method="POST" action="{{ route('logout') }}" style="position: absolute; top: 12px; right: 16px; margin: 0;">
+            @csrf
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
     </div>
 
     <!-- Form Body -->
