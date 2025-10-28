@@ -757,10 +757,16 @@ td .btn-group {
             <small>User Reports</small>
             <span id="admin-new-reports-badge" class="badge" style="display:none; background:#ff4757; color:white; border-radius:10px; padding:2px 6px; font-size:12px; margin-left:6px;"></span>
         </div>
-        <div class="card" id="reportIncidentBtn" role="button" tabindex="0">
+        <!--<div class="card" id="reportIncidentBtn" role="button" tabindex="0">
             <i class="fas fa-plus-circle icon" style="color: #f39c12;"></i>
             <p>Report Incident</p>
             <small>Log a new incident</small>
+        </div>-->
+        <div class="card" id="posoReportsBtn" role="button" tabindex="0">
+            <i class="fas fa-exclamation-triangle icon" style="color: #8e44ad;"></i>
+            <p>Poso Reports</p>
+            <small>POSO incident reports</small>
+            <span id="poso-new-reports-badge" class="badge" style="display:none; background:#ff4757; color:white; border-radius:10px; padding:2px 6px; font-size:12px; margin-left:6px;"></span>
         </div>
 
        <div class="card" id="open-traffic-modal" role="button" tabindex="0">
@@ -886,6 +892,7 @@ td .btn-group {
                     <th>Coords</th>
                     <th>Address</th>
                     <th>Date</th>
+                    <th>Reporter</th> 
                     <th>Status</th>
                     <th>Actions</th> 
                 </tr>
@@ -1004,6 +1011,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalUsersCard = document.getElementById('totalUsersCard');
     const paymentsCard = document.getElementById('payments-card');
     const accidentReportsBtn = document.getElementById('accidentReportsBtn');
+    const posoReportsBtn = document.getElementById('posoReportsBtn');
+    posoReportsBtn?.addEventListener('click', loadPosoReports);
 
     const usersModal = document.getElementById('usersModal');
     const paymentsModal = document.getElementById('payments-modal');
@@ -1232,16 +1241,20 @@ function resetAnalyticsUI() {
                     return;
                 }
                 users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.id}</td>
-                        <td>${user.name}</td>
-                        <td>${user.email}</td>
-                        <td>${user.is_admin ? 'Admin' : 'User'}</td>
-                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                    `;
-                    usersTableBody.appendChild(tr);
-                });
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${user.id}</td>
+        <td>${user.name}</td>
+        <td>${user.email}</td>
+        <td>${
+            user.is_admin 
+                ? 'Admin' 
+                : (user.email.toLowerCase().endsWith('@poso.gov.ph') ? 'Poso' : 'User')
+        }</td>
+        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+    `;
+    usersTableBody.appendChild(tr);
+});
             })
             .catch(() => {
                 usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load users</td></tr>';
@@ -1382,6 +1395,16 @@ function resetAnalyticsUI() {
     accidentReportsBtn?.addEventListener('click', loadIncidents);
 
     function loadIncidents() {
+    document.querySelector('#incidentModal thead tr').innerHTML = `
+        <th>Type</th>
+        <th>Description</th>
+        <th>Coords</th>
+        <th>Address</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+    `;
+
         incidentTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading reports...</td></tr>';
         incidentModal.style.display = 'flex';
 
@@ -1423,158 +1446,141 @@ function resetAnalyticsUI() {
     }
 
     function renderIncidents(data) {
-        incidentTableBody.innerHTML = '';
+    incidentTableBody.innerHTML = '';
+    if (!data.length) {
+        incidentTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No matching reports</td></tr>';
+        return;
+    }
+    data.forEach(item => {
+        const lat = parseFloat(item.lat);
+        const lng = parseFloat(item.lng);
+        const coords = !isNaN(lat) && !isNaN(lng)
+            ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+            : 'Not available';
+        const tr = document.createElement('tr');
+        tr.dataset.id = item.id;
 
-        if (!data.length) {
-            incidentTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No matching reports</td></tr>';
-            return;
-        }
+        const statusBtn = document.createElement('button');
+        statusBtn.className = 'status-toggle-btn';
+        statusBtn.textContent = item.status === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+        statusBtn.style.background = item.status === 'resolved' ? '#17a2b8' : '#28a745';
+        statusBtn.dataset.status = item.status;
+        statusBtn.addEventListener('click', function () {
+            const currentStatus = this.dataset.status;
+            const newStatus = currentStatus === 'reported' ? 'resolved' : 'reported';
+            const id = tr.dataset.id;
+            this.textContent = newStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+            this.style.background = newStatus === 'resolved' ? '#17a2b8' : '#28a745';
+            this.dataset.status = newStatus;
+            fetch(`{{ url('/incidents') }}/${id}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(`Incident ${newStatus}!`);
+                    updateAlertBadge();
+                } else {
+                    throw new Error('Update failed');
+                }
+            })
+            .catch(err => {
+                console.error('Error updating status:', err);
+                alert('Could not update status. Reverting...');
+                const revertStatus = this.dataset.status === 'resolved' ? 'reported' : 'resolved';
+                this.textContent = revertStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+                this.style.background = revertStatus === 'resolved' ? '#17a2b8' : '#28a745';
+                this.dataset.status = revertStatus;
+            });
+        });
 
-        data.forEach(item => {
-            const lat = parseFloat(item.lat);
-            const lng = parseFloat(item.lng);
-            const coords = !isNaN(lat) && !isNaN(lng)
-                ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-                : 'Not available';
-
-            const tr = document.createElement('tr');
-            tr.dataset.id = item.id;
-
-            const statusBtn = document.createElement('button');
-            statusBtn.className = 'status-toggle-btn';
-            statusBtn.textContent = item.status === 'resolved' ? '✅ Resolved' : '✓ Resolve';
-            statusBtn.style.background = item.status === 'resolved' ? '#17a2b8' : '#28a745';
-            statusBtn.dataset.status = item.status;
-
-            statusBtn.addEventListener('click', function () {
-                const currentStatus = this.dataset.status;
-                const newStatus = currentStatus === 'reported' ? 'resolved' : 'reported';
-                const id = tr.dataset.id;
-
-                this.textContent = newStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
-                this.style.background = newStatus === 'resolved' ? '#17a2b8' : '#28a745';
-                this.dataset.status = newStatus;
-
-                fetch(`{{ url('/incidents') }}/${id}/update-status`, {
-                    method: 'POST',
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'status-toggle-btn delete-btn';
+        deleteBtn.textContent = '🗑️ Delete';
+        deleteBtn.addEventListener('click', function () {
+            const id = tr.dataset.id;
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmYesBtn = document.getElementById('confirmYesBtn');
+            const confirmNoBtn = document.getElementById('confirmNoBtn');
+            confirmModal.style.display = 'flex';
+            const handleYes = () => {
+                confirmYesBtn.removeEventListener('click', handleYes);
+                confirmNoBtn.removeEventListener('click', handleNo);
+                confirmModal.style.display = 'none';
+                fetch(`{{ url('/incidents') }}/${id}`, {
+                    method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: newStatus })
+                    }
                 })
                 .then(res => res.json())
                 .then(result => {
                     if (result.success) {
-                        showToast(`Incident ${newStatus}!`);
+                        tr.remove();
+                        showToast('Report deleted!', 'success');
                         updateAlertBadge();
+                        allIncidentData = allIncidentData.filter(i => i.id != id);
                     } else {
-                        throw new Error('Update failed');
+                        throw new Error('Delete failed');
                     }
                 })
                 .catch(err => {
-                    console.error('Error updating status:', err);
-                    alert('Could not update status. Reverting...');
-
-                    const revertStatus = this.dataset.status === 'resolved' ? 'reported' : 'resolved';
-                    this.textContent = revertStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
-                    this.style.background = revertStatus === 'resolved' ? '#17a2b8' : '#28a745';
-                    this.dataset.status = revertStatus;
+                    console.error('Delete error:', err);
+                    showToast('Failed to delete report.', 'error');
                 });
-            });
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'status-toggle-btn delete-btn';
-            deleteBtn.textContent = '🗑️ Delete';
-            deleteBtn.addEventListener('click', function () {
-                const id = tr.dataset.id;
-
-                const confirmModal = document.getElementById('confirmModal');
-                const confirmYesBtn = document.getElementById('confirmYesBtn');
-                const confirmNoBtn = document.getElementById('confirmNoBtn');
-
-                confirmModal.style.display = 'flex';
-
-                const handleYes = () => {
-                    confirmYesBtn.removeEventListener('click', handleYes);
-                    confirmNoBtn.removeEventListener('click', handleNo);
-                    confirmModal.style.display = 'none';
-
-                    fetch(`{{ url('/incidents') }}/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(result => {
-                        if (result.success) {
-                            tr.remove();
-                            showToast('Report deleted!', 'success');
-                            updateAlertBadge();
-                            allIncidentData = allIncidentData.filter(i => i.id != id);
-                        } else {
-                            throw new Error('Delete failed');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Delete error:', err);
-                        showToast('Failed to delete report.', 'error');
-                    });
-                };
-
-                const handleNo = () => {
-                    confirmYesBtn.removeEventListener('click', handleYes);
-                    confirmNoBtn.removeEventListener('click', handleNo);
-                    confirmModal.style.display = 'none';
-                };
-
-                confirmYesBtn.addEventListener('click', handleYes);
-                confirmNoBtn.addEventListener('click', handleNo);
-
-                const closeOnOutsideClick = (e) => {
-                    if (e.target === confirmModal) {
-                        handleNo();
-                        window.removeEventListener('click', closeOnOutsideClick);
-                    }
-                };
-                window.addEventListener('click', closeOnOutsideClick);
-            });
-
-            tr.innerHTML = `
-                <td>${item.title || 'N/A'}</td>
-                <td>${item.description || 'N/A'}</td>
-                <td><code>${coords}</code></td>
-                <td style="font-size:13px; color:#555;">${item.address || 'Loading address...'}</td>
-                <td>${new Date(item.created_at).toLocaleString()}</td>
-            `;
-
-            const statusCell = document.createElement('td');
-            statusCell.appendChild(statusBtn);
-            tr.appendChild(statusCell);
-
-            const deleteCell = document.createElement('td');
-            deleteCell.appendChild(deleteBtn);
-            tr.appendChild(deleteCell);
-
-            incidentTableBody.appendChild(tr);
-
-            if (lat && lng && !item.address) {
-                reverseGeocode(lat, lng).then(addr => {
-                    tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
-                    const index = allIncidentData.findIndex(i => i.id == item.id);
-                    if (index !== -1) {
-                        allIncidentData[index].address = addr;
-                    }
-                }).catch(() => {
-                    tr.cells[3].textContent = "Address unavailable";
-                });
-            } else if (item.address) {
-                tr.cells[3].textContent = item.address;
-            }
+            };
+            const handleNo = () => {
+                confirmYesBtn.removeEventListener('click', handleYes);
+                confirmNoBtn.removeEventListener('click', handleNo);
+                confirmModal.style.display = 'none';
+            };
+            confirmYesBtn.addEventListener('click', handleYes);
+            confirmNoBtn.addEventListener('click', handleNo);
+            const closeOnOutsideClick = (e) => {
+                if (e.target === confirmModal) {
+                    handleNo();
+                    window.removeEventListener('click', closeOnOutsideClick);
+                }
+            };
+            window.addEventListener('click', closeOnOutsideClick);
         });
-    }
+
+        tr.innerHTML = `
+            <td>${item.title || 'N/A'}</td>
+            <td>${item.description || 'N/A'}</td>
+            <td><code>${coords}</code></td>
+            <td style="font-size:13px; color:#555;">${item.address || 'Loading address...'}</td>
+            <td>${new Date(item.created_at).toLocaleString()}</td>
+        `;
+        const statusCell = document.createElement('td');
+        statusCell.appendChild(statusBtn);
+        tr.appendChild(statusCell);
+        const deleteCell = document.createElement('td');
+        deleteCell.appendChild(deleteBtn);
+        tr.appendChild(deleteCell);
+        incidentTableBody.appendChild(tr);
+
+        if (lat && lng && !item.address) {
+            reverseGeocode(lat, lng).then(addr => {
+                tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
+                const index = allIncidentData.findIndex(i => i.id == item.id);
+                if (index !== -1) {
+                    allIncidentData[index].address = addr;
+                }
+            }).catch(() => {
+                tr.cells[3].textContent = "Address unavailable";
+            });
+        } else if (item.address) {
+            tr.cells[3].textContent = item.address;
+        }
+    });
+}
 
     let searchTimeout;
     searchInput.addEventListener('input', () => {
@@ -1878,6 +1884,189 @@ function logTrafficStatus(sensorData) {
   db.ref('traffic_logs').push(log); 
 }
 });
+function loadPosoReports() {
+    document.querySelector('#incidentModal thead tr').innerHTML = `
+        <th>Type</th>
+        <th>Description</th>
+        <th>Coords</th>
+        <th>Address</th>
+        <th>Date</th>
+        <th>Reporter</th>
+        <th>Status</th>
+        <th>Actions</th>
+    `;
+
+    incidentTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading Poso reports...</td></tr>';
+    incidentModal.style.display = 'flex';
+    fetch('{{ route("incidents.fetchPoso") }}', {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response failed');
+        return response.json();
+    })
+    .then(data => {
+        incidentTableBody.innerHTML = '';
+        allIncidentData = data;
+        renderPosoReports(data); 
+        const reportedCount = data.filter(i => i.status === 'reported').length;
+        updatePosoBadge(reportedCount);
+    })
+    .catch(err => {
+        console.log("Fetched POSO data:", data); 
+        incidentTableBody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align:center; color:red;">
+                    Error loading Poso reports.<br><small>Check console</small>
+                </td>
+            </tr>`;
+    });
+}
+function renderPosoReports(data) {
+    incidentTableBody.innerHTML = '';
+    if (!data.length) {
+        incidentTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No matching Poso reports</td></tr>';
+        return;
+    }
+    data.forEach(item => {
+        const lat = parseFloat(item.lat);
+        const lng = parseFloat(item.lng);
+        const coords = !isNaN(lat) && !isNaN(lng)
+            ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+            : 'Not available';
+        const tr = document.createElement('tr');
+        tr.dataset.id = item.id;
+
+        const statusBtn = document.createElement('button');
+        statusBtn.className = 'status-toggle-btn';
+        statusBtn.textContent = item.status === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+        statusBtn.style.background = item.status === 'resolved' ? '#17a2b8' : '#28a745';
+        statusBtn.dataset.status = item.status;
+        statusBtn.addEventListener('click', function () {
+            const currentStatus = this.dataset.status;
+            const newStatus = currentStatus === 'reported' ? 'resolved' : 'reported';
+            const id = tr.dataset.id;
+            this.textContent = newStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+            this.style.background = newStatus === 'resolved' ? '#17a2b8' : '#28a745';
+            this.dataset.status = newStatus;
+            fetch(`{{ url('/incidents') }}/${id}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(`Incident ${newStatus}!`);
+                    updatePosoBadge();
+                } else {
+                    throw new Error('Update failed');
+                }
+            })
+            .catch(err => {
+                console.error('Error updating status:', err);
+                alert('Could not update status. Reverting...');
+                const revertStatus = this.dataset.status === 'resolved' ? 'reported' : 'resolved';
+                this.textContent = revertStatus === 'resolved' ? '✅ Resolved' : '✓ Resolve';
+                this.style.background = revertStatus === 'resolved' ? '#17a2b8' : '#28a745';
+                this.dataset.status = revertStatus;
+            });
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'status-toggle-btn delete-btn';
+        deleteBtn.textContent = '🗑️ Delete';
+        deleteBtn.addEventListener('click', function () {
+            const id = tr.dataset.id;
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmYesBtn = document.getElementById('confirmYesBtn');
+            const confirmNoBtn = document.getElementById('confirmNoBtn');
+            confirmModal.style.display = 'flex';
+            const handleYes = () => {
+                confirmYesBtn.removeEventListener('click', handleYes);
+                confirmNoBtn.removeEventListener('click', handleNo);
+                confirmModal.style.display = 'none';
+                fetch(`{{ url('/incidents') }}/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.success) {
+                        tr.remove();
+                        showToast('Report deleted!', 'success');
+                        updatePosoBadge();
+                        allIncidentData = allIncidentData.filter(i => i.id != id);
+                    } else {
+                        throw new Error('Delete failed');
+                    }
+                })
+                .catch(err => {
+                    console.error('Delete error:', err);
+                    showToast('Failed to delete report.', 'error');
+                });
+            };
+            const handleNo = () => {
+                confirmYesBtn.removeEventListener('click', handleYes);
+                confirmNoBtn.removeEventListener('click', handleNo);
+                confirmModal.style.display = 'none';
+            };
+            confirmYesBtn.addEventListener('click', handleYes);
+            confirmNoBtn.addEventListener('click', handleNo);
+            const closeOnOutsideClick = (e) => {
+                if (e.target === confirmModal) {
+                    handleNo();
+                    window.removeEventListener('click', closeOnOutsideClick);
+                }
+            };
+            window.addEventListener('click', closeOnOutsideClick);
+        });
+
+        tr.innerHTML = `
+            <td>${item.title || 'N/A'}</td>
+            <td>${item.description || 'N/A'}</td>
+            <td><code>${coords}</code></td>
+            <td style="font-size:13px; color:#555;">${item.address || 'Loading address...'}</td>
+            <td>${new Date(item.created_at).toLocaleString()}</td>
+            <td>
+                <small style="color:#555;">By: ${item.reported_by?.name || 'Unknown'}</small><br>
+                <small style="color:#888;">(${item.reporter_role || 'poso'})</small>
+                <small>Unit: ${item.unit} | Badge: ${item.badge_number}</small>
+            </td>
+        `;
+        const statusCell = document.createElement('td');
+        statusCell.appendChild(statusBtn);
+        tr.appendChild(statusCell);
+        const deleteCell = document.createElement('td');
+        deleteCell.appendChild(deleteBtn);
+        tr.appendChild(deleteCell);
+        incidentTableBody.appendChild(tr);
+
+        if (lat && lng && !item.address) {
+            reverseGeocode(lat, lng).then(addr => {
+                tr.cells[3].textContent = addr.length > 100 ? addr.substring(0, 100) + '...' : addr;
+                const index = allIncidentData.findIndex(i => i.id == item.id);
+                if (index !== -1) {
+                    allIncidentData[index].address = addr;
+                }
+            }).catch(() => {
+                tr.cells[3].textContent = "Address unavailable";
+            });
+        } else if (item.address) {
+            tr.cells[3].textContent = item.address;
+        }
+    });
+}
 </script>
 
 </body>

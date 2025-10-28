@@ -7,13 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Incident extends Model
 {
     protected $fillable = [
-        'user_id',
-        'title',
-        'description',
-        'lat',
-        'lng',
-        'status'
-    ];
+    'user_id',
+    'title',
+    'description',
+    'lat',
+    'lng',
+    'status',
+    'type',
+    'reporter_role',
+    'unit',
+    'badge_number',
+];
 
     public function user()
     {

@@ -142,3 +142,10 @@ Route::middleware(['auth', 'role:admin,superadmin'])->group(function () {
     Route::post('/admin/incidents/{id}/approve', [IncidentController::class, 'approveIncident'])->name('admin.incidents.approve');
     Route::post('/admin/incidents/{id}/reject', [IncidentController::class, 'rejectIncident'])->name('admin.incidents.reject');
 });
+// routes/web.php
+Route::get('/api/incidents/poso', [IncidentController::class, 'fetchPoso'])->name('incidents.fetchPoso');
+
+Route::get('/incidents/fetch', [IncidentController::class, 'fetch'])->name('incidents.fetch');
+Route::get('/incidents/fetch-poso', [IncidentController::class, 'fetchPoso'])->name('incidents.fetchPoso');
+
+

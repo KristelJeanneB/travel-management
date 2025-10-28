@@ -21,9 +21,23 @@ class PosoAuthController extends Controller
      * Handle Poso registration request.
      */
     public function register(Request $request)
-    {
-        return $this->storePoso($request);
-    }
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|ends_with=@poso.gov.ph|unique:users,email',
+        'password' => 'required|confirmed|min:8',
+    ]);
+
+    // Create user
+    User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role' => 'poso', 
+    ]);
+
+    return redirect()->route('login')->with('success', 'Registration successful! You may now log in.');
+}
 
     /**
      * Store a new Poso user with 'poso' role.

@@ -10,9 +10,11 @@
 
     <form method="POST" action="{{ route('poso.report.store') }}" id="poso-incident-form">
         @csrf
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
         <input type="hidden" name="lat" id="poso-lat">
         <input type="hidden" name="lng" id="poso-lng">
         <input type="hidden" name="reporter_role" value="{{ auth()->user()->role }}">
+        
 
         <!-- Incident Type -->
         <div class="form-group" style="margin-bottom:1rem;">
@@ -76,6 +78,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     getUserLocationForPoso();
 });
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+fetch('/incidents', {
+    method: 'POST',
+    headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        type: 'traffic_jam',
+        description: '...',
+        lat: 12.345678,
+        lng: 123.456789,
+        unit: '2',
+        badge_number: '123456'
+    })
+})
+.then(res => res.json())
+.then(data => console.log(data))
+.catch(err => console.error(err));
 
 function getUserLocationForPoso() {
     const statusEl = document.getElementById('poso-location-status');

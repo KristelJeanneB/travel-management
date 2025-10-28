@@ -37,55 +37,80 @@ class IncidentController extends Controller
      * Store a new incident
      */
     public function store(Request $request)
-    {
-        Log::info('📥 Incoming incident report', $request->all());
+{
+    $validated = $request->validate([
+        'type' => 'required|string|in:accident,traffic_jam,road_closure,hazard',
+        'description' => 'nullable|string|max:1000',
+        'lat' => 'required|numeric|between:-90,90',
+        'lng' => 'required|numeric|between:-180,180',
+        'unit' => 'nullable|string',           
+        'badge_number' => 'nullable|string',   
+    ]);
 
-        $validated = $request->validate([
-            'type' => 'required|string|in:accident,traffic_jam,road_closure,hazard',
-            'description' => 'nullable|string|max:1000',
-            'lat' => 'required|numeric|between:-90,90',
-            'lng' => 'required|numeric|between:-180,180',
+    try {
+        $incident = Incident::create([
+            'user_id' => auth()->id(),
+            'title' => ucfirst(str_replace('_', ' ', $validated['type'])),
+            'type' => $validated['type'],
+            'description' => $validated['description'],
+            'lat' => $validated['lat'],
+            'lng' => $validated['lng'],
+            'status' => 'reported',
+            'reporter_role' => auth()->user()->role, 
+            'unit' => $validated['unit'] ?? null,
+            'badge_number' => $validated['badge_number'] ?? null,
         ]);
 
-        try {
-            $incident = Incident::create([
-                'title' => ucfirst(str_replace('_', ' ', $validated['type'])),
-                'description' => $validated['description'],
-                'lat' => $validated['lat'],
-                'lng' => $validated['lng'],
-                'status' => 'reported',
-                'role' => auth()->user()->role,
-            ]);
+        $this->syncToFirebase($incident);
 
-            Log::info('✅ Incident saved locally', ['id' => $incident->id]);
-
-            $this->syncToFirebase($incident);
-
-            return response()->json([
-                'message' => 'Incident reported successfully!',
-                'incident' => $incident
-            ], 201);
-
-        } catch (\Exception $e) {
-            Log::error('💥 Failed to save incident', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'message' => 'Failed to report incident.'
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Incident reported successfully!',
+            'incident' => $incident
+        ], 201);
+    } catch (\Exception $e) {
+        Log::error('💥 Failed to save incident', [
+            'error' => $e->getMessage(),
+        ]);
+        return response()->json(['message' => 'Failed to report incident.'], 500);
     }
+}
 
     public function fetch()
-    {
-        $incidents = Incident::select('id', 'title', 'description', 'lat', 'lng', 'status', 'created_at','reporter_role')
-            ->latest()
-            ->get();
+{
+    $incidents = Incident::with('user:id,name,email')
+        ->select(
+            'id',
+            'user_id',
+            'title',
+            'description',
+            'lat',
+            'lng',
+            'status',
+            'created_at',
+            'reporter_role'
+        )
+        ->latest()
+        ->get()
+        ->map(function ($incident) {
+            return [
+                'id' => $incident->id,
+                'title' => $incident->title,
+                'description' => $incident->description,
+                'lat' => $incident->lat,
+                'lng' => $incident->lng,
+                'status' => $incident->status,
+                'created_at' => $incident->created_at,
+                'reporter_role' => $incident->reporter_role,
+                'reported_by' => [
+                    'id' => $incident->user?->id,
+                    'name' => $incident->user?->name ?? 'Unknown',
+                    'email' => $incident->user?->email ?? null,
+                ],
+            ];
+        });
 
-        return response()->json($incidents);
-    }
+    return response()->json($incidents);
+}
 
     /**
      * Mark incident as resolved
@@ -241,5 +266,45 @@ public function destroy($id)
     $incident->delete(); 
 
     return response()->json(['success' => true]);
+}
+public function fetchPoso()
+{
+    $incidents = Incident::with('user:id,name,email')
+        ->where('reporter_role', 'poso')
+        ->select(
+            'id',
+            'user_id',
+            'title',
+            'description',
+            'lat',
+            'lng',
+            'status',
+            'created_at',
+            'reporter_role',
+            'unit',            
+            'badge_number'     
+        )
+        ->latest()
+        ->get()
+        ->map(function ($incident) {
+            return [
+                'id' => $incident->id,
+                'title' => $incident->title,
+                'description' => $incident->description,
+                'lat' => $incident->lat,
+                'lng' => $incident->lng,
+                'status' => $incident->status,
+                'created_at' => $incident->created_at,
+                'reporter_role' => $incident->reporter_role,
+                'reported_by' => [
+                    'id' => $incident->user?->id,
+                    'name' => $incident->user?->name ?? 'Unknown',
+                ],
+                'unit' => $incident->unit ?? 'N/A',          
+                'badge_number' => $incident->badge_number ?? 'N/A', 
+            ];
+        });
+
+    return response()->json($incidents);
 }
 }
